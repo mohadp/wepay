@@ -3,4 +3,10 @@
     <string name="button_transfers">Transfers to/from </string>
     <string name="text_hint_amount">Amount</string>
     <string name="text_hint_message">Add description...</string>
+
+
+    <!-- To be deleted; sample labels to delete stuff -->
+    <string name="list_group_name">Group name</string>
+    <string name="list_group_balance">$100.00</string>
+
 </resources>

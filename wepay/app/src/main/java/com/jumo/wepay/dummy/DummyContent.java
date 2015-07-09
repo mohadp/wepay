@@ -1,4 +1,4 @@
-package com.jumo.wepay.wepay.dummy;
+package com.jumo.wepay.dummy;
 
 import java.util.ArrayList;
 import java.util.HashMap;
