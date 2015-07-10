@@ -1,4 +1,4 @@
-package com.jumo.wepay.controller;
+package com.jumo.wepay.provider;
 
 import java.util.LinkedHashMap;
 
@@ -8,24 +8,27 @@ import java.util.LinkedHashMap;
 public final class WepayContract {
 
     private static final String TAG = "WepayContract";
+    public static String AUTHORITY = WepayProvider.PROVIDER_AUTHORITY;
+    public static String SCHEME = "content://";
 
     //Column definitions
     protected static final int COL_TYPE = 0;
     protected static final int COL_SPEC = 1;
+    protected static final String USER_BALANCE = "user_balance";
 
     //Tables and columns
 
 
     public final static class Group{
         //Group Table
-        protected static final String TABLE_NAME = "group";
+        public static final String TABLE_NAME = "group";
         protected static final LinkedHashMap<String, String[]> COL_DEFS = new LinkedHashMap<String, String[]>();
         
         public static final String _ID = "_id";
         public static final String NAME = "name";
         public static final String CREATED_ON = "created_on";
         public static final String GROUP_PICTURE = "group_picture";
-        public static final String USER_BALANCE = "user_balance"; //Not saved in the databased, this represents a user' balance at the group level (or expense level) = the sum of payments.
+        public static final String USER_BALANCE = WepayContract.USER_BALANCE; //Not saved in the databased, this represents a user' balance at the group level (or expense level) = the sum of payments.
 
         static{
             COL_DEFS.put(_ID, new String[]{"integer", "primary key"});
@@ -38,7 +41,7 @@ public final class WepayContract {
 
     public final static class Expense{
         //Expense table
-        protected static final String TABLE_NAME = "expense";
+        public static final String TABLE_NAME = "expense";
         protected static final LinkedHashMap<String, String[]> COL_DEFS =  new LinkedHashMap<String, String[]>();
 
         public static final String _ID = "_id";
@@ -52,7 +55,7 @@ public final class WepayContract {
         public static final String RECURRENCE_ID = "recurrence_id";
         public static final String GROUP_EXPENSE_ID = "group_expense_id";
         public static final String IS_PAYMENT = "is_payment";
-        public static final String USER_BALANCE = "user_balance"; //Not saved in the databased, this represents a user' balance at the group level (or expense level) = the sum of payments.
+        public static final String USER_BALANCE = WepayContract.USER_BALANCE; //Not saved in the databased, this represents a user' balance at the group level (or expense level) = the sum of payments.
         
         static {
             COL_DEFS.put(_ID, new String[]{"integer", "primary key"});
@@ -71,7 +74,7 @@ public final class WepayContract {
 
     public static final class Member{
         //Member Table
-        protected static final String TABLE_NAME = "member";
+        public static final String TABLE_NAME = "member";
         protected static final LinkedHashMap<String, String[]> COL_DEFS = new LinkedHashMap<String, String[]>();        
             
         public static final String _ID = "_id";
@@ -92,12 +95,13 @@ public final class WepayContract {
     public static final class User{
 
         //User Table
-        protected static final String TABLE_NAME = "user";
+        public static final String TABLE_NAME = "user";
         protected static final LinkedHashMap<String, String[]> COL_DEFS = new LinkedHashMap<String, String[]>();
 
         public static final String _ID = "_id";
         public static final String NAME = "name";
         public static final String PHONE = "phone";
+        public static final String USER_BALANCE = WepayContract.USER_BALANCE;
 
         static {
             COL_DEFS.put(_ID, new String[]{"nvarchar(255)", "primary key"});
@@ -110,7 +114,7 @@ public final class WepayContract {
     public static final class Recurrence{
 
         //Recurrence Table   
-        protected static final String TABLE_NAME = "recurrence";
+        public static final String TABLE_NAME = "recurrence";
         protected static final LinkedHashMap<String, String[]> COL_DEFS = new LinkedHashMap<String, String[]>();
 
         public static final String _ID = "_id";
@@ -127,7 +131,7 @@ public final class WepayContract {
     public static final class Payer{
 
         //Payer Table
-        protected static final String TABLE_NAME = "payer";
+        public static final String TABLE_NAME = "payer";
         protected static final LinkedHashMap<String, String[]> COL_DEFS = new LinkedHashMap<String, String[]>();
 
         public static final String _ID = "_id";
@@ -150,7 +154,7 @@ public final class WepayContract {
 
 
         //Location Table
-        protected static final String TABLE_NAME = "location";
+        public static final String TABLE_NAME = "location";
         protected static final LinkedHashMap<String, String[]> COL_DEFS = new LinkedHashMap<String, String[]>();
 
         public static final String _ID = "_id";

@@ -8,6 +8,7 @@ public class User {
     private String id;
     private String name;
     private long phone;
+    private double userBalance;
 
     public String getId() {
         return id;
@@ -31,5 +32,13 @@ public class User {
 
     public void setPhone(long phone) {
         this.phone = phone;
+    }
+
+    public double getUserBalance() {
+        return userBalance;
+    }
+
+    public void setUserBalance(double userBalance) {
+        this.userBalance = userBalance;
     }
 }

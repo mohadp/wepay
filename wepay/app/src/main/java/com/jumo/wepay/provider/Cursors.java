@@ -1,36 +1,28 @@
-package com.jumo.wepay.controller;
+package com.jumo.wepay.provider;
 
 import android.content.ContentValues;
-import android.database.Cursor;
 import android.database.CursorWrapper;
+import android.database.Cursor;
 
-import com.jumo.wepay.model.Expense;
-import com.jumo.wepay.model.Group;
-import com.jumo.wepay.model.Member;
-import com.jumo.wepay.model.Payer;
-import com.jumo.wepay.model.User;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Type;
+
 import java.util.Date;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by Moha on 7/4/15.
  */
 public class Cursors {
 
-    public static class GroupCursor extends CursorWrapper {
+    public static class Group extends CursorWrapper {
 
-        public GroupCursor(Cursor c) {
+        public Group(Cursor c) {
             super(c);
         }
 
-        public Group getGroup() {
+        public com.jumo.wepay.model.Group getGroup() {
             if (isBeforeFirst() || isAfterLast())
                 return null;
-            Group group = new Group();
+            com.jumo.wepay.model.Group group = new com.jumo.wepay.model.Group();
             int colIndex = -1;
 
             if((colIndex = getColumnIndex(WepayContract.Group._ID)) >= 0) group.setId(getLong(colIndex));
@@ -43,7 +35,7 @@ public class Cursors {
 
         }
 
-        public static ContentValues toContentValue(Group g){
+        public static ContentValues toContentValue(com.jumo.wepay.model.Group g){
             ContentValues cv = new ContentValues();
 
             if(g.getId() != 0) cv.put(WepayContract.Group._ID, g.getId());
@@ -57,16 +49,16 @@ public class Cursors {
         }
     }
 
-    public static class MemberCursor extends CursorWrapper {
+    public static class Member extends CursorWrapper {
 
-        public MemberCursor(Cursor c){
+        public Member(Cursor c){
             super(c);
         }
 
-        public Member getMember() {
+        public com.jumo.wepay.model.Member getMember() {
             if(isBeforeFirst() || isAfterLast())
                 return null;
-            Member member = new Member();
+            com.jumo.wepay.model.Member member = new com.jumo.wepay.model.Member();
             int colIndex = -1;
 
             if((colIndex = getColumnIndex(WepayContract.Member.GROUP_ID)) >= 0) member.setGroupId(getLong(colIndex));
@@ -78,7 +70,7 @@ public class Cursors {
             return member;
         }
 
-        public static ContentValues toContentValue(Member m){
+        public static ContentValues toContentValue(com.jumo.wepay.model.Member m){
             ContentValues cv = new ContentValues();
 
             if(m.getId() != 0) cv.put(WepayContract.Member._ID, m.getId());
@@ -93,17 +85,17 @@ public class Cursors {
         }
     }
 
-    public static class PayerCursor extends CursorWrapper{
+    public static class Payer extends CursorWrapper{
 
-        public PayerCursor(Cursor c){
+        public Payer(Cursor c){
             super(c);
         }
 
-        public Payer getPayer(){
+        public com.jumo.wepay.model.Payer getPayer(){
             if(isBeforeFirst() || isAfterLast()){
                 return null;
             }
-            Payer payer = new Payer();
+            com.jumo.wepay.model.Payer payer = new com.jumo.wepay.model.Payer();
             int colIndex = -1;
 
             if((colIndex = getColumnIndex(WepayContract.Payer._ID)) >= 0) payer.setId(getLong(colIndex));
@@ -114,7 +106,7 @@ public class Cursors {
             return payer;
         }
 
-        public static ContentValues toContentValues(Payer p){
+        public static ContentValues toContentValues(com.jumo.wepay.model.Payer p){
             ContentValues cv = new ContentValues();
 
             if(p.getId() != 0) cv.put(WepayContract.Payer._ID, p.getId());
@@ -129,26 +121,27 @@ public class Cursors {
         }
     }
 
-    public static class UserCursor extends CursorWrapper{
+    public static class User extends CursorWrapper{
 
-        public UserCursor(Cursor c){
+        public User(Cursor c){
             super(c);
         }
 
-        public User getUser(){
+        public com.jumo.wepay.model.User getUser(){
             if(isBeforeFirst() || isAfterLast()){
                 return null;
             }
-            User user = new User();
+            com.jumo.wepay.model.User user = new com.jumo.wepay.model.User();
             int colIndex = -1;
 
             if((colIndex = getColumnIndex(WepayContract.User._ID)) >= 0) user.setId(getString(colIndex));
             if((colIndex = getColumnIndex(WepayContract.User.NAME)) >= 0)user.setName(getString(colIndex));
             if((colIndex = getColumnIndex(WepayContract.User.PHONE)) >= 0)user.setPhone(getLong(colIndex));
+            if((colIndex = getColumnIndex(WepayContract.User.USER_BALANCE)) >= 0) user.setUserBalance(getDouble(colIndex));
             return user;
         }
 
-        public static ContentValues toContentValues(User u){
+        public static ContentValues toContentValues(com.jumo.wepay.model.User u){
             ContentValues cv = new ContentValues();
 
             if(u.getId() != null) cv.put(WepayContract.User._ID, u.getId());
@@ -161,17 +154,17 @@ public class Cursors {
         }
     }
 
-    public static class ExpenseCursor extends CursorWrapper{
+    public static class Expense extends CursorWrapper{
 
-        public ExpenseCursor(Cursor c){
+        public Expense(Cursor c){
             super(c);
         }
 
-        public Expense getExpense(){
+        public com.jumo.wepay.model.Expense getExpense(){
             if(isBeforeFirst() || isAfterLast()){
                 return null;
             }
-            Expense expense = new Expense();
+            com.jumo.wepay.model.Expense expense = new com.jumo.wepay.model.Expense();
             int colIndex = -1;
 
             if((colIndex = getColumnIndex(WepayContract.Expense._ID)) >= 0) expense.setId(getLong(colIndex));
@@ -190,7 +183,7 @@ public class Cursors {
             return expense;
         }
 
-        public static ContentValues toContentValues(Expense e){
+        public static ContentValues toContentValues(com.jumo.wepay.model.Expense e){
             ContentValues cv = new ContentValues();
 
             if(e.getId() != 0) cv.put(WepayContract.Expense._ID, e.getId());

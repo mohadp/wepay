@@ -13,7 +13,7 @@
         </activity>
         <provider
             android:authorities="com.jumo.wepay.provider"
-            android:name=".controller.WepayProvider">
+            android:name=".provider.WepayProvider">
         </provider>
 
 

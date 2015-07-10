@@ -1,17 +1,10 @@
-package com.jumo.wepay.controller;
+package com.jumo.wepay.provider;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.jumo.wepay.model.Group;
-import com.jumo.wepay.model.Member;
-
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by Moha on 6/28/15.
