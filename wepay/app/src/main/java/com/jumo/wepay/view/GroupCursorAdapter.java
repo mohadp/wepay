@@ -9,16 +9,16 @@ import android.widget.TextView;
 
 import com.jumo.wepay.R;
 import com.jumo.wepay.model.Group;
-import com.jumo.wepay.controller.Dao;
+import com.jumo.wepay.provider.dao.GroupCursor;
 
 /**
  * Created by Moha on 7/9/15.
  */
 public class GroupCursorAdapter extends CursorAdapter {
 
-    private Dao.GroupCursor mGroupCursor;
+    private GroupCursor mGroupCursor;
 
-    public GroupCursorAdapter(Context context, Dao.GroupCursor cursor) {
+    public GroupCursorAdapter(Context context, GroupCursor cursor) {
         super(context, cursor, 0);
         mGroupCursor = cursor;
     }

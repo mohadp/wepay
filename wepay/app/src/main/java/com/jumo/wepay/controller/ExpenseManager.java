@@ -10,7 +10,9 @@ import com.jumo.wepay.model.Group;
 import com.jumo.wepay.model.Member;
 import com.jumo.wepay.model.User;
 import com.jumo.wepay.model.Payer;
+import com.jumo.wepay.provider.dao.EntityDao;
 import com.jumo.wepay.provider.WepayContract;
+import com.jumo.wepay.provider.dao.GroupCursor;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -45,13 +47,13 @@ public class ExpenseManager {
         return expenseManager;
     }
 
-    public Dao.GroupCursor getUserGroups(String userId){
+    public GroupCursor getUserGroups(String userId){
         ContentResolver content = mContext.getContentResolver();
         Uri uri = baseUri.buildUpon().appendPath(WepayContract.User.TABLE_NAME)
                 .appendPath(userId).appendPath("groups")
                 .build();
 
-        return new Dao.GroupCursor(content.query(uri, null, null, null, null));
+        return new GroupCursor(content.query(uri, null, null, null, null));
     }
 
     public void createSampleData(){
@@ -73,19 +75,19 @@ public class ExpenseManager {
         HashMap<Long, ArrayList<Payer>> newExpensePayers = createSamplePayers(newGroupMembers, newGroupExpenses);
         //}
 
-        /*Dao.UserCursor userCursor = new Dao.UserCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.User.TABLE_NAME).build() ,null, null, null, null));
+        /*EntityDao.UserCursor userCursor = new EntityDao.UserCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.User.TABLE_NAME).build() ,null, null, null, null));
         Log.d(TAG, userCursor.toString());
 
-        Dao.GroupCursor groupCursor = new Dao.GroupCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.Group.TABLE_NAME).build() ,null, null, null, null));
+        EntityDao.GroupCursor groupCursor = new EntityDao.GroupCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.Group.TABLE_NAME).build() ,null, null, null, null));
         Log.d(TAG, groupCursor.toString());
 
-        Dao.MemberCursor memberCursor = new Dao.MemberCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.Member.TABLE_NAME).build() ,null, null, null, null));
+        EntityDao.MemberCursor memberCursor = new EntityDao.MemberCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.Member.TABLE_NAME).build() ,null, null, null, null));
         Log.d(TAG, memberCursor.toString());
 
-        Dao.ExpenseCursor expenseCursor = new Dao.ExpenseCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.Expense.TABLE_NAME).build() ,null, null, null, null));
+        EntityDao.ExpenseCursor expenseCursor = new EntityDao.ExpenseCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.Expense.TABLE_NAME).build() ,null, null, null, null));
         Log.d(TAG, expenseCursor.toString());
 
-        Dao.PayerCursor payerCursor = new Dao.PayerCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.Payer.TABLE_NAME).build() ,null, null, null, null));
+        EntityDao.PayerCursor payerCursor = new EntityDao.PayerCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.Payer.TABLE_NAME).build() ,null, null, null, null));
         Log.d(TAG, payerCursor.toString());
         */
 
@@ -126,7 +128,7 @@ public class ExpenseManager {
 
 
             //insert user
-            mContext.getContentResolver().insert(usersTable, Dao.toContentValues(user));
+            mContext.getContentResolver().insert(usersTable, EntityDao.toContentValues(user));
             newUsers.add(user);
 
             //we want to create name-lastName with an offset of phased alignment between the arrays to create new names with diferent combinations of names and last names.
@@ -148,7 +150,7 @@ public class ExpenseManager {
             group.setCreatedOn(new Date());
             group.setName("GroupCursor " + i);
 
-            mContext.getContentResolver().insert(groupTable, Dao.toContentValues(group));
+            mContext.getContentResolver().insert(groupTable, EntityDao.toContentValues(group));
             newGroups.add(group);
         }
 
@@ -177,7 +179,7 @@ public class ExpenseManager {
                 member.setUserId(users.get(addUserAt).getId());
 
                 //Insert member into the database.
-                mContext.getContentResolver().insert(memberTable, Dao.toContentValues(member));
+                mContext.getContentResolver().insert(memberTable, EntityDao.toContentValues(member));
                 members.add(member);
             }
 
@@ -217,7 +219,7 @@ public class ExpenseManager {
                 expense.setCategoryId(categoryId);
 
                 //Insert member into the database.
-                mContext.getContentResolver().insert(expenseTable, Dao.toContentValues(expense));
+                mContext.getContentResolver().insert(expenseTable, EntityDao.toContentValues(expense));
                 expenses.add(expense);
             }
 
@@ -277,11 +279,11 @@ public class ExpenseManager {
                         }
 
                         //Insert Payers.
-                        mContext.getContentResolver().insert(payerTable, Dao.toContentValues(payerShouldPay));
+                        mContext.getContentResolver().insert(payerTable, EntityDao.toContentValues(payerShouldPay));
                         payers.add(payerShouldPay);
 
                         if(payerPaid != null) {
-                            mContext.getContentResolver().insert(payerTable, Dao.toContentValues(payerPaid));
+                            mContext.getContentResolver().insert(payerTable, EntityDao.toContentValues(payerPaid));
                             payers.add(payerPaid);
                         }
                         currentMember++;
