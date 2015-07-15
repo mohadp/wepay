@@ -1,4 +1,4 @@
-package com.jumo.wepay.model;
+package com.jumo.wepay.controller;
 
 import android.content.ContentValues;
 import android.database.CursorWrapper;

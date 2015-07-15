@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import com.jumo.wepay.R;
 import com.jumo.wepay.model.Group;
-import com.jumo.wepay.provider.Dao;
+import com.jumo.wepay.controller.Dao;
 
 /**
  * Created by Moha on 7/9/15.

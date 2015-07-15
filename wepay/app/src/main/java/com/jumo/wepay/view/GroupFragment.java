@@ -1,21 +1,15 @@
 package com.jumo.wepay.view;
 
-import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CursorAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.jumo.wepay.R;
 import com.jumo.wepay.controller.ExpenseManager;
-import com.jumo.wepay.model.Group;
-import com.jumo.wepay.provider.Dao;
 
 /**
  * A fragment representing a list of Items.

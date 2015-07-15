@@ -2,10 +2,7 @@ package com.jumo.wepay.controller;
 
 import android.content.ContentResolver;
 import android.content.Context;
-import android.database.Cursor;
-import android.database.CursorWrapper;
 import android.net.Uri;
-import android.util.Log;
 
 import com.jumo.wepay.model.Categories;
 import com.jumo.wepay.model.Expense;
@@ -13,7 +10,6 @@ import com.jumo.wepay.model.Group;
 import com.jumo.wepay.model.Member;
 import com.jumo.wepay.model.User;
 import com.jumo.wepay.model.Payer;
-import com.jumo.wepay.provider.Dao;
 import com.jumo.wepay.provider.WepayContract;
 
 import java.util.ArrayList;
