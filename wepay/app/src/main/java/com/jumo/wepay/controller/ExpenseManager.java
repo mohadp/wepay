@@ -121,8 +121,8 @@ public class ExpenseManager {
             int offset = 0;
 
             User user = new User();
-            int nameIndex = i % names.length;
-            int lNameIndex = (i + offset) % lastNames.length;
+            int nameIndex = i % (names.length - 1);
+            int lNameIndex = (i + offset) % (lastNames.length - 1);
 
             user.setId((names[nameIndex].charAt(0) + lastNames[lNameIndex]).toLowerCase() + "@gmail.com");
             user.setName(names[nameIndex] + " " + lastNames[lNameIndex]);
