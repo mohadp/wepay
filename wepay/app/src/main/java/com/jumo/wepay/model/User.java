@@ -7,8 +7,17 @@ public class User {
 
     private String id;
     private String name;
-    private long phone;
+    private String phone;
     private double userBalance;
+
+    public String toString(){
+        StringBuilder toString = new StringBuilder("User: {");
+        toString.append(id).append(", ")
+                .append(name).append(", ")
+                .append(phone).append(", ")
+                .append(userBalance).append("}");
+        return toString.toString();
+    }
 
     public String getId() {
         return id;
@@ -26,11 +35,11 @@ public class User {
         this.name = name;
     }
 
-    public long getPhone() {
+    public String getPhone() {
         return phone;
     }
 
-    public void setPhone(long phone) {
+    public void setPhone(String phone) {
         this.phone = phone;
     }
 

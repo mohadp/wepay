@@ -4,6 +4,7 @@ import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
+import android.database.Cursor;
 import android.net.Uri;
 
 import java.util.Set;
@@ -14,6 +15,8 @@ import java.util.regex.Pattern;
  * Created by Moha on 7/3/15.
  */
 public class WepayProvider extends ContentProvider{
+
+    //TODO: need to close database
 
     private static final int JOIN_GROUP_MEMBER = 1;
     private static final int JOIN_GROUP_MEMBER_USER = 2;
@@ -52,21 +55,21 @@ public class WepayProvider extends ContentProvider{
     {   //TODO: possibly add a GROUP_USERS
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.User.TABLE_NAME + "/*", USER_ID);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.User.TABLE_NAME, USERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.User.TABLE_NAME + "/*/group", USER_GROUPS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.User.TABLE_NAME + "/*/groups", USER_GROUPS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME, GROUPS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME + "/#", GROUP_ID);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME + "/#/user", GROUP_MEMBER_USERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME + "/*/#/expense", USER_GROUP_EXPENSES);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME + "/#/expense/#/payer", GROUP_EXPENSE_PAYERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME + "/#/payer", GROUP_PAYERS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME + "/#/users", GROUP_MEMBER_USERS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME + "/*/#/expenses", USER_GROUP_EXPENSES);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME + "/#/expense/#/payers", GROUP_EXPENSE_PAYERS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME + "/#/payers", GROUP_PAYERS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Member.TABLE_NAME + "/#", MEMBER_ID);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Member.TABLE_NAME, MEMBERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Member.TABLE_NAME + "/#/user", MEMBER_USER);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Member.TABLE_NAME + "/#/users", MEMBER_USER);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.TABLE_NAME + "/#", EXPENSE_ID);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.TABLE_NAME, EXPENSES);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.TABLE_NAME + "/#/payer", EXPENSE_PAYERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.TABLE_NAME + "/#/location", EXPENSE_LOCATION);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.TABLE_NAME + "/#/recurrence", EXPENSE_RECURRENCE);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.TABLE_NAME + "/#/payers", EXPENSE_PAYERS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.TABLE_NAME + "/#/locations", EXPENSE_LOCATION);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.TABLE_NAME + "/#/recurrences", EXPENSE_RECURRENCE);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Payer.TABLE_NAME, PAYERS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Location.TABLE_NAME + "/#", LOCATION_ID);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Recurrence.TABLE_NAME + "/#", RECURRENCE_ID);
@@ -79,7 +82,7 @@ public class WepayProvider extends ContentProvider{
         return true;
     }
 
-    public android.database.Cursor query(Uri uri,
+    public Cursor query(Uri uri,
         String[] projection,
         String selection,
         String[] selectionArgs,
@@ -87,56 +90,56 @@ public class WepayProvider extends ContentProvider{
 
         String userId, groupId;
 
-        android.database.Cursor wrapped = null;
+        Cursor wrapped = null;
 
         switch(sURIMatcher.match(uri)){
             case USER_ID:
                 userId = uri.getPathSegments().get(1); // get the user ID from the path.
                 wrapped = mDBHelper.getReadableDatabase().rawQuery(selectEntity(WepayContract.User.TABLE_NAME, WepayContract.User.COL_DEFS.keySet(), projection, ADD_BALANCE, JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER, selection, sortOrder, userId, null), selectionArgs);
-                return new Cursors.User(wrapped);
+                break;
 
             case USERS:
                 wrapped = mDBHelper.getReadableDatabase().query(WepayContract.User.TABLE_NAME,projection, selection /*filter*/,
                         selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
-                return new Cursors.User(wrapped);
+                break;
 
             case USER_GROUPS: //This also adds a balance from the perspective of a user.
                 userId = uri.getPathSegments().get(1); // get the user ID from the path.
                 wrapped = mDBHelper.getReadableDatabase().rawQuery(selectEntity(WepayContract.Group.TABLE_NAME, WepayContract.Group.COL_DEFS.keySet(), projection, true, JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER, selection, sortOrder, userId, null), selectionArgs);
-                return new Cursors.Group(wrapped);
+                break;
 
             case GROUPS:
                 wrapped = mDBHelper.getReadableDatabase().query(WepayContract.Group.TABLE_NAME,projection, selection /*filter*/,
                         selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
-                return new Cursors.Group(wrapped);
+                break;
 
             case MEMBERS:
                 wrapped = mDBHelper.getReadableDatabase().query(WepayContract.Member.TABLE_NAME, projection, selection /*filter*/,
                         selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
-                return new Cursors.Member(wrapped);
+                break;
 
             case EXPENSES:
                 wrapped = mDBHelper.getReadableDatabase().query(WepayContract.Expense.TABLE_NAME, projection, selection /*filter*/,
                         selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
-                return new Cursors.Expense(wrapped);
+                break;
 
             case PAYERS:
                 wrapped = mDBHelper.getReadableDatabase().query(WepayContract.Payer.TABLE_NAME, projection, selection /*filter*/,
                         selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
-                return new Cursors.Payer(wrapped);
+                break;
 
             case GROUP_MEMBER_USERS:
                 groupId = uri.getPathSegments().get(1); // get the group ID from the path.
                 wrapped = mDBHelper.getReadableDatabase().rawQuery(selectEntity(WepayContract.User.TABLE_NAME, WepayContract.User.COL_DEFS.keySet(), projection, NO_BALANCE, JOIN_GROUP_MEMBER_USER, selection, sortOrder, null, groupId), selectionArgs);
-                return new Cursors.User(wrapped);
+                break;
 
             case USER_GROUP_EXPENSES:
                 userId = uri.getPathSegments().get(1); // get the user ID from the path.
                 groupId = uri.getPathSegments().get(2); // get the group ID from the path.
                 wrapped = mDBHelper.getReadableDatabase().rawQuery(selectEntity(WepayContract.User.TABLE_NAME, WepayContract.User.COL_DEFS.keySet(), projection, ADD_BALANCE, JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER, selection, sortOrder, userId, groupId), selectionArgs);
-                return new Cursors.Expense(wrapped);
+                break;
         }
-        return null;
+        return wrapped;
     }
 
 
@@ -184,8 +187,9 @@ public class WepayProvider extends ContentProvider{
 
         if(table == null)
             return null;
-        else
+        else {
             return ContentUris.withAppendedId(uri, mDBHelper.getWritableDatabase().insert(table, null, values));
+        }
     }
 
 
@@ -203,19 +207,19 @@ public class WepayProvider extends ContentProvider{
 
         switch(sURIMatcher.match(uri)){
             case USERS:
-                table = uri.getLastPathSegment();
+                table = WepayContract.User.TABLE_NAME;
                 break;
             case GROUPS:
-                table = uri.getLastPathSegment();
+                table = WepayContract.Group.TABLE_NAME;
                 break;
             case MEMBERS:
-                table = uri.getLastPathSegment();
+                table = WepayContract.Member.TABLE_NAME;
                 break;
             case EXPENSES:
-                table = uri.getLastPathSegment();
+                table = WepayContract.Expense.TABLE_NAME;
                 break;
             case PAYERS:
-                table = uri.getLastPathSegment();
+                table = WepayContract.Payer.TABLE_NAME;
                 break;
         }
         return table;
@@ -260,13 +264,13 @@ public class WepayProvider extends ContentProvider{
             if(userIdFilter != null || groupIdFilter != null) sb.append(" and ");
         }
 
-        //Add the condition on User Name
+        //Add the condition on UserCursor Name
         if(userIdFilter != null){
             sb.append("(").append(WepayContract.User.TABLE_NAME).append(".").append(WepayContract.User._ID);
-            sb.append(" = ").append(userIdFilter).append(")");
+            sb.append(" = '").append(userIdFilter).append("')");
             if(groupIdFilter != null) sb.append(" and ");
         }
-        //Add the condition on Group Id
+        //Add the condition on GroupCursor Id
         if(groupIdFilter != null){
             sb.append("(").append(WepayContract.Group.TABLE_NAME).append(".").append(WepayContract.Group._ID);
             sb.append(" = ").append(groupIdFilter).append(")");
@@ -298,8 +302,8 @@ public class WepayProvider extends ContentProvider{
     }
 
     /**
-     * Returns a join string for the tables to join. If 1 is entered, then join only Group and Member; 2 joins Group, Member and User.
-     * 3 joins up to Expense, and 4 up to Payer.
+     * Returns a join string for the tables to join. If 1 is entered, then join only GroupCursor and MemberCursor; 2 joins GroupCursor, MemberCursor and UserCursor.
+     * 3 joins up to ExpenseCursor, and 4 up to PayerCursor.
      * @param whichToJoin
      * @return
      */
@@ -307,7 +311,7 @@ public class WepayProvider extends ContentProvider{
         StringBuffer sb = null;
 
         if(whichToJoin >= 1) {
-            //Join Group with Member
+            //Join GroupCursor with MemberCursor
             StringBuffer join1 = SQLGenerator.joinTables(sb, WepayContract.Group.TABLE_NAME, new String[]{WepayContract.Group._ID},
                     WepayContract.Member.TABLE_NAME, new String[]{WepayContract.Member.GROUP_ID});
             sb = join1;
@@ -317,12 +321,12 @@ public class WepayProvider extends ContentProvider{
                     WepayContract.User.TABLE_NAME, new String[]{WepayContract.User._ID});
             sb = join2;
         }if(whichToJoin >= 3) {
-            //Join Expense
+            //Join ExpenseCursor
             StringBuffer join3 = SQLGenerator.joinTables(sb, WepayContract.Group.TABLE_NAME, new String[]{WepayContract.Group._ID},
                     WepayContract.Expense.TABLE_NAME, new String[]{WepayContract.Expense.GROUP_ID});
             sb = join3;
         }if(whichToJoin >= 4) {
-            //Join the above with Payer.
+            //Join the above with PayerCursor.
             StringBuffer join4 = SQLGenerator.joinTables(sb, WepayContract.Expense.TABLE_NAME, new String[]{WepayContract.Expense._ID},
                     WepayContract.Payer.TABLE_NAME, new String[]{WepayContract.Payer.EXPENSE_ID});
             sb = join4;

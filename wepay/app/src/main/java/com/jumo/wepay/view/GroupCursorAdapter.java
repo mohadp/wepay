@@ -8,16 +8,17 @@ import android.widget.CursorAdapter;
 import android.widget.TextView;
 
 import com.jumo.wepay.R;
-import com.jumo.wepay.provider.Cursors;
+import com.jumo.wepay.model.Group;
+import com.jumo.wepay.provider.Dao;
 
 /**
  * Created by Moha on 7/9/15.
  */
 public class GroupCursorAdapter extends CursorAdapter {
 
-    private Cursors.Group mGroupCursor;
+    private Dao.GroupCursor mGroupCursor;
 
-    public GroupCursorAdapter(Context context, Cursors.Group cursor) {
+    public GroupCursorAdapter(Context context, Dao.GroupCursor cursor) {
         super(context, cursor, 0);
         mGroupCursor = cursor;
     }
@@ -35,11 +36,12 @@ public class GroupCursorAdapter extends CursorAdapter {
     @Override
     public void bindView(View view, Context context, android.database.Cursor cursor) {
         // get the run for the current row
-        com.jumo.wepay.model.Group group = mGroupCursor.getGroup();
+        Group group = mGroupCursor.getGroup();
 
         // set up the start date text view
-        TextView startDateTextView = (TextView)view;
-        //startDateTextView.setText("Run at " + group.getStartDate());
+        ((TextView)view.findViewById(R.id.list_group_name)).setText(group.getName());
+        ((TextView)view.findViewById(R.id.list_group_balance)).setText("" + group.getUserBalance());
+
     }
 
 }

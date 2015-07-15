@@ -9,6 +9,6 @@ public class GroupActivity extends SingleFragmentActivity {
 
 
     protected Fragment createFragment(){
-        return GroupFragment.newInstance("mohadp@gmail.com");
+        return GroupFragment.newInstance("lcarrillo@gmail.com");
     }
 }

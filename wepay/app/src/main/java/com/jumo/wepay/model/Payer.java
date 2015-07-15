@@ -17,6 +17,16 @@ public class Payer {
     //Ancestor
     private long expenseId;          //Foreign key
 
+    public String toString(){
+        StringBuilder toString = new StringBuilder("Payer: {");
+        toString.append(id).append(", ")
+                .append(memberId).append(", ")
+                .append(role).append(", ")
+                .append(percentage).append(", ")
+                .append(expenseId).append("}");
+        return toString.toString();
+    }
+
     public long getId() {
         return id;
     }
@@ -42,6 +52,12 @@ public class Payer {
     }
 
     public void setRole(int role) {
+        if((role == ROLE_SHOULD_PAY && percentage > 0) || (role == ROLE_PAID && percentage < 0)){
+            //if percentage is already set, then
+            //make percentage negative because payer should pay and this person should show as a debt (negative number) or
+            //make percentage positive because payer actually paid, so he/she should receive compensation  (positive number).
+            percentage = percentage * -1;
+        }
         this.role = role;
     }
 
@@ -50,7 +66,12 @@ public class Payer {
     }
 
     public void setPercentage(double percentage) {
-        this.percentage = percentage;
+        if((role == ROLE_SHOULD_PAY && percentage > 0) || (role == ROLE_PAID && percentage < 0)) {
+            this.percentage = percentage * -1;
+        }else{
+            this.percentage = percentage;
+        }
+
     }
 
     public long getExpenseId() {

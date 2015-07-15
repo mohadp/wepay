@@ -1,19 +1,21 @@
 package com.jumo.wepay.view;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.widget.CursorAdapter;
 import android.widget.ListAdapter;
-
+import android.widget.ListView;
+import android.widget.TextView;
 
 import com.jumo.wepay.R;
-import com.jumo.wepay.dummy.DummyContent;
+import com.jumo.wepay.controller.ExpenseManager;
+import com.jumo.wepay.model.Group;
+import com.jumo.wepay.provider.Dao;
 
 /**
  * A fragment representing a list of Items.
@@ -26,17 +28,21 @@ import com.jumo.wepay.dummy.DummyContent;
  */
 public class GroupFragment extends Fragment {
 
+    private static final String TAG = "GroupFragment";
+
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String EXTRA_USER = "com.jumo.wepay.user_id";
 
+    private ExpenseManager expenseManager;
 
 
-    private OnFragmentInteractionListener mListener;
+
+    //private OnFragmentInteractionListener mListener;
 
     /**
      * The fragment's ListView/GridView.
      */
-    private AbsListView mListView;
+    private ListView mListView;
 
     /**
      * The Adapter which will be used to populate the ListView/GridView with
@@ -61,15 +67,10 @@ public class GroupFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        expenseManager = ExpenseManager.newInstance(this.getActivity());
 
-        if (getArguments() != null) {
-            //mParam1 = getArguments().getString(ARG_PARAM1);
-            //mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-
-        // TODO: Change Adapter to display your content
-        mAdapter = new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, DummyContent.ITEMS);
+        String userName = getArguments().getString(EXTRA_USER);
+        mAdapter = new GroupCursorAdapter(this.getActivity(), expenseManager.getUserGroups(userName));
     }
 
     @Override
@@ -78,8 +79,8 @@ public class GroupFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_group, container, false);
 
         // Set the adapter
-        mListView = (AbsListView) view.findViewById(android.R.id.list);
-        ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
+        mListView = (ListView) view.findViewById(android.R.id.list);
+        mListView.setAdapter(mAdapter);
 
         // Set OnItemClickListener so we can be notified on item clicks
         //mListView.setOnItemClickListener(this);
@@ -87,6 +88,7 @@ public class GroupFragment extends Fragment {
         return view;
     }
 
+    /*
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -102,7 +104,7 @@ public class GroupFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
-    }
+    }*/
 
     /**
      * This interface must be implemented by activities that contain this
@@ -114,9 +116,10 @@ public class GroupFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener {
+    /*public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         public void onFragmentInteraction(String id);
-    }
+    }*/
+
 
 }

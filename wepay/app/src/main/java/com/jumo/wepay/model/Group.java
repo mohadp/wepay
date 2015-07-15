@@ -12,6 +12,16 @@ public class Group {
     private byte[] groupPicture;
     private double userBalance; //Not persisted in the database; used for contain balances for the group for a user (owes or has paid more and for how much)
 
+    public String toString(){
+        StringBuilder toString = new StringBuilder("Group: {");
+        toString.append(id).append(", ")
+                .append(createdOn).append(", ")
+                .append(name).append(", ")
+                .append(groupPicture == null? "GroupPicNotNull" : "").append(", ")
+                .append(userBalance).append("}");
+        return toString.toString();
+    }
+
     public long getId() {
         return id;
     }

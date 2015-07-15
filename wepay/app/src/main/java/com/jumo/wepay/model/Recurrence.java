@@ -18,6 +18,14 @@ public class Recurrence {
 
     private long offset;
 
+    public String toString(){
+        StringBuilder toString = new StringBuilder("Recurrence: {");
+        toString.append(id).append(", ")
+                .append(periodicity).append(", ")
+                .append(offset).append("}");
+        return toString.toString();
+    }
+
     public long getId() {
         return id;
     }

@@ -13,10 +13,7 @@ public class Categories {
     private HashMap<Integer, String> categoryItems;
 
     private Categories(){
-        //Categories could be added from a file so that there is no need to modify source code to add new categories.
-        //A new getInstance and constructor could be created to accept a file containing categories (could be a JSON file)
         categoryItems = new HashMap<Integer, String>();
-
         categoryItems.put(1, "ATM");
         categoryItems.put(2, "Bills");
         categoryItems.put(3, "Education");
@@ -34,19 +31,21 @@ public class Categories {
     }
 
     public static Categories getInstance(){
-        initialize();
-        return categories;
-    }
-
-    public static void initialize(){
         if(categories == null){
             categories = new Categories();
         }
+        return categories;
     }
 
+
     public static String get(int categoryId){
-        initialize();
+
         return categories.categoryItems.get(categoryId);
+    }
+
+    public static int size(){
+
+        return categories.categoryItems.size();
     }
 
 }

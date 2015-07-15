@@ -10,6 +10,14 @@ public class Member {
     private boolean isAdmin;
     private boolean leftGroup;
 
+    public String toString(){
+        StringBuilder toString = new StringBuilder("Member: {");
+        toString.append(id).append(", ")
+                .append(userId).append(", ")
+                .append(isAdmin).append(", ")
+                .append(leftGroup).append("}");
+        return toString.toString();
+    }
 
     //Ancestor
     private long groupId;            //"Foreign key"

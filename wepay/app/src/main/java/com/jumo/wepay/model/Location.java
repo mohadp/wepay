@@ -10,6 +10,15 @@ public class Location {
     private double latitude;
     private double longitude;
 
+    public String toString(){
+        StringBuilder toString = new StringBuilder("Location: {");
+        toString.append(id).append(", ")
+                .append(name).append(", ")
+                .append(latitude).append(", ")
+                .append(longitude).append("}");
+        return toString.toString();
+    }
+
     public long getId() {
         return id;
     }

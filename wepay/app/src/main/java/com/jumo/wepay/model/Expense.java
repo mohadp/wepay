@@ -24,6 +24,21 @@ public class Expense {
     //Ancestor fields
     private long groupId;                            //Foreign key
 
+    public String toString(){
+        StringBuilder toString = new StringBuilder("Expense: {");
+        toString.append(id).append(", ")
+                .append(createdOn).append(", ")
+                .append(amount).append(", ")
+                .append(currencyId).append(", ")
+                .append(locationId).append(", ")
+                .append(categoryId).append(", ")
+                .append(recurrenceId).append(", ")
+                .append(groupExpenseId).append(", ")
+                .append(isPayment).append(", ")
+                .append(userBalance).append("}");
+        return toString.toString();
+    }
+
     public long getId() {
         return id;
     }

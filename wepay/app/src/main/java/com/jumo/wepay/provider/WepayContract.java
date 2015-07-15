@@ -9,7 +9,7 @@ public final class WepayContract {
 
     private static final String TAG = "WepayContract";
     public static String AUTHORITY = WepayProvider.PROVIDER_AUTHORITY;
-    public static String SCHEME = "content://";
+    public static String SCHEME = "content";
 
     //Column definitions
     protected static final int COL_TYPE = 0;
@@ -20,8 +20,8 @@ public final class WepayContract {
 
 
     public final static class Group{
-        //Group Table
-        public static final String TABLE_NAME = "group";
+        //GroupCursor Table
+        public static final String TABLE_NAME = "groups";
         protected static final LinkedHashMap<String, String[]> COL_DEFS = new LinkedHashMap<String, String[]>();
         
         public static final String _ID = "_id";
@@ -34,13 +34,13 @@ public final class WepayContract {
             COL_DEFS.put(_ID, new String[]{"integer", "primary key"});
             COL_DEFS.put(NAME, new String[]{"nvarchar(100)", null});
             COL_DEFS.put(CREATED_ON, new String[]{"integer", null});
-            COL_DEFS.put(GROUP_PICTURE, new String[]{"varchar(100)", null});
+            COL_DEFS.put(GROUP_PICTURE, new String[]{"blob", null});
         }
     }
 
 
     public final static class Expense{
-        //Expense table
+        //ExpenseCursor table
         public static final String TABLE_NAME = "expense";
         protected static final LinkedHashMap<String, String[]> COL_DEFS =  new LinkedHashMap<String, String[]>();
 
@@ -59,7 +59,7 @@ public final class WepayContract {
         
         static {
             COL_DEFS.put(_ID, new String[]{"integer", "primary key"});
-            COL_DEFS.put(GROUP_ID, new String[]{"integer", "references Group(_id)"});
+            COL_DEFS.put(GROUP_ID, new String[]{"integer", "references GroupCursor(_id)"});
             COL_DEFS.put(CREATED_ON, new String[]{"integer", null});
             COL_DEFS.put(MESSAGE, new String[]{"nvarchar(255)", null});
             COL_DEFS.put(AMOUNT, new String[]{"double", null});
@@ -67,13 +67,13 @@ public final class WepayContract {
             COL_DEFS.put(LOCATION_ID, new String[]{"integer", "references Location(_id)"});
             COL_DEFS.put(CATEGORY_ID, new String[]{"integer", null});
             COL_DEFS.put(RECURRENCE_ID, new String[]{"integer", "references Recurrence(_id)"});
-            COL_DEFS.put(GROUP_EXPENSE_ID, new String[]{"integer", "references Expense(_id)"});
+            COL_DEFS.put(GROUP_EXPENSE_ID, new String[]{"integer", "references ExpenseCursor(_id)"});
             COL_DEFS.put(IS_PAYMENT, new String[]{"integer", null}); //boolean 0=false, 1=true
         }
     }
 
     public static final class Member{
-        //Member Table
+        //MemberCursor Table
         public static final String TABLE_NAME = "member";
         protected static final LinkedHashMap<String, String[]> COL_DEFS = new LinkedHashMap<String, String[]>();        
             
@@ -85,8 +85,8 @@ public final class WepayContract {
 
         static {
             COL_DEFS.put(_ID, new String[]{"integer", "primary key"});
-            COL_DEFS.put(USER_ID, new String[]{"integer", "references User(_id)"});
-            COL_DEFS.put(GROUP_ID, new String[]{"integer", "references Group(_id)"});
+            COL_DEFS.put(USER_ID, new String[]{"integer", "references UserCursor(_id)"});
+            COL_DEFS.put(GROUP_ID, new String[]{"integer", "references GroupCursor(_id)"});
             COL_DEFS.put(IS_ADMIN, new String[]{"integer", null}); //boolean 0=false, 1=true
             COL_DEFS.put(LEFT_GROUP, new String[]{"integer", null}); //boolean 0=false, 1=true
         }
@@ -94,7 +94,7 @@ public final class WepayContract {
     
     public static final class User{
 
-        //User Table
+        //UserCursor Table
         public static final String TABLE_NAME = "user";
         protected static final LinkedHashMap<String, String[]> COL_DEFS = new LinkedHashMap<String, String[]>();
 
@@ -106,7 +106,7 @@ public final class WepayContract {
         static {
             COL_DEFS.put(_ID, new String[]{"nvarchar(255)", "primary key"});
             COL_DEFS.put(NAME, new String[]{"nvarchar(255)", null});
-            COL_DEFS.put(PHONE, new String[]{"unsigned big int", null});
+            COL_DEFS.put(PHONE, new String[]{"nvarchar(255)", null});
         }
 
     }
@@ -130,7 +130,7 @@ public final class WepayContract {
 
     public static final class Payer{
 
-        //Payer Table
+        //PayerCursor Table
         public static final String TABLE_NAME = "payer";
         protected static final LinkedHashMap<String, String[]> COL_DEFS = new LinkedHashMap<String, String[]>();
 
@@ -142,8 +142,8 @@ public final class WepayContract {
 
         static {
             COL_DEFS.put(_ID, new String[]{"integer", "primary key"});
-            COL_DEFS.put(MEMBER_ID, new String[]{"integer", "references Member(_id)"});
-            COL_DEFS.put(EXPENSE_ID, new String[]{"integer", "references Expense(_id)"});
+            COL_DEFS.put(MEMBER_ID, new String[]{"integer", "references MemberCursor(_id)"});
+            COL_DEFS.put(EXPENSE_ID, new String[]{"integer", "references ExpenseCursor(_id)"});
             COL_DEFS.put(ROLE, new String[]{"integer", null});
             COL_DEFS.put(PERCENTAGE, new String[]{"double", null});
         }
