@@ -8,5 +8,6 @@
     <!-- To be deleted; sample labels to delete stuff -->
     <string name="list_group_name">Group name</string>
     <string name="list_group_balance">$100.00</string>
+	<string name="list_message_desc">Description</string>
 
 </resources>

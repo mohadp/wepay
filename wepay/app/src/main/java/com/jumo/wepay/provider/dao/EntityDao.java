@@ -84,6 +84,7 @@ public class EntityDao {
         if(e.getCreatedOn() != null) cv.put(WepayContract.Expense.CREATED_ON, e.getCreatedOn().getTime());
         if(e.getMessage() != null) cv.put(WepayContract.Expense.MESSAGE, e.getMessage());
         cv.put(WepayContract.Expense.AMOUNT, e.getAmount());
+		cv.put(WepayContract.Expense.EXCHANGE_RATE, e.getExchangeRate());
         cv.put(WepayContract.Expense.IS_PAYMENT, e.isPayment()? 1 : 0);
 
         if(cv.size() == 0) return null;

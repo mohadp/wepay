@@ -10,6 +10,7 @@ import android.widget.TextView;
 import com.jumo.wepay.R;
 import com.jumo.wepay.model.Group;
 import com.jumo.wepay.provider.dao.GroupCursor;
+import java.text.*;
 
 /**
  * Created by Moha on 7/9/15.
@@ -27,9 +28,11 @@ public class GroupCursorAdapter extends CursorAdapter {
     @Override
     public View newView(Context context, android.database.Cursor cursor, ViewGroup parent) {
         // use a layout inflater to get a row view
-        LayoutInflater inflater =
-                (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        return inflater.inflate(R.layout.list_item_group, parent, false);
+        LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		
+		View view = inflater.inflate(R.layout.list_item_group, parent, false);
+		
+		return view;
     }
 
     //fill the view with data from the cursor.
@@ -40,7 +43,7 @@ public class GroupCursorAdapter extends CursorAdapter {
 
         // set up the start date text view
         ((TextView)view.findViewById(R.id.list_group_name)).setText(group.getName());
-        ((TextView)view.findViewById(R.id.list_group_balance)).setText("" + group.getUserBalance());
+        ((TextView)view.findViewById(R.id.list_group_balance)).setText(String.format("%1$.2f",group.getUserBalance()));
 
     }
 

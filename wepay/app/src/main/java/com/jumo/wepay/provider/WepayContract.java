@@ -49,6 +49,7 @@ public final class WepayContract {
         public static final String CREATED_ON = "created_on";
         public static final String MESSAGE = "message";
         public static final String AMOUNT = "amount";
+		public static final String EXCHANGE_RATE = "exchange_rate";
         public static final String CURRENCY = "currency";
         public static final String LOCATION_ID = "location_id";
         public static final String CATEGORY_ID = "category_id";
@@ -63,6 +64,7 @@ public final class WepayContract {
             COL_DEFS.put(CREATED_ON, new String[]{"integer", null});
             COL_DEFS.put(MESSAGE, new String[]{"nvarchar(255)", null});
             COL_DEFS.put(AMOUNT, new String[]{"double", null});
+			COL_DEFS.put(EXCHANGE_RATE, new String[]{"double", null});  //TODO: Add a clause for having 1 as default exchange rate (this means there is no conversion)
             COL_DEFS.put(CURRENCY, new String[]{"nvarchar(5)", null});
             COL_DEFS.put(LOCATION_ID, new String[]{"integer", "references Location(_id)"});
             COL_DEFS.put(CATEGORY_ID, new String[]{"integer", null});

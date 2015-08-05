@@ -59,7 +59,7 @@ public class WepayProvider extends ContentProvider{
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME, GROUPS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME + "/#", GROUP_ID);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME + "/#/users", GROUP_MEMBER_USERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME + "/*/#/expenses", USER_GROUP_EXPENSES);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME + "/#/*/expenses", USER_GROUP_EXPENSES);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME + "/#/expense/#/payers", GROUP_EXPENSE_PAYERS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME + "/#/payers", GROUP_PAYERS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Member.TABLE_NAME + "/#", MEMBER_ID);
@@ -134,8 +134,8 @@ public class WepayProvider extends ContentProvider{
                 break;
 
             case USER_GROUP_EXPENSES:
-                userId = uri.getPathSegments().get(1); // get the user ID from the path.
-                groupId = uri.getPathSegments().get(2); // get the group ID from the path.
+                userId = uri.getPathSegments().get(2); // get the user ID from the path.
+                groupId = uri.getPathSegments().get(1); // get the group ID from the path.
                 wrapped = mDBHelper.getReadableDatabase().rawQuery(selectEntity(WepayContract.User.TABLE_NAME, WepayContract.User.COL_DEFS.keySet(), projection, ADD_BALANCE, JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER, selection, sortOrder, userId, groupId), selectionArgs);
                 break;
         }
@@ -296,6 +296,8 @@ public class WepayProvider extends ContentProvider{
         StringBuffer sb = new StringBuffer("sum(");
         sb.append(WepayContract.Expense.TABLE_NAME).append(".").append(WepayContract.Expense.AMOUNT).
                 append(" * ").
+				append(WepayContract.Expense.TABLE_NAME).append(".").append(WepayContract.Expense.EXCHANGE_RATE).
+				append(" * ").
                 append(WepayContract.Payer.TABLE_NAME).append(".").append(WepayContract.Payer.PERCENTAGE).
                 append(") as ").append(WepayContract.USER_BALANCE);
         return sb;

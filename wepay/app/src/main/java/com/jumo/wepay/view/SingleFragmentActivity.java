@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 
 import com.jumo.wepay.R;
+import android.widget.*;
 
 
 /**
@@ -17,8 +18,9 @@ public abstract class SingleFragmentActivity extends ActionBarActivity {
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        setContentView(getActivityLayoutResId());
-        FragmentManager fm = getFragmentManager();
+		setContentView(getActivityLayoutResId());
+		
+		FragmentManager fm = getFragmentManager();
         Fragment fragment = fm.findFragmentById(getFragmentLayoutResId());
 
         if(fragment == null){

@@ -10,6 +10,9 @@ import android.widget.ListView;
 
 import com.jumo.wepay.R;
 import com.jumo.wepay.controller.ExpenseManager;
+import android.widget.*;
+import android.os.*;
+import com.jumo.wepay.provider.dao.*;
 
 /**
  * A fragment representing a list of Items.
@@ -42,7 +45,9 @@ public class GroupFragment extends Fragment {
      * The Adapter which will be used to populate the ListView/GridView with
      * Views.
      */
-    private ListAdapter mAdapter;
+    private GroupCursorAdapter mAdapter;
+	private GroupCursor mGroups;
+	private String mUserName;
 
     public static GroupFragment newInstance(String userId) {
         GroupFragment fragment = new GroupFragment();
@@ -62,9 +67,11 @@ public class GroupFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         expenseManager = ExpenseManager.newInstance(this.getActivity());
-
-        String userName = getArguments().getString(EXTRA_USER);
-        mAdapter = new GroupCursorAdapter(this.getActivity(), expenseManager.getUserGroups(userName));
+		
+        mUserName = getArguments().getString(EXTRA_USER);
+        
+		//Moving all this to the AsyncTask, all on the OnCreateView
+		//mAdapter = new GroupCursorAdapter(this.getActivity(), expenseManager.getUserGroups(mUserName));
     }
 
     @Override
@@ -74,13 +81,29 @@ public class GroupFragment extends Fragment {
 
         // Set the adapter
         mListView = (ListView) view.findViewById(android.R.id.list);
-        mListView.setAdapter(mAdapter);
+		//mListView.setEmptyView(inflater.inflate(R.layout.list_empty, container, false));
+		
+		
+		//Calling the adapter setup in the AsynchTaskl
+        //mListView.setAdapter(mAdapter);
+		new GroupLoaderTask().execute();
 
         // Set OnItemClickListener so we can be notified on item clicks
         //mListView.setOnItemClickListener(this);
-
+		
         return view;
     }
+	
+	protected void setupAdapter(){
+		if(this.getActivity() == null || mListView == null) return;
+		
+		if(mGroups != null){
+			mAdapter = new GroupCursorAdapter(this.getActivity(), mGroups);
+		}else{
+			mAdapter = null;
+		}
+		mListView.setAdapter(mAdapter);
+	}
 
     /*
     @Override
@@ -114,6 +137,21 @@ public class GroupFragment extends Fragment {
         // TODO: Update argument type and name
         public void onFragmentInteraction(String id);
     }*/
+	
+	private class GroupLoaderTask extends AsyncTask<Void, Void,GroupCursor>{
 
+		@Override
+		protected GroupCursor doInBackground(Void... p1){
+			//All the database work is done here
+			expenseManager.createSampleData();
+			return expenseManager.getUserGroups(mUserName);
+		}
 
+		//Updating the UI on this method, which is executed in the main thread.
+		@Override
+		protected void onPostExecute(GroupCursor userGroups){
+			mGroups = userGroups;
+			setupAdapter();
+		}
+	}
 }
