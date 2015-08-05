@@ -18,6 +18,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
+import android.widget.*;
+import android.database.*;
+import com.jumo.wepay.provider.dao.*;
 
 /**
  * Created by Moha on 7/10/15.
@@ -36,7 +39,7 @@ public class ExpenseManager {
         baseUri = new Uri.Builder().scheme(WepayContract.SCHEME).authority(WepayContract.AUTHORITY).build();
         //String uriString = baseUri.toString();
         //Log.d(TAG, baseUri.toString());
-        createSampleData();
+        //createSampleData();
 
     }
 
@@ -55,25 +58,40 @@ public class ExpenseManager {
 
         return new GroupCursor(content.query(uri, null, null, null, null));
     }
+	
+	public ExpenseCursor getUserGroupExpenses(String userId, long groupId){
+		ContentResolver content = mContext.getContentResolver();
+		Uri uri = baseUri.buildUpon().appendPath(WepayContract.Group.TABLE_NAME)
+				.appendPath(Long.toString(groupId)).appendPath(userId)
+				.appendPath("expenses").build();
+		
+		StringBuilder sortBy = new StringBuilder(WepayContract.Expense.CREATED_ON).append(" ASC");
+		
+		return new ExpenseCursor(content.query(uri, null, null, null, sortBy.toString()));
+	}
 
     public void createSampleData(){
         ContentResolver content = mContext.getContentResolver();
 
-        //Uri seeGroups = baseUri.buildUpon().appendPath(WepayContract.Group.TABLE_NAME).build();
-        //Cursor groupsCursor = content.query(seeGroups, null, null, null, null);
+        Uri seeGroups = baseUri.buildUpon().appendPath(WepayContract.Group.TABLE_NAME).build();
+        Cursor groupsCursor = content.query(seeGroups, null, null, null, null);
+		
 
         //boolean afterLast = groupsCursor.isAfterLast();
         //boolean beforeFirst = groupsCursor.isBeforeFirst();
 
 
-        //if(groupsCursor == null || groupsCursor.getCount() == 0){
-        deleteAllData();
-        ArrayList<User> newUsers = createSampleUsers();
-        ArrayList<Group> newGroups = createSampleGroups();
-        HashMap<Long, ArrayList<Member>> newGroupMembers = createSampleMembers(newUsers, newGroups);
-        HashMap<Long, ArrayList<Expense>> newGroupExpenses = createSampleExpenses(newGroupMembers);
-        HashMap<Long, ArrayList<Payer>> newExpensePayers = createSamplePayers(newGroupMembers, newGroupExpenses);
-        //}
+        if(groupsCursor == null || groupsCursor.getCount() == 0){
+        	deleteAllData();
+		
+		//Toast.makeText(mContext, "Data Deleted", Toast.LENGTH_SHORT);
+		
+        	ArrayList<User> newUsers = createSampleUsers();
+        	ArrayList<Group> newGroups = createSampleGroups();
+        	HashMap<Long, ArrayList<Member>> newGroupMembers = createSampleMembers(newUsers, newGroups);
+        	HashMap<Long, ArrayList<Expense>> newGroupExpenses = createSampleExpenses(newGroupMembers);
+        	createSamplePayers(newGroupMembers, newGroupExpenses);
+        }
 
         /*EntityDao.UserCursor userCursor = new EntityDao.UserCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.User.TABLE_NAME).build() ,null, null, null, null));
         Log.d(TAG, userCursor.toString());
@@ -211,7 +229,8 @@ public class ExpenseManager {
                 expense.setGroupId(groupId);
                 expense.setPayment(false);
                 expense.setAmount(Math.random()*100); // amount is any number from 0 to 100.
-                expense.setMessage("Message " + i);
+                expense.setExchangeRate(1);
+				expense.setMessage("Message " + i);
                 expense.setCreatedOn(new Date());
                 expense.setCurrencyId("USD");
                 //include category

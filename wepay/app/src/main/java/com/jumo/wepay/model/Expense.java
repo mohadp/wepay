@@ -11,6 +11,7 @@ public class Expense {
     private Date createdOn;
     private String message;
     private double amount;
+	private double exchangeRate;
     private String currencyId;                        //Foreign key (optional)
     private long locationId;                           //Foreign key
     private long categoryId;                           //Foreign key
@@ -24,11 +25,16 @@ public class Expense {
     //Ancestor fields
     private long groupId;                            //Foreign key
 
+	public Expense(){
+		exchangeRate = 1;  //By default, there is no conversion unless otherwise specified.
+	}
+	
     public String toString(){
         StringBuilder toString = new StringBuilder("Expense: {");
         toString.append(id).append(", ")
                 .append(createdOn).append(", ")
-                .append(amount).append(", ")
+                .append(amount).append(", ") 
+				.append(exchangeRate).append(", ")
                 .append(currencyId).append(", ")
                 .append(locationId).append(", ")
                 .append(categoryId).append(", ")
@@ -38,6 +44,14 @@ public class Expense {
                 .append(userBalance).append("}");
         return toString.toString();
     }
+	
+	public double getExchangeRate(){
+		return exchangeRate;
+	}
+	
+	public void setExchangeRate(double rate){
+		exchangeRate = rate;
+	}
 
     public long getId() {
         return id;

@@ -33,6 +33,7 @@ public class ExpenseCursor extends CursorWrapper {
         if((colIndex = getColumnIndex(WepayContract.Expense.CREATED_ON)) >= 0)expense.setCreatedOn(new Date(getLong(colIndex)));
         if((colIndex = getColumnIndex(WepayContract.Expense.MESSAGE)) >= 0)expense.setMessage(getString(colIndex));
         if((colIndex = getColumnIndex(WepayContract.Expense.AMOUNT)) >= 0)expense.setAmount(getDouble(colIndex));
+		if((colIndex = getColumnIndex(WepayContract.Expense.EXCHANGE_RATE)) >= 0) expense.setExchangeRate(getDouble(colIndex));
         if((colIndex = getColumnIndex(WepayContract.Expense.IS_PAYMENT)) >= 0)expense.setPayment(getInt(colIndex) != 0);
         if((colIndex = getColumnIndex(WepayContract.Group.USER_BALANCE)) >= 0) expense.setUserBalance(getDouble(colIndex));
 
