@@ -28,9 +28,9 @@ public class RoundImageViewRow extends LinearLayout{
 		super(context, attrs, defStyleAttr);
 	}
 
-	public RoundImageViewRow(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes){
+	/*public RoundImageViewRow(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes){
 		super(context, attrs, defStyleAttr, defStyleRes);
-	}
+	}*/
 	
 	public void addRoundImageViews(int[] resIds){
 		for(int i : resIds){

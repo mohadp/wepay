@@ -17,7 +17,7 @@ class ExpenseCursorAdapter extends CursorAdapter{
 	private String mUserName;
 	private long groupId;
 
-    public ExpenseCursorAdapter(Context context, ExpenseCursor cursor, PayerCursor payerCursor) {
+    public ExpenseCursorAdapter(Context context, ExpenseCursor cursor) {
         super(context, cursor, 0);
         mExpenseCursor = cursor;
 	}
