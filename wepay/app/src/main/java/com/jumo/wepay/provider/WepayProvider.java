@@ -259,7 +259,7 @@ public class WepayProvider extends ContentProvider{
         //// WHERE ////
         sb.append(" where ");
         if(filter != null ){
-            sb.append(SQLGenerator.addTablePrefixToString(table, tableCols, filter));
+            sb.append(SQLGenerator.addTablePrefixToString(table, tableCols, filter.toLowerCase()));
 
             if(userIdFilter != null || groupIdFilter != null) sb.append(" and ");
         }
@@ -284,8 +284,8 @@ public class WepayProvider extends ContentProvider{
 
         //// SORT BY ////
         if(sortOrder != null) {
-            sb.append(" sort by ");
-            sb.append(SQLGenerator.addTablePrefixToString(table, tableCols, sortOrder));
+            sb.append(" order by ");
+            sb.append(SQLGenerator.addTablePrefixToString(table, tableCols, sortOrder.toLowerCase()));
         }
 
         return sb.toString();

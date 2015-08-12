@@ -1,5 +1,6 @@
 package com.jumo.wepay.view;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
@@ -12,6 +13,8 @@ import com.jumo.wepay.R;
 import com.jumo.wepay.controller.ExpenseManager;
 import android.widget.*;
 import android.os.*;
+
+import com.jumo.wepay.model.Group;
 import com.jumo.wepay.provider.dao.*;
 
 /**
@@ -20,7 +23,7 @@ import com.jumo.wepay.provider.dao.*;
  * Large screen devices (such as tablets) are supported by replacing the ListView
  * with a GridView.
  * <p/>
- * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
+ * Activities containing this fragment MUST implement the {@links OnFragmentInteractionListener}
  * interface.
  */
 public class GroupFragment extends Fragment {
@@ -81,6 +84,7 @@ public class GroupFragment extends Fragment {
 
         // Set the adapter
         mListView = (ListView) view.findViewById(android.R.id.list);
+        mListView.setOnItemClickListener(new GroupListListener());
 		//mListView.setEmptyView(inflater.inflate(R.layout.list_empty, container, false));
 		
 		
@@ -154,4 +158,21 @@ public class GroupFragment extends Fragment {
 			setupAdapter();
 		}
 	}
+
+    private class GroupListListener implements AbsListView.OnItemClickListener{
+
+
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            GroupCursorAdapter groups = (GroupCursorAdapter) parent.getAdapter();
+            Group group = groups.getItem(position);
+
+            //TODO: I will call an interface method for upper class to either start an activity or just update a fragment
+
+            Intent i = new Intent(GroupFragment.this.getActivity(), ExpenseActivity.class);
+            i.putExtra(ExpenseFragment.EXTRA_GROUP_ID, group.getId());
+            i.putExtra(ExpenseFragment.EXTRA_USER_ID, mUserName);
+            startActivity(i);
+        }
+    }
 }

@@ -47,5 +47,10 @@ public class GroupCursorAdapter extends CursorAdapter {
 
     }
 
+    public Group getItem(int i){
+        mGroupCursor.moveToPosition(i);
+        return mGroupCursor.getGroup();
+    }
+
 }
 

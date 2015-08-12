@@ -10,6 +10,7 @@ import android.widget.ListView;
 
 import com.jumo.wepay.R;
 import com.jumo.wepay.controller.ExpenseManager;
+import com.jumo.wepay.model.Expense;
 import com.jumo.wepay.provider.dao.ExpenseCursor;
 import com.jumo.wepay.provider.dao.GroupCursor;
 
@@ -27,8 +28,8 @@ public class ExpenseFragment extends Fragment {
     private static final String TAG = "ExpenseFragment";
 
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String EXTRA_GROUP_ID = "com.jumo.wepay.group_id";
-    private static final String EXTRA_USER_ID = "com.jumo.wepay.user_id";
+    public static final String EXTRA_GROUP_ID = "com.jumo.wepay.group_id";
+    public static final String EXTRA_USER_ID = "com.jumo.wepay.user_id";
 
     private ExpenseManager expenseManager;
 
@@ -46,12 +47,12 @@ public class ExpenseFragment extends Fragment {
      * Views.
      */
     private ExpenseCursorAdapter mAdapter;
-	private ExpenseCursor mExpensess;
+	private ExpenseCursor mExpenses;
 
     private String mUserName;
     private long mGroupId;
 
-    public static ExpenseFragment newInstance(long groupId, String userId) {
+    public static ExpenseFragment newInstance(String userId, long groupId) {
         ExpenseFragment fragment = new ExpenseFragment();
         Bundle args = new Bundle();
         args.putString(EXTRA_USER_ID, userId);
@@ -81,7 +82,7 @@ public class ExpenseFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_group, container, false);
+        View view = inflater.inflate(R.layout.fragment_conversation, container, false);
 
         // Set the adapter
         mListView = (ListView) view.findViewById(android.R.id.list);
@@ -90,7 +91,7 @@ public class ExpenseFragment extends Fragment {
 		
 		//Calling the adapter setup in the AsynchTaskl
         //mListView.setAdapter(mAdapter);
-		//new GroupLoaderTask().execute();
+		new ExpenseLoaderTask().execute();
 
         // Set OnItemClickListener so we can be notified on item clicks
         //mListView.setOnItemClickListener(this);
@@ -99,14 +100,14 @@ public class ExpenseFragment extends Fragment {
     }
 	
 	protected void setupAdapter(){
-		/*if(this.getActivity() == null || mListView == null) return;
+		if(this.getActivity() == null || mListView == null) return;
 		
-		if(mGroups != null){
-			mAdapter = new GroupCursorAdapter(this.getActivity(), mGroups);
+		if(mExpenses != null){
+			mAdapter = new ExpenseCursorAdapter(this.getActivity(), mExpenses);
 		}else{
 			mAdapter = null;
 		}
-		mListView.setAdapter(mAdapter);*/
+		mListView.setAdapter(mAdapter);
 	}
 
     /*
@@ -142,19 +143,19 @@ public class ExpenseFragment extends Fragment {
         public void onFragmentInteraction(String id);
     }*/
 	
-	private class ExpenseLoaderTask extends AsyncTask<Void, Void,GroupCursor>{
+	private class ExpenseLoaderTask extends AsyncTask<Void, Void,ExpenseCursor>{
 
 		@Override
-		protected GroupCursor doInBackground(Void... p1){
+		protected ExpenseCursor doInBackground(Void... p1){
 			//All the database work is done here
-			expenseManager.createSampleData();
-			return expenseManager.getUserGroups(mUserName);
+			//expenseManager.createSampleData();
+			return expenseManager.getUserGroupExpenses(mUserName, mGroupId);
 		}
 
 		//Updating the UI on this method, which is executed in the main thread.
 		@Override
-		protected void onPostExecute(GroupCursor userGroups){
-			//mGroups = userGroups;
+		protected void onPostExecute(ExpenseCursor expenses){
+			mExpenses = expenses;
 			setupAdapter();
 		}
 	}

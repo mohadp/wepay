@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/fragmentGroupList"
@@ -10,63 +10,83 @@
         android:layout_height="match_parent"
         android:layout_weight="1">
 
-        <ListView android:id="@android:id/list"
+        <ListView
+            android:id="@android:id/list"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
     </FrameLayout>
 
-    <LinearLayout android:orientation="horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" >
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
-        <LinearLayout android:orientation="vertical"
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1">
+            android:orientation="vertical"
+            android:layout_weight="1"
+            android:layout_marginRight="5dp">
 
-            <LinearLayout android:orientation="horizontal"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="44dp">
+                android:layout_height="44dp"
+                android:orientation="horizontal">
 
-                <ImageButton android:id="@+id/button_currency"
-                    android:layout_height="fill_parent"
+                <ImageButton
+                    android:id="@+id/button_currency"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:src="@android:drawable/ic_menu_compass" />
+
+                <TextView
+                    android:id="@+id/text_amount"
                     android:layout_width="wrap_content"
-                    android:src="@android:drawable/ic_menu_compass"/>
-
-                <TextView android:id="@+id/text_amount"
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
+                    android:layout_height="match_parent"
                     android:hint="@string/text_hint_amount"
-                    android:layout_weight="1" />
+                    android:layout_weight="1"
+                    android:inputType="numberDecimal" />
 
-                <ImageButton android:id="@+id/button_category"
-                    android:layout_height="fill_parent"
-                    android:layout_width="wrap_content"
-                    android:src="@android:drawable/ic_menu_myplaces"/>
 
-                <ImageButton android:id="@+id/button_fullEditor"
-                    android:layout_height="fill_parent"
-                    android:layout_width="wrap_content"
-                    android:src="@android:drawable/ic_menu_edit"/>
+                <ImageButton
+                    android:id="@+id/button_category"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:src="@android:drawable/ic_menu_myplaces" />
+
+                <ImageButton
+                    android:id="@+id/button_text"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:src="@android:drawable/ic_menu_sort_alphabetically" />
+
+                <ImageButton
+                    android:id="@+id/button_fullEditor"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:src="@android:drawable/ic_menu_edit" />
 
             </LinearLayout>
 
-            <EditText android:id="@+id/edit_message"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:visibility="invisible"
-                android:hint="@string/text_hint_message"/>
+            <EditText
+                android:id="@+id/edit_message"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="@string/text_hint_message" />
 
         </LinearLayout>
 
-        <ImageButton android:id="@+id/button_sendExpense"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
+        <ImageButton
+            android:id="@+id/button_sendExpense"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:src="@android:drawable/ic_menu_send" />
+
     </LinearLayout>
 
-    <FrameLayout android:id="@+id/inputMethod"
+    <FrameLayout
+        android:id="@+id/inputMethod"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
