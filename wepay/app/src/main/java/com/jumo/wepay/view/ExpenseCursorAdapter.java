@@ -49,14 +49,17 @@ class ExpenseCursorAdapter extends CursorAdapter{
 		for(int i = 0; i < rand; i++){
 			resources[i] = R.drawable.ic_launcher;
 		}
-		
-		((RoundImageViewRow)view.findViewById(R.id.list_message_payers_images)).addRoundImageViews(resources); //TODO: will set this in a separate thread (probably a Handler/Looper/Message, to query each expense for payers and set images.
+
+        RoundImageViewRow imgPayers = (RoundImageViewRow)view.findViewById(R.id.list_message_payers_images);
+		imgPayers.addRoundImageViews(resources); //TODO: will set this in a separate thread (probably a Handler/Looper/Message, to query each expense for payers and set images.
 		
 		((TextView)view.findViewById(R.id.list_message_desc)).setText(expense.getMessage());
 		((TextView)view.findViewById(R.id.list_message_balance)).setText(String.format("%1$.2f",expense.getUserBalance()));
 		((TextView)view.findViewById(R.id.list_message_total)).setText(String.format("%1$.2f",expense.getAmount()));
 		((TextView)view.findViewById(R.id.list_message_date)).setText(expense.getCreatedOn().toLocaleString());
 		((TextView)view.findViewById(R.id.list_message_location)).setText("Washington, DC, USA");
+
+
     }
 	
 }

@@ -61,9 +61,9 @@ public class ExpenseManager {
 	
 	public ExpenseCursor getUserGroupExpenses(String userId, long groupId){
 		ContentResolver content = mContext.getContentResolver();
-		Uri uri = baseUri.buildUpon().appendPath(WepayContract.Group.TABLE_NAME)
-				.appendPath(Long.toString(groupId)).appendPath(userId)
-				.appendPath("expenses").build();
+		Uri uri = baseUri.buildUpon().appendPath(WepayContract.Expense.TABLE_NAME)
+				.appendPath("user").appendPath(userId).appendPath("group").appendPath(Long.toString(groupId))
+				.build();
 		
 		StringBuilder sortBy = new StringBuilder(WepayContract.Expense.CREATED_ON).append(" ASC");
 		

@@ -38,12 +38,20 @@ public class RoundImageView extends ImageView{
 		int diameter = (width <= height)? width : height;
 		
 		Bitmap newRoundBmp = getRoundBitmap(originalBmp, diameter);
-		canvas.drawBitmap(newRoundBmp, 0, 0, null);	
-		this.setAdjustViewBounds(true);
+
+        //Replace img with new one
+        setImageBitmap(newRoundBmp);
+
+        //Draw the bitmap
+        canvas.drawBitmap(newRoundBmp, 0, 0, null);
+
+        this.setAdjustViewBounds(true);
+        this.setLayoutParams(new LinearLayout.LayoutParams(newRoundBmp.getWidth(), newRoundBmp.getHeight()));
 	
 	}
-	
-	private Bitmap getRoundBitmap(Bitmap bmp, int diameter) { 
+
+
+    private Bitmap getRoundBitmap(Bitmap bmp, int diameter) {
 		
 		if(bmp == null) return null;
 		

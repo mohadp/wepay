@@ -87,8 +87,7 @@ public class ExpenseFragment extends Fragment {
         // Set the adapter
         mListView = (ListView) view.findViewById(android.R.id.list);
 		//mListView.setEmptyView(inflater.inflate(R.layout.list_empty, container, false));
-		
-		
+
 		//Calling the adapter setup in the AsynchTaskl
         //mListView.setAdapter(mAdapter);
 		new ExpenseLoaderTask().execute();

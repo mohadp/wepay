@@ -59,13 +59,13 @@ public class WepayProvider extends ContentProvider{
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME, GROUPS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME + "/#", GROUP_ID);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME + "/#/users", GROUP_MEMBER_USERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME + "/#/*/expenses", USER_GROUP_EXPENSES);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME + "/#/expense/#/payers", GROUP_EXPENSE_PAYERS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.TABLE_NAME + "/#/payers", GROUP_PAYERS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Member.TABLE_NAME + "/#", MEMBER_ID);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Member.TABLE_NAME, MEMBERS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Member.TABLE_NAME + "/#/users", MEMBER_USER);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.TABLE_NAME + "/#", EXPENSE_ID);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.TABLE_NAME + "/user/*/group/#", USER_GROUP_EXPENSES);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.TABLE_NAME, EXPENSES);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.TABLE_NAME + "/#/payers", EXPENSE_PAYERS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.TABLE_NAME + "/#/locations", EXPENSE_LOCATION);
@@ -135,8 +135,8 @@ public class WepayProvider extends ContentProvider{
 
             case USER_GROUP_EXPENSES:
                 userId = uri.getPathSegments().get(2); // get the user ID from the path.
-                groupId = uri.getPathSegments().get(1); // get the group ID from the path.
-                wrapped = mDBHelper.getReadableDatabase().rawQuery(selectEntity(WepayContract.User.TABLE_NAME, WepayContract.User.COL_DEFS.keySet(), projection, ADD_BALANCE, JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER, selection, sortOrder, userId, groupId), selectionArgs);
+                groupId = uri.getPathSegments().get(4); // get the group ID from the path.
+                wrapped = mDBHelper.getReadableDatabase().rawQuery(selectEntity(WepayContract.Expense.TABLE_NAME, WepayContract.Expense.COL_DEFS.keySet(), projection, ADD_BALANCE, JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER, selection, sortOrder, userId, groupId), selectionArgs);
                 break;
         }
         return wrapped;
