@@ -137,8 +137,8 @@ public class ExpenseManager {
             int offset = 0;
 
             User user = new User();
-            int nameIndex = i % (names.length - 1);
-            int lNameIndex = (i + offset) % (lastNames.length - 1);
+            int nameIndex = i % (names.length);
+            int lNameIndex = (i + offset) % (lastNames.length);
 
             user.setId((names[nameIndex].charAt(0) + lastNames[lNameIndex]).toLowerCase() + "@gmail.com");
             user.setName(names[nameIndex] + " " + lastNames[lNameIndex]);
@@ -150,7 +150,7 @@ public class ExpenseManager {
             newUsers.add(user);
 
             //we want to create name-lastName with an offset of phased alignment between the arrays to create new names with diferent combinations of names and last names.
-            if (i % (lastNames.length - 1) == 0) offset++;
+            if ((i+1) % lastNames.length == 0) offset++;
         }
         return newUsers;
     }
@@ -278,15 +278,19 @@ public class ExpenseManager {
 
 
                         //Add payer as ROLE_PAID
-                        //Make only the first member to pay all; though, for even expense, make the first two members pay all
+                        //Make only the first member to pay all; though, for even expenses, make the first two members pay all
                         Payer payerPaid = null;
-                        double percentagePayer = 1;
-                        boolean addAsPayerToo = (currentMember == 0); // true for first
+                        double percentagePayer = 0;
+                        boolean addAsPayerToo = false; // true for first
 
-                        if(currentExpense % 2 == 0 && currentMember <= 1){
+                        if(expense.getId() % 2 == 0 && currentMember <= 1){
                             addAsPayerToo = true;
                             percentagePayer = 0.5;
+                        }else if(currentMember <= 0){
+                            addAsPayerToo = true;
+                            percentagePayer = 1;
                         }
+
 
                         if(addAsPayerToo) {
                             payerPaid = new Payer();
