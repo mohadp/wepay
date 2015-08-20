@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
+
+import android.util.Log;
 import android.widget.*;
 import android.database.*;
 import com.jumo.wepay.provider.dao.*;
@@ -105,7 +107,7 @@ public class ExpenseManager {
         EntityDao.ExpenseCursor expenseCursor = new EntityDao.ExpenseCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.Expense.TABLE_NAME).build() ,null, null, null, null));
         Log.d(TAG, expenseCursor.toString());
 
-        EntityDao.PayerCursor payerCursor = new EntityDao.PayerCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.Payer.TABLE_NAME).build() ,null, null, null, null));
+        PayerCursor payerCursor = new PayerCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.Payer.TABLE_NAME).build() ,null, null, null, null));
         Log.d(TAG, payerCursor.toString());
         */
 
@@ -133,8 +135,9 @@ public class ExpenseManager {
         String[] lastNames = { "Carrillo", "Vishar", "Pineda", "Wilson", "Potter", "Schwartz" };
         Uri usersTable = baseUri.buildUpon().appendPath(WepayContract.User.TABLE_NAME).build();
 
-        for(int i = 0; i < 10; i++) {
-            int offset = 0;
+        int offset = 0;
+
+        for(int i = 0; i < 8; i++) {
 
             User user = new User();
             int nameIndex = i % (names.length);
@@ -150,7 +153,7 @@ public class ExpenseManager {
             newUsers.add(user);
 
             //we want to create name-lastName with an offset of phased alignment between the arrays to create new names with diferent combinations of names and last names.
-            if ((i+1) % lastNames.length == 0) offset++;
+            if((i+1)%lastNames.length == 0) offset++;
         }
         return newUsers;
     }
@@ -181,7 +184,7 @@ public class ExpenseManager {
 
         for(Group group : groups){
 
-            int noMembers = (int)(Math.round(Math.random()*100)) % 5 + 1; //Groups have 5 or less members
+            int noMembers = 5; //(int)(Math.round(Math.random()*100)) % 5 + 1; //Groups have 5 or less members... creating 5 members
             int startAddingFromPos = (int)(Math.round(Math.random()*100)) % users.size(); //A random position within the user list. Start adding users from a starting index
 
             ArrayList<Member> members = new ArrayList<Member>();
@@ -262,7 +265,7 @@ public class ExpenseManager {
                 for (Expense expense : groupExpenses.get(groupId)) {
                     //every expenses will be split among all members equally. Only the first or first two members will have paid the full expense.
                     int noMembers = members.size();
-                    double percentagePerPerson = 1 / noMembers;
+                    double percentagePerPerson = 1d / noMembers;
                     int currentMember = 0;
                     ArrayList<Payer> payers = new ArrayList();
 
@@ -280,25 +283,25 @@ public class ExpenseManager {
                         //Add payer as ROLE_PAID
                         //Make only the first member to pay all; though, for even expenses, make the first two members pay all
                         Payer payerPaid = null;
-                        double percentagePayer = 0;
-                        boolean addAsPayerToo = false; // true for first
+                        //double percentagePayer = 0;
+                        //boolean addAsPayerToo = false; // true for first
 
+                        /*
                         if(expense.getId() % 2 == 0 && currentMember <= 1){
                             addAsPayerToo = true;
                             percentagePayer = 0.5;
-                        }else if(currentMember <= 0){
+                        } else if(currentMember <= 0){
                             addAsPayerToo = true;
                             percentagePayer = 1;
-                        }
+                        }*/
 
-
-                        if(addAsPayerToo) {
+                        if(currentMember <= 0 /*addAsPayerToo*/) {
                             payerPaid = new Payer();
                             payerPaid.setId(expense.getId() * 100 + currentMember * 2 + 1);
                             payerPaid.setMemberId(member.getId());
                             payerPaid.setExpenseId(expense.getId());
                             payerPaid.setRole(Payer.ROLE_PAID);
-                            payerPaid.setPercentage(percentagePayer);
+                            payerPaid.setPercentage(1);
                         }
 
                         //Insert Payers.

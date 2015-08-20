@@ -19,11 +19,11 @@ public class Payer {
 
     public String toString(){
         StringBuilder toString = new StringBuilder("Payer: {");
-        toString.append(id).append(", ")
-                .append(memberId).append(", ")
-                .append(role).append(", ")
-                .append(percentage).append(", ")
-                .append(expenseId).append("}");
+        toString.append("id:").append(id).append(", ")
+                .append("member:").append(memberId).append(", ")
+                .append("role:").append(role).append(", ")
+                .append("percentage:").append(percentage).append(", ")
+                .append("expense:").append(expenseId).append("}");
         return toString.toString();
     }
 

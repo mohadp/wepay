@@ -60,16 +60,16 @@ public final class WepayContract {
         
         static {
             COL_DEFS.put(_ID, new String[]{"integer", "primary key"});
-            COL_DEFS.put(GROUP_ID, new String[]{"integer", "references GroupCursor(_id)"});
+            COL_DEFS.put(GROUP_ID, new String[]{"integer", "references groups(_id)"});
             COL_DEFS.put(CREATED_ON, new String[]{"integer", null});
             COL_DEFS.put(MESSAGE, new String[]{"nvarchar(255)", null});
             COL_DEFS.put(AMOUNT, new String[]{"double", null});
 			COL_DEFS.put(EXCHANGE_RATE, new String[]{"double", null});  //TODO: Add a clause for having 1 as default exchange rate (this means there is no conversion)
             COL_DEFS.put(CURRENCY, new String[]{"nvarchar(5)", null});
-            COL_DEFS.put(LOCATION_ID, new String[]{"integer", "references Location(_id)"});
+            COL_DEFS.put(LOCATION_ID, new String[]{"integer", "references location(_id)"});
             COL_DEFS.put(CATEGORY_ID, new String[]{"integer", null});
-            COL_DEFS.put(RECURRENCE_ID, new String[]{"integer", "references Recurrence(_id)"});
-            COL_DEFS.put(GROUP_EXPENSE_ID, new String[]{"integer", "references ExpenseCursor(_id)"});
+            COL_DEFS.put(RECURRENCE_ID, new String[]{"integer", "references recurrence(_id)"});
+            COL_DEFS.put(GROUP_EXPENSE_ID, new String[]{"integer", "references expense(_id)"});
             COL_DEFS.put(IS_PAYMENT, new String[]{"integer", null}); //boolean 0=false, 1=true
         }
     }
@@ -87,8 +87,8 @@ public final class WepayContract {
 
         static {
             COL_DEFS.put(_ID, new String[]{"integer", "primary key"});
-            COL_DEFS.put(USER_ID, new String[]{"integer", "references UserCursor(_id)"});
-            COL_DEFS.put(GROUP_ID, new String[]{"integer", "references GroupCursor(_id)"});
+            COL_DEFS.put(USER_ID, new String[]{"integer", "references user(_id)"});
+            COL_DEFS.put(GROUP_ID, new String[]{"integer", "references groups(_id)"});
             COL_DEFS.put(IS_ADMIN, new String[]{"integer", null}); //boolean 0=false, 1=true
             COL_DEFS.put(LEFT_GROUP, new String[]{"integer", null}); //boolean 0=false, 1=true
         }
@@ -144,8 +144,8 @@ public final class WepayContract {
 
         static {
             COL_DEFS.put(_ID, new String[]{"integer", "primary key"});
-            COL_DEFS.put(MEMBER_ID, new String[]{"integer", "references MemberCursor(_id)"});
-            COL_DEFS.put(EXPENSE_ID, new String[]{"integer", "references ExpenseCursor(_id)"});
+            COL_DEFS.put(MEMBER_ID, new String[]{"integer", "references member(_id)"});
+            COL_DEFS.put(EXPENSE_ID, new String[]{"integer", "references expense(_id)"});
             COL_DEFS.put(ROLE, new String[]{"integer", null});
             COL_DEFS.put(PERCENTAGE, new String[]{"double", null});
         }

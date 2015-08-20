@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.net.Uri;
+import android.util.Log;
 
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -15,6 +16,7 @@ import java.util.regex.Pattern;
  * Created by Moha on 7/3/15.
  */
 public class WepayProvider extends ContentProvider{
+    private static final String TAG = "WepayProvider";
 
     //TODO: need to close database
 
@@ -67,12 +69,13 @@ public class WepayProvider extends ContentProvider{
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.TABLE_NAME + "/#", EXPENSE_ID);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.TABLE_NAME + "/user/*/group/#", USER_GROUP_EXPENSES);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.TABLE_NAME, EXPENSES);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.TABLE_NAME + "/#/payers", EXPENSE_PAYERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.TABLE_NAME + "/#/locations", EXPENSE_LOCATION);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.TABLE_NAME + "/#/recurrences", EXPENSE_RECURRENCE);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Payer.TABLE_NAME + "/expense/#", EXPENSE_PAYERS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Payer.TABLE_NAME, PAYERS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Location.TABLE_NAME + "/#", LOCATION_ID);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Location.TABLE_NAME + "/expense/#", EXPENSE_LOCATION);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Recurrence.TABLE_NAME + "/#", RECURRENCE_ID);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Recurrence.TABLE_NAME + "/recurrence/#", EXPENSE_RECURRENCE);
+
     }
 
     private WepayDatabaseHelper mDBHelper;
@@ -136,6 +139,8 @@ public class WepayProvider extends ContentProvider{
             case USER_GROUP_EXPENSES:
                 userId = uri.getPathSegments().get(2); // get the user ID from the path.
                 groupId = uri.getPathSegments().get(4); // get the group ID from the path.
+                //String q = selectEntity(WepayContract.Expense.TABLE_NAME, WepayContract.Expense.COL_DEFS.keySet(), projection, ADD_BALANCE, JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER, selection, sortOrder, userId, groupId);
+                //Log.d(TAG, q);
                 wrapped = mDBHelper.getReadableDatabase().rawQuery(selectEntity(WepayContract.Expense.TABLE_NAME, WepayContract.Expense.COL_DEFS.keySet(), projection, ADD_BALANCE, JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER, selection, sortOrder, userId, groupId), selectionArgs);
                 break;
         }
@@ -314,23 +319,23 @@ public class WepayProvider extends ContentProvider{
 
         if(whichToJoin >= 1) {
             //Join GroupCursor with MemberCursor
-            StringBuffer join1 = SQLGenerator.joinTables(sb, WepayContract.Group.TABLE_NAME, new String[]{WepayContract.Group._ID},
+            StringBuffer join1 = SQLGenerator.joinTables(sb, new String[] {WepayContract.Group.TABLE_NAME}, new String[]{WepayContract.Group._ID},
                     WepayContract.Member.TABLE_NAME, new String[]{WepayContract.Member.GROUP_ID});
             sb = join1;
         }if(whichToJoin >= 2) {
             //Join with user
-            StringBuffer join2 = SQLGenerator.joinTables(sb, WepayContract.Member.TABLE_NAME, new String[]{WepayContract.Member.USER_ID},
+            StringBuffer join2 = SQLGenerator.joinTables(sb, new String[] {WepayContract.Member.TABLE_NAME}, new String[]{WepayContract.Member.USER_ID},
                     WepayContract.User.TABLE_NAME, new String[]{WepayContract.User._ID});
             sb = join2;
         }if(whichToJoin >= 3) {
             //Join ExpenseCursor
-            StringBuffer join3 = SQLGenerator.joinTables(sb, WepayContract.Group.TABLE_NAME, new String[]{WepayContract.Group._ID},
+            StringBuffer join3 = SQLGenerator.joinTables(sb, new String[] {WepayContract.Group.TABLE_NAME}, new String[]{WepayContract.Group._ID},
                     WepayContract.Expense.TABLE_NAME, new String[]{WepayContract.Expense.GROUP_ID});
             sb = join3;
         }if(whichToJoin >= 4) {
             //Join the above with PayerCursor.
-            StringBuffer join4 = SQLGenerator.joinTables(sb, WepayContract.Expense.TABLE_NAME, new String[]{WepayContract.Expense._ID},
-                    WepayContract.Payer.TABLE_NAME, new String[]{WepayContract.Payer.EXPENSE_ID});
+            StringBuffer join4 = SQLGenerator.joinTables(sb, new String[] {WepayContract.Expense.TABLE_NAME, WepayContract.Member.TABLE_NAME}, new String[]{WepayContract.Expense._ID, WepayContract.Member._ID},
+                    WepayContract.Payer.TABLE_NAME, new String[]{WepayContract.Payer.EXPENSE_ID, WepayContract.Payer.MEMBER_ID});
             sb = join4;
         }
 
@@ -353,10 +358,10 @@ public class WepayProvider extends ContentProvider{
          * @param colsTable2
          * @return
          */
-        protected static StringBuffer joinTables(StringBuffer prevJoinTree, String table1, String[] colsTable1, String table2, String[] colsTable2) {
+        protected static StringBuffer joinTables(StringBuffer prevJoinTree, String[] table1, String[] colsTable1, String table2, String[] colsTable2) {
             StringBuffer sb = new StringBuffer();
             if (prevJoinTree == null) {
-                sb.append(table1);
+                sb.append(table1[0]);
             } else {
                 sb.append(prevJoinTree);
             }
@@ -366,7 +371,7 @@ public class WepayProvider extends ContentProvider{
             int size = colsTable1.length;
 
             for (int i = 0; i < size; i++) {
-                sb.append(table1).append(".").append(colsTable1[i]);
+                sb.append(table1[i]).append(".").append(colsTable1[i]);
                 sb.append(" = ");
                 sb.append(table2).append(".").append(colsTable2[i]);
 
