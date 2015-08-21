@@ -51,6 +51,7 @@ class ExpenseCursorAdapter extends CursorAdapter{
 		}
 
         RoundImageViewRow imgPayers = (RoundImageViewRow)view.findViewById(R.id.list_message_payers_images);
+        imgPayers.removeAllRoundImageViews();
 		imgPayers.addRoundImageViews(resources); //TODO: will set this in a separate thread (probably a Handler/Looper/Message, to query each expense for payers and set images.
 		
 		((TextView)view.findViewById(R.id.list_message_desc)).setText(expense.getMessage());

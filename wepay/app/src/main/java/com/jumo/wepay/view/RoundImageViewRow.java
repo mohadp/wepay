@@ -47,4 +47,16 @@ public class RoundImageViewRow extends LinearLayout{
 			this.addView(i);
 		}
 	}
+
+    /**
+     * Method removes all RoundImageViews; all their bitmaps are recycled.
+     */
+    public void removeAllRoundImageViews(){
+        int count = this.getChildCount();
+        for(int i = count-1; i >= 0; i--){
+            RoundImageView image = (RoundImageView)this.getChildAt(0);
+            ((BitmapDrawable)image.getDrawable()).getBitmap().recycle();
+            this.removeViewAt(i);
+        }
+    }
 }

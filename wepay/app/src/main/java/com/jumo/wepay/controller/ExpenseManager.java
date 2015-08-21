@@ -269,6 +269,9 @@ public class ExpenseManager {
                     int currentMember = 0;
                     ArrayList<Payer> payers = new ArrayList();
 
+                    //figure out who the payer is for this expense; will make this random, any of the members
+                    int payer = ((int)Math.round(Math.random()*100)) % members.size();
+
                     for (Member member : members) {
 
                         //Add payer as ROLE_SHOULD_PAY
@@ -295,7 +298,10 @@ public class ExpenseManager {
                             percentagePayer = 1;
                         }*/
 
-                        if(currentMember <= 0 /*addAsPayerToo*/) {
+
+
+
+                        if(currentMember == payer /*addAsPayerToo*/) {
                             payerPaid = new Payer();
                             payerPaid.setId(expense.getId() * 100 + currentMember * 2 + 1);
                             payerPaid.setMemberId(member.getId());

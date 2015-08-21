@@ -20,70 +20,80 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_marginRight="5dp"
+        android:orientation="vertical">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_weight="1"
-            android:layout_marginRight="5dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:orientation="horizontal">
-
-                <ImageButton
-                    android:id="@+id/button_currency"
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:src="@android:drawable/ic_menu_compass" />
-
-                <TextView
-                    android:id="@+id/text_amount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:hint="@string/text_hint_amount"
-                    android:layout_weight="1"
-                    android:inputType="numberDecimal" />
-
-
-                <ImageButton
-                    android:id="@+id/button_category"
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:src="@android:drawable/ic_menu_myplaces" />
-
-                <ImageButton
-                    android:id="@+id/button_text"
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:src="@android:drawable/ic_menu_sort_alphabetically" />
-
-                <ImageButton
-                    android:id="@+id/button_fullEditor"
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:src="@android:drawable/ic_menu_edit" />
-
-            </LinearLayout>
+            android:orientation="horizontal">
 
             <EditText
                 android:id="@+id/edit_message"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:layout_weight="3"
                 android:hint="@string/text_hint_message" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:inputType="numberDecimal"
+                android:id="@+id/text_amount"
+                android:layout_weight="1" />
 
         </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/button_sendExpense"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@android:drawable/ic_menu_send" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/button_currency"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:src="@android:drawable/ic_menu_compass" />
+
+
+            <ImageButton
+                android:id="@+id/button_category"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:src="@android:drawable/ic_menu_myplaces" />
+
+            <ImageButton
+                android:id="@+id/button_text"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:src="@android:drawable/ic_menu_sort_alphabetically" />
+
+            <ImageButton
+                android:id="@+id/button_fullEditor"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:src="@android:drawable/ic_menu_edit" />
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <ImageButton
+                    android:id="@+id/button_sendExpense"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="right"
+                    android:src="@android:drawable/ic_menu_send" />
+
+            </FrameLayout>
+
+        </LinearLayout>
+
 
     </LinearLayout>
+
 
     <FrameLayout
         android:id="@+id/inputMethod"
