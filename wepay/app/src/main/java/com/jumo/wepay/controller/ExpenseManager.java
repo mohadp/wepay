@@ -52,6 +52,8 @@ public class ExpenseManager {
         return expenseManager;
     }
 
+    /*
+    // I will not use this
     public GroupCursor getUserGroups(String userId){
         ContentResolver content = mContext.getContentResolver();
         Uri uri = baseUri.buildUpon().appendPath(WepayContract.User.TABLE_NAME)
@@ -59,8 +61,9 @@ public class ExpenseManager {
                 .build();
 
         return new GroupCursor(content.query(uri, null, null, null, null));
-    }
-	
+    }*/
+
+    /*
 	public ExpenseCursor getUserGroupExpenses(String userId, long groupId){
 		ContentResolver content = mContext.getContentResolver();
 		Uri uri = baseUri.buildUpon().appendPath(WepayContract.Expense.TABLE_NAME)
@@ -70,7 +73,7 @@ public class ExpenseManager {
 		StringBuilder sortBy = new StringBuilder(WepayContract.Expense.CREATED_ON).append(" ASC");
 		
 		return new ExpenseCursor(content.query(uri, null, null, null, sortBy.toString()));
-	}
+	}*/
 
     public void createSampleData(){
         ContentResolver content = mContext.getContentResolver();
