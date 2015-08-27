@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -103,14 +104,15 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        Log.d(TAG, "onLoadFinished");
         if(this.getActivity() == null || mListView == null) return;
-        ((ExpenseCursorAdapter)mListView.getAdapter()).swapCursor(new ExpenseCursor(data));
+        ((ExpenseCursorAdapter)mListView.getAdapter()).changeCursor(new ExpenseCursor(data));
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         if(mListView == null) return;
-        ((ExpenseCursorAdapter)mListView.getAdapter()).swapCursor(null);
+        ((ExpenseCursorAdapter)mListView.getAdapter()).changeCursor(null);
     }
 
     /*

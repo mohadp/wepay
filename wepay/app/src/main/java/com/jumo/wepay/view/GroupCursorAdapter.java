@@ -17,11 +17,11 @@ import java.text.*;
  */
 public class GroupCursorAdapter extends CursorAdapter {
 
-    private GroupCursor mGroupCursor;
+    //private GroupCursor mGroupCursor;
 
     public GroupCursorAdapter(Context context, GroupCursor cursor) {
         super(context, cursor, 0);
-        mGroupCursor = cursor;
+        //mGroupCursor = cursor;
     }
 
     //Create view for each item
@@ -38,8 +38,11 @@ public class GroupCursorAdapter extends CursorAdapter {
     //fill the view with data from the cursor.
     @Override
     public void bindView(View view, Context context, android.database.Cursor cursor) {
+        GroupCursor groupCursor = (GroupCursor)getCursor();
+        if(groupCursor == null) return;
+
         // get the run for the current row
-        Group group = mGroupCursor.getGroup();
+        Group group = groupCursor.getGroup();
 
         // set up the start date text view
         ((TextView)view.findViewById(R.id.list_group_name)).setText(group.getName());
@@ -48,8 +51,11 @@ public class GroupCursorAdapter extends CursorAdapter {
     }
 
     public Group getItem(int i){
-        mGroupCursor.moveToPosition(i);
-        return mGroupCursor.getGroup();
+        GroupCursor groupCursor = (GroupCursor)getCursor();
+        if(groupCursor == null) return null;
+
+        groupCursor.moveToPosition(i);
+        return groupCursor.getGroup();
     }
 
 }

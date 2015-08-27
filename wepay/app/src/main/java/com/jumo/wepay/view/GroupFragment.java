@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -110,16 +111,18 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        Log.d(TAG, "onLoadFinished");
         if(this.getActivity() == null || mListView == null) return;
 
-        ((GroupCursorAdapter)mListView.getAdapter()).swapCursor(new GroupCursor(data));
+        ((GroupCursorAdapter)mListView.getAdapter()).changeCursor(new GroupCursor(data));
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+        Log.d(TAG, "onLoadReset");
         if(mListView == null) return;
 
-        ((GroupCursorAdapter)mListView.getAdapter()).swapCursor(null);
+        ((GroupCursorAdapter)mListView.getAdapter()).changeCursor(null);
     }
 
     /*

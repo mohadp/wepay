@@ -11,7 +11,7 @@ import com.jumo.wepay.R;
 import com.jumo.wepay.provider.dao.*;
 
 class ExpenseCursorAdapter extends CursorAdapter{
-	private ExpenseCursor mExpenseCursor;
+	//private ExpenseCursor mExpenseCursor;
 	
 	//To get balances on a per-user basis for a particular group
 	private String mUserName;
@@ -19,7 +19,7 @@ class ExpenseCursorAdapter extends CursorAdapter{
 
     public ExpenseCursorAdapter(Context context, ExpenseCursor cursor) {
         super(context, cursor, 0);
-        mExpenseCursor = cursor;
+        //mExpenseCursor = cursor;
 	}
 
     //Create view for each item
@@ -36,8 +36,12 @@ class ExpenseCursorAdapter extends CursorAdapter{
     //fill the view with data from the cursor.
     @Override
     public void bindView(View view, Context context, android.database.Cursor cursor) {
+        ExpenseCursor expenseCursor = (ExpenseCursor)getCursor();
+
+        if(expenseCursor == null) return;
+
         // get the run for the current row
-        Expense expense = mExpenseCursor.getExpense();
+        Expense expense = expenseCursor.getExpense();
 
         // set up the start date text view
         ((ImageView)view.findViewById(R.id.list_message_image)).setImageResource(R.drawable.ic_launcher); //TODO: will load the image of the person who createrd this expense, prob. through another background process
