@@ -1,5 +1,7 @@
 package com.jumo.wepay.provider;
 
+import android.net.Uri;
+
 import java.util.LinkedHashMap;
 
 /**
@@ -8,8 +10,9 @@ import java.util.LinkedHashMap;
 public final class WepayContract {
 
     private static final String TAG = "WepayContract";
-    public static String AUTHORITY = WepayProvider.PROVIDER_AUTHORITY;
-    public static String SCHEME = "content";
+    public static final String AUTHORITY = WepayProvider.PROVIDER_AUTHORITY;
+    public static final String SCHEME = "content";
+    public static final Uri BASE_URI = new Uri.Builder().scheme(WepayContract.SCHEME).authority(WepayContract.AUTHORITY).build();
 
     //Column definitions
     protected static final int COL_TYPE = 0;
