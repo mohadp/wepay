@@ -21,13 +21,13 @@ public class WepayDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db){
-        db.execSQL(createTableSQL(WepayContract.User.TABLE_NAME, WepayContract.User.COL_DEFS));
-        db.execSQL(createTableSQL(WepayContract.Group.TABLE_NAME, WepayContract.Group.COL_DEFS));
-        db.execSQL(createTableSQL(WepayContract.Recurrence.TABLE_NAME, WepayContract.Recurrence.COL_DEFS));
-        db.execSQL(createTableSQL(WepayContract.Location.TABLE_NAME, WepayContract.Location.COL_DEFS));
-        db.execSQL(createTableSQL(WepayContract.Expense.TABLE_NAME, WepayContract.Expense.COL_DEFS));
-        db.execSQL(createTableSQL(WepayContract.Member.TABLE_NAME, WepayContract.Member.COL_DEFS));
-        db.execSQL(createTableSQL(WepayContract.Payer.TABLE_NAME, WepayContract.Payer.COL_DEFS));
+        db.execSQL(createTableSQL(WepayContract.User.table().tableName, WepayContract.User.table().columns));
+        db.execSQL(createTableSQL(WepayContract.Group.table().tableName, WepayContract.Group.table().columns));
+        db.execSQL(createTableSQL(WepayContract.Recurrence.table().tableName, WepayContract.Recurrence.table().columns));
+        db.execSQL(createTableSQL(WepayContract.Location.table().tableName, WepayContract.Location.table().columns));
+        db.execSQL(createTableSQL(WepayContract.Expense.table().tableName, WepayContract.Expense.table().columns));
+        db.execSQL(createTableSQL(WepayContract.Member.table().tableName, WepayContract.Member.table().columns));
+        db.execSQL(createTableSQL(WepayContract.Payer.table().tableName, WepayContract.Payer.table().columns));
 
     }
 
@@ -37,15 +37,14 @@ public class WepayDatabaseHelper extends SQLiteOpenHelper {
     }
 
 
-    private String createTableSQL(String tableName, LinkedHashMap<String, String[]> columns){
+    private String createTableSQL(String tableName, LinkedHashMap<String, WepayContract.Column> columns){
         StringBuilder insertSQL = (new StringBuilder("create table ")).append(tableName).append(" ( ");
 
         int count = columns.size();
-        for(String col_name : columns.keySet()){
-            String[] col_def = columns.get(col_name);
-            insertSQL.append(col_name).append(" ")                    //column name
-                .append(col_def[WepayContract.COL_TYPE]).append(" ")    // column type
-                .append((col_def[WepayContract.COL_SPEC] == null)? "" : col_def[WepayContract.COL_SPEC]) // column specifications (primary key, etc.)
+        for(WepayContract.Column column : columns.values()){
+            insertSQL.append(column.name).append(" ")                    //column name
+                .append(column.datatype).append(" ")    // column type
+                .append((column.spec == null)? "" : column.spec) // column specifications (primary key, etc.)
                 .append((count-- > 1) ? ", " : ""); //add comma at the end except for the last column.
         }
 
