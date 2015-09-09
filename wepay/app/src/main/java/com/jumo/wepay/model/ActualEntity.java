@@ -2,6 +2,7 @@ package com.jumo.wepay.model;
 
 import android.util.Log;
 
+import com.jumo.wepay.provider.Column;
 import com.jumo.wepay.provider.Table;
 
 import java.util.Date;
@@ -16,6 +17,7 @@ public class ActualEntity implements Entity {
     private static final String TAG = "ActualEntity";
 
     public ActualEntity(Table e){
+        attributes = new HashMap<String, Object>();
         table = e;
     }
 
@@ -28,7 +30,8 @@ public class ActualEntity implements Entity {
     public int getInt(String column){
         int val = 0;
         try {
-            val =((Integer) attributes.get(column)).intValue();
+            Object field = attributes.get(column);
+            val = (field == null)? 0 : ((Integer)field).intValue();
         }catch(ClassCastException e){
             Log.d(TAG, "Could not cast to a an integer value:" + e.toString());
         }
@@ -40,7 +43,8 @@ public class ActualEntity implements Entity {
     public long getLong(String column){
         long val = 0;
         try {
-            val =((Integer) attributes.get(column)).intValue();
+            Object field = attributes.get(column);
+            val = (field == null)? 0 :((Long)field).longValue();
         }catch(ClassCastException e){
             Log.d(TAG, "Could not cast to a an long value:" + e.toString());
         }
@@ -52,7 +56,8 @@ public class ActualEntity implements Entity {
     public double getDouble(String column){
         double val = 0;
         try{
-            val = ((Double)attributes.get(column)).doubleValue();
+            Object field = attributes.get(column);
+            val = (field == null)? 0 : ((Double)field).doubleValue();
         }catch(ClassCastException e){
             Log.d(TAG, "Could not cast to a an double value:" + e.toString());
         }
@@ -63,7 +68,8 @@ public class ActualEntity implements Entity {
     public boolean getBoolean(String column){
         boolean val = false;
         try{
-            val = ((Boolean)attributes.get(column)).booleanValue();
+            Object field = attributes.get(column);
+            val = (field == null)? false : ((Boolean)field).booleanValue();
         }catch(ClassCastException e){
             Log.d(TAG, "Could not cast to a an boolean value:" + e.toString());
         }
@@ -106,5 +112,19 @@ public class ActualEntity implements Entity {
     @Override
     public void setField(String column, Object val){
         attributes.put(column, val);
+    }
+
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder(table.getTableName());
+        sb.append(":[\n");
+
+        for(Column c : table.getColumns()){
+            sb.append("\t").append(c.name)
+                    .append(":").append(attributes.get(c.name).toString())
+                    .append("\n");
+        }
+        sb.append("]\n");
+        return sb.toString();
     }
 }

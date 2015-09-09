@@ -19,7 +19,7 @@ public class EntityCursor extends CursorWrapper {
 
     public EntityCursor(Cursor c){
         super(c);
-        considerPrefix = false;
+        recognizeIfUsingPrefixes();
     }
 
     /**
@@ -35,6 +35,17 @@ public class EntityCursor extends CursorWrapper {
         considerPrefix = useFullNames;
     }
 
+    private void recognizeIfUsingPrefixes(){
+        //Verify that all columns have a dot in their name; if yes, the query is using column prefixes.
+        String[] cols = this.getColumnNames();
+        boolean usesPrefixes = true;
+
+        for(String c : cols){
+            usesPrefixes = usesPrefixes && c.contains(".");
+        }
+
+        setConsiderPrefix(usesPrefixes);
+    }
 
     public Entity getEntity(Table table){
         if(isBeforeFirst() || isAfterLast()){

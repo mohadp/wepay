@@ -20,6 +20,7 @@ import java.util.Date;
 public class EntityWriter {
 
     //List of toContentValues functions that convert objects into ContentValues.
+    //TODO: This can be simplified by just iterating over the Entity's fields to get a ContentValues object.
 
     public static ContentValues toContentValues(Group g){
         ContentValues cv = new ContentValues();

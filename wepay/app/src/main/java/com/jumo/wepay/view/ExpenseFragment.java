@@ -6,7 +6,6 @@ import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,11 +14,8 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import com.jumo.wepay.R;
-import com.jumo.wepay.controller.ExpenseManager;
-import com.jumo.wepay.model.Expense;
 import com.jumo.wepay.provider.WepayContract;
-import com.jumo.wepay.provider.dao.ExpenseCursor;
-import com.jumo.wepay.provider.dao.GroupCursor;
+import com.jumo.wepay.provider.dao.EntityCursor;
 
 /**
  * A fragment representing a list of Items.
@@ -94,7 +90,7 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Uri uri = WepayContract.BASE_URI.buildUpon().appendPath(WepayContract.Expense.TABLE_NAME)
+        Uri uri = WepayContract.BASE_URI.buildUpon().appendPath(WepayContract.Expense.getInstance().getTableName())
                 .appendPath("user").appendPath(mUserName).appendPath("group").appendPath(Long.toString(mGroupId))
                 .build();
 
@@ -106,7 +102,7 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         Log.d(TAG, "onLoadFinished");
         if(this.getActivity() == null || mListView == null) return;
-        ((ExpenseCursorAdapter)mListView.getAdapter()).changeCursor(new ExpenseCursor(data));
+        ((ExpenseCursorAdapter)mListView.getAdapter()).changeCursor(new EntityCursor(data));
     }
 
     @Override

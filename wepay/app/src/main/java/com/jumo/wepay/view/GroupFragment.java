@@ -100,7 +100,7 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
         //no need to check for GROUPS_LOADER
-        Uri uri = WepayContract.BASE_URI.buildUpon().appendPath(WepayContract.User.TABLE_NAME)
+        Uri uri = WepayContract.BASE_URI.buildUpon().appendPath(WepayContract.User.getInstance().getTableName())
                 .appendPath(mUserName).appendPath("groups")
                 .build();
 
@@ -114,7 +114,7 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
         Log.d(TAG, "onLoadFinished");
         if(this.getActivity() == null || mListView == null) return;
 
-        ((GroupCursorAdapter)mListView.getAdapter()).changeCursor(new GroupCursor(data));
+        ((GroupCursorAdapter)mListView.getAdapter()).changeCursor(new EntityCursor(data));
     }
 
     @Override

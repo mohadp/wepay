@@ -1,157 +1,193 @@
 package com.jumo.wepay.model;
 
+import com.jumo.wepay.provider.Table;
+import com.jumo.wepay.provider.WepayContract;
+
 import java.util.Date;
 
 /**
- * Created by Moha on 6/20/15.
+ * Created by Moha on 6/20/15. Decorator class on ActualEntity, which allows to get fields for particular Table/table
  */
-public class Expense {
+public class Expense implements Entity {
+    private Entity entity;
 
-    private long id;
-    private Date createdOn;
-    private String message;
-    private double amount;
-	private double exchangeRate;
-    private String currencyId;                        //Foreign key (optional)
-    private long locationId;                           //Foreign key
-    private long categoryId;                           //Foreign key
-
-    private long recurrenceId;                         //Foreign key
-    private long groupExpenseId;                       //Foreign key
-    private boolean isPayment;
-    private double userBalance; //Not persisted in the database; used for contain balances for the group for a user (owes or has paid more and for how much)
-
-
-    //Ancestor fields
-    private long groupId;                            //Foreign key
-
-	public Expense(){
-		exchangeRate = 1;  //By default, there is no conversion unless otherwise specified.
+	public Expense(Entity m){
+        entity = m;
+        setExchangeRate(1);
 	}
-	
-    public String toString(){
-        StringBuilder toString = new StringBuilder("Expense: {");
-        toString.append(id).append(", ")
-                .append(createdOn).append(", ")
-                .append(amount).append(", ") 
-				.append(exchangeRate).append(", ")
-                .append(currencyId).append(", ")
-                .append(locationId).append(", ")
-                .append(categoryId).append(", ")
-                .append(recurrenceId).append(", ")
-                .append(groupExpenseId).append(", ")
-                .append(isPayment).append(", ")
-                .append(userBalance).append("}");
-        return toString.toString();
+
+    public Expense(){
+        entity = new ActualEntity(WepayContract.Expense.getInstance());
+        setExchangeRate(1);
     }
-	
+
 	public double getExchangeRate(){
-		return exchangeRate;
+		return getDouble(WepayContract.Expense.EXCHANGE_RATE);
 	}
 	
 	public void setExchangeRate(double rate){
-		exchangeRate = rate;
+        setField(WepayContract.Expense.EXCHANGE_RATE, rate);
 	}
 
     public long getId() {
-        return id;
+        return getLong(WepayContract.Expense._ID);
     }
 
     public void setId(long id) {
-        this.id = id;
+        setField(WepayContract.Expense._ID, id);
     }
 
     public Date getCreatedOn() {
-        return createdOn;
+        return getDate(WepayContract.Expense.CREATED_ON);
     }
 
     public void setCreatedOn(Date createdOn) {
-        this.createdOn = createdOn;
+        setField(WepayContract.Expense.CREATED_ON, createdOn);
     }
 
     public String getMessage() {
-        return message;
+        return getText(WepayContract.Expense.MESSAGE);
     }
 
     public void setMessage(String message) {
-        this.message = message;
+        setField(WepayContract.Expense.MESSAGE, message);
     }
 
     public double getAmount() {
-        return amount;
+        return getDouble(WepayContract.Expense.AMOUNT);
     }
 
     public void setAmount(double amount) {
-        this.amount = amount;
+        setField(WepayContract.Expense.AMOUNT, amount);
     }
 
     public String getCurrencyId() {
-        return currencyId;
+        return getText(WepayContract.Expense.CURRENCY);
     }
 
     public void setCurrencyId(String currencyId) {
-        this.currencyId = currencyId;
+        setField(WepayContract.Expense.CURRENCY, currencyId);
     }
 
     public long getLocationId() {
-        return locationId;
+        return getLong(WepayContract.Expense.LOCATION_ID);
     }
 
     public void setLocationId(long locationId) {
-        this.locationId = locationId;
+        setField(WepayContract.Expense.LOCATION_ID, locationId);
     }
 
     public long getCategoryId() {
-        return categoryId;
+        return getLong(WepayContract.Expense.CATEGORY_ID);
     }
 
     public void setCategoryId(long categoryId) {
-        this.categoryId = categoryId;
+        setField(WepayContract.Expense.CATEGORY_ID, categoryId);
     }
 
-    /** If recurrenceId is unset (value is 0), this is a normal expense; else
+    /**
+     * If recurrenceId is unset (value is 0), this is a normal expense; else
      * the expense is a group-level expense, which is not considered in the group balances
      * Only instances of this group-level expense can be counted for the group balances; instances
      * of a group-level expense can be identified by the groupExpenseId, which value is the ID of the
      * group-level expense.
+     * @return
      */
     public long getRecurrenceId() {
-        return recurrenceId;
+        return getLong(WepayContract.Expense.RECURRENCE_ID);
     }
 
     public void setRecurrenceId(long recurrenceId) {
-        this.recurrenceId = recurrenceId;
+        setField(WepayContract.Expense.RECURRENCE_ID, recurrenceId);
     }
 
     public long getGroupExpenseId() {
-        return groupExpenseId;
+        return getLong(WepayContract.Expense.GROUP_EXPENSE_ID);
     }
 
     public void setGroupExpenseId(long groupExpenseId) {
-        this.groupExpenseId = groupExpenseId;
+        setField(WepayContract.Expense.GROUP_EXPENSE_ID, groupExpenseId);
     }
 
     public boolean isPayment() {
-        return isPayment;
+        return getBoolean(WepayContract.Expense.IS_PAYMENT);
     }
 
     public void setPayment(boolean isPayment) {
-        this.isPayment = isPayment;
+        setField(WepayContract.Expense.IS_PAYMENT, isPayment);
     }
 
     public long getGroupId() {
-        return groupId;
+        return getLong(WepayContract.Expense.GROUP_ID);
     }
 
     public void setGroupId(long groupId) {
-        this.groupId = groupId;
+        setField(WepayContract.Expense.GROUP_ID, groupId);
     }
 
     public double getUserBalance() {
-        return userBalance;
+        return getDouble(WepayContract.Expense.USER_BALANCE);
     }
 
     public void setUserBalance(double userBalance) {
-        this.userBalance = userBalance;
+        setField(WepayContract.Expense.USER_BALANCE, userBalance);
+    }
+
+    @Override
+    public Table table(){
+        return entity.table();
+    }
+
+    @Override
+    public int getInt(String column) {
+        return entity.getInt(column);
+    }
+
+    @Override
+    public long getLong(String column) {
+        return entity.getLong(column);
+    }
+
+    @Override
+    public double getDouble(String column) {
+        return entity.getDouble(column);
+    }
+
+    @Override
+    public boolean getBoolean(String column) {
+        return entity.getBoolean(column);
+    }
+
+    @Override
+    public String getText(String column) {
+        return entity.getText(column);
+    }
+
+    @Override
+    public Date getDate(String column) {
+        return entity.getDate(column);
+    }
+
+    @Override
+    public byte[] getBytes(String column) {
+        return entity.getBytes(column);
+    }
+
+    @Override
+    public void setField(String column, Object val) {
+        entity.setField(column, val);
+    }
+
+    @Override
+    public String toString(){
+        return entity.toString();
+    }
+
+    public Entity getEntity() {
+        return entity;
+    }
+
+    public void setEntity(Entity m){
+        entity = m;
     }
 }

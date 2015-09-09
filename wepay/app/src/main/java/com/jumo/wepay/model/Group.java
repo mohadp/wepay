@@ -1,64 +1,119 @@
 package com.jumo.wepay.model;
 
+import com.jumo.wepay.provider.Table;
+import com.jumo.wepay.provider.WepayContract;
+
 import java.util.Date;
 
 /**
  * Created by Moha on 6/20/15.
  */
-public class Group {
-    private long id;
-    private String name;
-    private Date createdOn;
-    private byte[] groupPicture;
-    private double userBalance; //Not persisted in the database; used for contain balances for the group for a user (owes or has paid more and for how much)
+public class Group implements Entity {
+    private Entity entity;
 
-    public String toString(){
-        StringBuilder toString = new StringBuilder("Group: {");
-        toString.append(id).append(", ")
-                .append(createdOn).append(", ")
-                .append(name).append(", ")
-                .append(groupPicture == null? "GroupPicNotNull" : "").append(", ")
-                .append(userBalance).append("}");
-        return toString.toString();
+    public Group(Entity m){
+        entity = m;
+    }
+
+    public Group(){
+        entity = new ActualEntity(WepayContract.Group.getInstance());
     }
 
     public long getId() {
-        return id;
+        return getLong(WepayContract.Group._ID);
     }
 
     public void setId(long id) {
-        this.id = id;
+        setField(WepayContract.Group._ID, id);
     }
 
     public String getName() {
-        return name;
+        return getText(WepayContract.Group.NAME);
     }
 
     public void setName(String name) {
-        this.name = name;
+        setField(WepayContract.Group.NAME, name);
     }
 
     public Date getCreatedOn() {
-        return createdOn;
+        return getDate(WepayContract.Group.CREATED_ON);
     }
 
     public void setCreatedOn(Date createdOn) {
-        this.createdOn = createdOn;
+        setField(WepayContract.Group.CREATED_ON, createdOn);
     }
 
     public byte[] getGroupPicture() {
-        return groupPicture;
+        return getBytes(WepayContract.Group.GROUP_PICTURE);
     }
 
     public void setGroupPicture(byte[] groupPicture) {
-        this.groupPicture = groupPicture;
+        setField(WepayContract.Group.GROUP_PICTURE, groupPicture);
     }
 
     public double getUserBalance() {
-        return userBalance;
+        return getDouble(WepayContract.Group.USER_BALANCE);
     }
 
     public void setUserBalance(double userBalance) {
-        this.userBalance = userBalance;
+        setField(WepayContract.Group.USER_BALANCE, userBalance);
+    }
+
+    @Override
+    public Table table(){
+        return entity.table();
+    }
+
+    @Override
+    public int getInt(String column) {
+        return entity.getInt(column);
+    }
+
+    @Override
+    public long getLong(String column) {
+        return entity.getLong(column);
+    }
+
+    @Override
+    public double getDouble(String column) {
+        return entity.getDouble(column);
+    }
+
+    @Override
+    public boolean getBoolean(String column) {
+        return entity.getBoolean(column);
+    }
+
+    @Override
+    public String getText(String column) {
+        return entity.getText(column);
+    }
+
+    @Override
+    public Date getDate(String column) {
+        return entity.getDate(column);
+    }
+
+    @Override
+    public byte[] getBytes(String column) {
+        return entity.getBytes(column);
+    }
+
+    @Override
+    public void setField(String column, Object val) {
+        entity.setField(column, val);
+    }
+
+    @Override
+    public String toString(){
+        return entity.toString();
+    }
+
+    public Entity getEntity() {
+        return entity;
+    }
+
+    public void setEntity(Entity m){
+        entity = m;
     }
 }

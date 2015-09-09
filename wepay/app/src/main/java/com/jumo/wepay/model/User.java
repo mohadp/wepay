@@ -1,53 +1,111 @@
 package com.jumo.wepay.model;
 
+import com.jumo.wepay.provider.Table;
+import com.jumo.wepay.provider.WepayContract;
+
+import java.util.Date;
+
 /**
  * Created by Moha on 6/26/15.
  */
-public class User {
+public class User implements Entity {
+    private Entity entity;
 
-    private String id;
-    private String name;
-    private String phone;
-    private double userBalance;
+    public User(Entity m){
+        entity = m;
+    }
 
-    public String toString(){
-        StringBuilder toString = new StringBuilder("User: {");
-        toString.append(id).append(", ")
-                .append(name).append(", ")
-                .append(phone).append(", ")
-                .append(userBalance).append("}");
-        return toString.toString();
+    public User(){
+        entity = new ActualEntity(WepayContract.User.getInstance());
     }
 
     public String getId() {
-        return id;
+        return getText(WepayContract.User._ID);
     }
 
     public void setId(String id) {
-        this.id = id;
+        setField(WepayContract.User._ID, id);
     }
 
     public String getName() {
-        return name;
+        return getText(WepayContract.User.NAME);
     }
 
     public void setName(String name) {
-        this.name = name;
+        setField(WepayContract.User.NAME, name);
     }
 
     public String getPhone() {
-        return phone;
+        return getText(WepayContract.User.PHONE);
     }
 
     public void setPhone(String phone) {
-        this.phone = phone;
+        setField(WepayContract.User.PHONE, phone);
     }
 
     public double getUserBalance() {
-        return userBalance;
+        return getDouble(WepayContract.User.USER_BALANCE);
     }
 
     public void setUserBalance(double userBalance) {
-        this.userBalance = userBalance;
+        setField(WepayContract.User.USER_BALANCE, userBalance);
+    }
+
+    @Override
+    public Table table(){
+        return entity.table();
+    }
+
+    @Override
+    public int getInt(String column) {
+        return entity.getInt(column);
+    }
+
+    @Override
+    public long getLong(String column) {
+        return entity.getLong(column);
+    }
+
+    @Override
+    public double getDouble(String column) {
+        return entity.getDouble(column);
+    }
+
+    @Override
+    public boolean getBoolean(String column) {
+        return entity.getBoolean(column);
+    }
+
+    @Override
+    public String getText(String column) {
+        return entity.getText(column);
+    }
+
+    @Override
+    public Date getDate(String column) {
+        return entity.getDate(column);
+    }
+
+    @Override
+    public byte[] getBytes(String column) {
+        return entity.getBytes(column);
+    }
+
+    @Override
+    public void setField(String column, Object val) {
+        entity.setField(column, val);
+    }
+
+    @Override
+    public String toString(){
+        return entity.toString();
+    }
+
+    public Entity getEntity() {
+        return entity;
+    }
+
+    public void setEntity(Entity m){
+        entity = m;
     }
 }

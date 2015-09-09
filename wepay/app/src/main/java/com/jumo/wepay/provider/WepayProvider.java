@@ -6,9 +6,15 @@ import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.net.Uri;
+import android.util.Log;
+
+import com.jumo.wepay.provider.dao.EntityCursor;
 
 import java.util.ArrayList;
-import java.util.Set;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,26 +61,26 @@ public class WepayProvider extends ContentProvider{
 
     static
     {   //TODO: possibly add a GROUP_USERS
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.User.table().tableName + "/*", USER_ID);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.User.table().tableName, USERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.User.table().tableName + "/*/groups", USER_GROUPS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.table().tableName, GROUPS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.table().tableName + "/#", GROUP_ID);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.table().tableName + "/#/users", GROUP_MEMBER_USERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.table().tableName + "/#/expense/#/payers", GROUP_EXPENSE_PAYERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.table().tableName + "/#/payers", GROUP_PAYERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Member.table().tableName + "/#", MEMBER_ID);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Member.table().tableName, MEMBERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Member.table().tableName + "/#/users", MEMBER_USER);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.table().tableName + "/#", EXPENSE_ID);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.table().tableName + "/user/*/group/#", USER_GROUP_EXPENSES);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.table().tableName, EXPENSES);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Payer.table().tableName + "/expense/#", EXPENSE_PAYER_USERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Payer.table().tableName, PAYERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Location.table().tableName + "/#", LOCATION_ID);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Location.table().tableName + "/expense/#", EXPENSE_LOCATION);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Recurrence.table().tableName + "/#", RECURRENCE_ID);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Recurrence.table().tableName + "/recurrence/#", EXPENSE_RECURRENCE);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.User.getInstance().getTableName() + "/*", USER_ID);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.User.getInstance().getTableName(), USERS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.User.getInstance().getTableName() + "/*/groups", USER_GROUPS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.getInstance().getTableName(), GROUPS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.getInstance().getTableName() + "/#", GROUP_ID);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.getInstance().getTableName() + "/#/users", GROUP_MEMBER_USERS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.getInstance().getTableName() + "/#/expense/#/payers", GROUP_EXPENSE_PAYERS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.getInstance().getTableName() + "/#/payers", GROUP_PAYERS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Member.getInstance().getTableName() + "/#", MEMBER_ID);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Member.getInstance().getTableName(), MEMBERS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Member.getInstance().getTableName() + "/#/users", MEMBER_USER);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.getInstance().getTableName() + "/#", EXPENSE_ID);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.getInstance().getTableName() + "/user/*/group/#", USER_GROUP_EXPENSES);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.getInstance().getTableName(), EXPENSES);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Payer.getInstance().getTableName() + "/expense/#", EXPENSE_PAYER_USERS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Payer.getInstance().getTableName(), PAYERS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Location.getInstance().getTableName() + "/#", LOCATION_ID);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Location.getInstance().getTableName() + "/expense/#", EXPENSE_LOCATION);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Recurrence.getInstance().getTableName() + "/#", RECURRENCE_ID);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Recurrence.getInstance().getTableName() + "/recurrence/#", EXPENSE_RECURRENCE);
 
     }
 
@@ -92,56 +98,72 @@ public class WepayProvider extends ContentProvider{
         String sortOrder){
 
         String userId, groupId, expenseId;
-
         Cursor cursorResult = null;
+
+        //Additional preparation to query
+        StringBuffer newSelection = (selection == null)? new StringBuffer() : new StringBuffer(selection);
+        ArrayList<String> newSelectArgs = (selectionArgs == null)? new ArrayList<String>() : new ArrayList<String>(Arrays.asList(selectionArgs));
+        ArrayList<String> newProjection = (projection == null)? new ArrayList<String>() : new ArrayList<String>(Arrays.asList(projection));
+        ArrayList<Metric> metrics = new ArrayList<Metric>();
+        Metric metric = null;
 
         switch(sURIMatcher.match(uri)){
             case USER_ID:
                 userId = uri.getPathSegments().get(1); // get the user ID from the path.
-                cursorResult = mDBHelper.getReadableDatabase().rawQuery(selectEntity(WepayContract.User.table().tableName, WepayContract.User.table().columns.keySet(), projection, ADD_BALANCE, JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER, selection, sortOrder, userId, null), selectionArgs);
+                cursorResult = mDBHelper.getReadableDatabase().rawQuery(selectEntity(WepayContract.User.getInstance().getTableName(), WepayContract.User.getInstance().getColumnNames(), projection, ADD_BALANCE, JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER, selection, sortOrder, userId, null), selectionArgs);
                 break;
 
             case USERS:
-                cursorResult = mDBHelper.getReadableDatabase().query(WepayContract.User.table().tableName,projection, selection /*filter*/,
+                cursorResult = mDBHelper.getReadableDatabase().query(WepayContract.User.getInstance().getTableName(),projection, selection /*filter*/,
                         selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
                 break;
 
             case USER_GROUPS: //This also adds a balance from the perspective of a user.
-                userId = uri.getPathSegments().get(1); // get the user ID from the path.
-                cursorResult = mDBHelper.getReadableDatabase().rawQuery(selectEntity(WepayContract.Group.table().tableName, WepayContract.Group.table().columns.keySet(), projection, true, JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER, selection, sortOrder, userId, null), selectionArgs);
+                appendToProjection(WepayContract.Group.getInstance().getColumns(), newProjection);
+                appendToFilter(newSelection, newSelectArgs, WepayContract.User.getInstance().getColumn(WepayContract.User._ID), uri.getPathSegments().get(1)); // get the user ID from the path.
+
+                //cursorResult = mDBHelper.getReadableDatabase().rawQuery(selectEntity(WepayContract.Group.getInstance().getTableName(), WepayContract.Group.getInstance().getColumnNames(), projection, true, JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER, selection, sortOrder, userId, null), selectionArgs);
+                metric = WepayContract.getBalanceMetric();
+                metric.setColumn(WepayContract.Group.getInstance().getColumn(WepayContract.Group.USER_BALANCE));
+                metrics.add(metric);
+                cursorResult = mDBHelper.getReadableDatabase().rawQuery(select(WepayContract.UserGroupBalance.getInstance(), metrics, newProjection.toArray(new String[]{}), newSelection.toString(), sortOrder), newSelectArgs.toArray(new String[]{}));
                 break;
 
             case GROUPS:
-                cursorResult = mDBHelper.getReadableDatabase().query(WepayContract.Group.table().tableName,projection, selection /*filter*/,
+                cursorResult = mDBHelper.getReadableDatabase().query(WepayContract.Group.getInstance().getTableName(),projection, selection /*filter*/,
                         selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
                 break;
 
             case MEMBERS:
-                cursorResult = mDBHelper.getReadableDatabase().query(WepayContract.Member.table().tableName, projection, selection /*filter*/,
+                cursorResult = mDBHelper.getReadableDatabase().query(WepayContract.Member.getInstance().getTableName(), projection, selection /*filter*/,
                         selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
                 break;
 
             case EXPENSES:
-                cursorResult = mDBHelper.getReadableDatabase().query(WepayContract.Expense.table().tableName, projection, selection /*filter*/,
+                cursorResult = mDBHelper.getReadableDatabase().query(WepayContract.Expense.getInstance().getTableName(), projection, selection /*filter*/,
                         selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
                 break;
 
             case PAYERS:
-                cursorResult = mDBHelper.getReadableDatabase().query(WepayContract.Payer.table().tableName, projection, selection /*filter*/,
+                cursorResult = mDBHelper.getReadableDatabase().query(WepayContract.Payer.getInstance().getTableName(), projection, selection /*filter*/,
                         selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
                 break;
 
             case GROUP_MEMBER_USERS:
                 groupId = uri.getPathSegments().get(1); // get the group ID from the path.
-                cursorResult = mDBHelper.getReadableDatabase().rawQuery(selectEntity(WepayContract.User.table().tableName, WepayContract.User.table().columns.keySet(), projection, NO_BALANCE, JOIN_GROUP_MEMBER_USER, selection, sortOrder, null, groupId), selectionArgs);
+                cursorResult = mDBHelper.getReadableDatabase().rawQuery(selectEntity(WepayContract.User.getInstance().getTableName(), WepayContract.User.getInstance().getColumnNames(), projection, NO_BALANCE, JOIN_GROUP_MEMBER_USER, selection, sortOrder, null, groupId), selectionArgs);
                 break;
 
             case USER_GROUP_EXPENSES:
-                userId = uri.getPathSegments().get(2); // get the user ID from the path.
-                groupId = uri.getPathSegments().get(4); // get the group ID from the path.
-                //String q = selectEntity(WepayContract.Expense.table().tableName, WepayContract.Expense.table().columns.keySet(), projection, ADD_BALANCE, JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER, selection, sortOrder, userId, groupId);
-                //Log.d(TAG, q);
-                cursorResult = mDBHelper.getReadableDatabase().rawQuery(selectEntity(WepayContract.Expense.table().tableName, WepayContract.Expense.table().columns.keySet(), projection, ADD_BALANCE, JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER, selection, sortOrder, userId, groupId), selectionArgs);
+                appendToProjection(WepayContract.Expense.getInstance().getColumns(), newProjection);
+                appendToFilter(newSelection, newSelectArgs, WepayContract.User.getInstance().getColumn(WepayContract.User._ID), uri.getPathSegments().get(2)); // get the user ID from the path.
+                appendToFilter(newSelection, newSelectArgs, WepayContract.Group.getInstance().getColumn(WepayContract.Group._ID), uri.getPathSegments().get(4)); // // get the group ID from the path.
+                metric = WepayContract.getBalanceMetric();
+                metric.setColumn(WepayContract.Expense.getInstance().getColumn(WepayContract.Expense.USER_BALANCE));
+                metrics.add(metric);
+
+                //cursorResult = mDBHelper.getReadableDatabase().rawQuery(selectEntity(WepayContract.Expense.getInstance().getTableName(), WepayContract.Expense.getInstance().getColumnNames(), projection, ADD_BALANCE, JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER, selection, sortOrder, userId, groupId), selectionArgs);
+                cursorResult = mDBHelper.getReadableDatabase().rawQuery(select(WepayContract.UserExpenseBalance.getInstance(), metrics, projection, newSelection.toString(), sortOrder), newSelectArgs.toArray(new String[]{}));
                 break;
 
             case EXPENSE_PAYER_USERS:
@@ -158,23 +180,23 @@ public class WepayProvider extends ContentProvider{
         StringBuilder str = new StringBuilder("vnd.android.cursor");
         switch(sURIMatcher.match(uri)){
             case USER_ID:
-                return str.append(".item/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.User.table().tableName).toString();
+                return str.append(".item/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.User.getInstance().getTableName()).toString();
             case USERS:
-                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.User.table().tableName).toString();
+                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.User.getInstance().getTableName()).toString();
             case USER_GROUPS:
-                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.Group.table().tableName).toString();
+                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.Group.getInstance().getTableName()).toString();
             case GROUPS:
-                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.Group.table().tableName).toString();
+                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.Group.getInstance().getTableName()).toString();
             case MEMBERS:
-                return str.append("dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.Member.table().tableName).toString();
+                return str.append("dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.Member.getInstance().getTableName()).toString();
             case EXPENSES:
-                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.Expense.table().tableName).toString();
+                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.Expense.getInstance().getTableName()).toString();
             case PAYERS:
-                return str.append("dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.Payer.table().tableName).toString();
+                return str.append("dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.Payer.getInstance().getTableName()).toString();
             case GROUP_MEMBER_USERS:
-                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.User.table().tableName).toString();
+                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.User.getInstance().getTableName()).toString();
             case USER_GROUP_EXPENSES:
-                return str.append("dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.Expense.table().tableName).toString();
+                return str.append("dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.Expense.getInstance().getTableName()).toString();
         }
 
         return null;
@@ -217,51 +239,115 @@ public class WepayProvider extends ContentProvider{
 
         switch(sURIMatcher.match(uri)){
             case USERS:
-                table = WepayContract.User.table().tableName;
+                table = WepayContract.User.getInstance().getTableName();
                 break;
             case GROUPS:
-                table = WepayContract.Group.table().tableName;
+                table = WepayContract.Group.getInstance().getTableName();
                 break;
             case MEMBERS:
-                table = WepayContract.Member.table().tableName;
+                table = WepayContract.Member.getInstance().getTableName();
                 break;
             case EXPENSES:
-                table = WepayContract.Expense.table().tableName;
+                table = WepayContract.Expense.getInstance().getTableName();
                 break;
             case PAYERS:
-                table = WepayContract.Payer.table().tableName;
+                table = WepayContract.Payer.getInstance().getTableName();
                 break;
         }
         return table;
     }
 
+    /**
+     * Adds a new selection condition to the selection text in the form of "[...] AND col = ?" with
+     * the new value added to the oritinalParams
+     * @param originalSelection
+     * @param originalParams
+     * @param col
+     * @param value
+     */
+    private void appendToFilter(StringBuffer originalSelection, ArrayList<String> originalParams, Column col, String value){
+        if(originalParams.size() > 0){
+            originalSelection.append(" AND ");
+        }
+        originalSelection.append(col.getFullName()).append(" = ?");
+        originalParams.add(value);
+    }
 
-    private String select(WepayContract.CompositeEntity entity, ArrayList<Metric> metrics){ //include the rest of parameters.
+    private void appendToProjection(Collection<Column> columns, ArrayList<String> originalProjection){
+        for(Column c : columns){
+            if(c.persisted){
+                originalProjection.add(c.getFullName());
+            }
+        }
+    }
+
+    private String select(CompositeTable entity, ArrayList<Metric> metrics,
+                          String[] projection, String selection, String sortOrder){
+
+        StringBuffer columns = getProjectionSQL(entity, projection);
+        StringBuffer metricCols = null;
+        HashSet<Table> metricTables = null;
+
+        //Get set of tables needed for metric calculation, and form the metric expressions
+        if(metrics != null) {
+            metricCols = new StringBuffer();
+            metricTables = new HashSet<Table>();
+            Iterator<Metric> it = metrics.iterator();
+            while (it.hasNext()) {
+                Metric m = it.next();
+                metricTables.addAll(m.getDependentEntities());
+                metricCols.append(m.getColumnDefinition());
+                if (it.hasNext()) {
+                    metricCols.append(", ");
+                }
+            }
+        }
+
+        StringBuffer from = getJoinTableSQL(entity, metricTables);
+
+        //Build the final query
+        StringBuffer query = new StringBuffer();
+        query.append("select ").append(columns);
+        if(metricCols != null) {
+            query.append(", ").append(metricCols);
+        }
+        query.append(" from ").append(from);
+
+        if(selection != null){
+            query.append(" where ").append(selection);
+        }
+        if(metrics != null && metrics.size() > 0){
+            query.append(" group by ").append(columns);
+        }
+        if(sortOrder != null){
+            query.append(" order by ").append(sortOrder);
+        }
 
 
-        return null;
+        Log.d(TAG, query.toString());
+        return query.toString();
     }
 
 
     /**
      *
-     * @param table is the table for the entity being retrieved
-     * @param tableCols is the set of columns of the table for which the entity is being retrieved
-     * @param projection determines the set of columns to select from a particular entity table
+     * @param table is the getInstance for the table being retrieved
+     * @param tableCols is the set of mColumns of the getInstance for which the table is being retrieved
+     * @param projection determines the set of mColumns to select from a particular table getInstance
      * @param addBalance determines whether to include balance grouped by whether column defined in the projection
      * @param filter filter specification
      * @param sortOrder sort specification
-     * @param tableJoins is an integer representing the tables to be joined; use the static members JOIN_*
+     * @param tableJoins is an integer representing the mTables to be joined; use the static members JOIN_*
      * @param userIdFilter represents the user ID to be included in the where clause
      * @param groupIdFilter represents the group ID to be included in the where clause
      * @return a full SQL select query with all joins and filters based on passed on parameters
      */
-    private String selectEntity(String table, Set<String> tableCols, String[] projection, boolean addBalance, int tableJoins, String filter, String sortOrder,  String userIdFilter, String groupIdFilter){
+    private String selectEntity(String table, Collection<String> tableCols, String[] projection, boolean addBalance, int tableJoins, String filter, String sortOrder,  String userIdFilter, String groupIdFilter){
         //// SELECT ////
         StringBuffer sb = new StringBuffer("select ");
         String[] newProjection;
 
-        //add table prefix to projection columns
+        //add getInstance prefix to projection mColumns
         if(projection != null) {
             newProjection = projection;
         }else{
@@ -284,13 +370,13 @@ public class WepayProvider extends ContentProvider{
 
         //Add the condition on UserCursor Name
         if(userIdFilter != null){
-            sb.append("(").append(WepayContract.User.table().tableName).append(".").append(WepayContract.User._ID);
+            sb.append("(").append(WepayContract.User.getInstance().getTableName()).append(".").append(WepayContract.User._ID);
             sb.append(" = '").append(userIdFilter).append("')");
             if(groupIdFilter != null) sb.append(" and ");
         }
         //Add the condition on GroupCursor Id
         if(groupIdFilter != null){
-            sb.append("(").append(WepayContract.Group.table().tableName).append(".").append(WepayContract.Group._ID);
+            sb.append("(").append(WepayContract.Group.getInstance().getTableName()).append(".").append(WepayContract.Group._ID);
             sb.append(" = ").append(groupIdFilter).append(")");
         }
 
@@ -312,17 +398,17 @@ public class WepayProvider extends ContentProvider{
 
     private StringBuffer addBalanceSum(){
         StringBuffer sb = new StringBuffer("sum(");
-        sb.append(WepayContract.Expense.table().tableName).append(".").append(WepayContract.Expense.AMOUNT).
+        sb.append(WepayContract.Expense.getInstance().getTableName()).append(".").append(WepayContract.Expense.AMOUNT).
                 append(" * ").
-				append(WepayContract.Expense.table().tableName).append(".").append(WepayContract.Expense.EXCHANGE_RATE).
+				append(WepayContract.Expense.getInstance().getTableName()).append(".").append(WepayContract.Expense.EXCHANGE_RATE).
 				append(" * ").
-                append(WepayContract.Payer.table().tableName).append(".").append(WepayContract.Payer.PERCENTAGE).
+                append(WepayContract.Payer.getInstance().getTableName()).append(".").append(WepayContract.Payer.PERCENTAGE).
                 append(") as ").append(WepayContract.USER_BALANCE);
         return sb;
     }
 
     /**
-     * Returns a join string for the tables to join. If 1 is entered, then join only GroupCursor and MemberCursor; 2 joins GroupCursor, MemberCursor and UserCursor.
+     * Returns a join string for the mTables to join. If 1 is entered, then join only GroupCursor and MemberCursor; 2 joins GroupCursor, MemberCursor and UserCursor.
      * 3 joins up to ExpenseCursor, and 4 up to PayerCursor.
      * @param whichToJoin
      * @return
@@ -332,110 +418,101 @@ public class WepayProvider extends ContentProvider{
 
         if(whichToJoin >= 1) {
             //Join GroupCursor with MemberCursor
-            StringBuffer join1 = SQLGenerator.joinTables(sb, new String[] {WepayContract.Group.table().tableName}, new String[]{WepayContract.Group._ID},
-                    WepayContract.Member.table().tableName, new String[]{WepayContract.Member.GROUP_ID});
+            StringBuffer join1 = SQLGenerator.joinTables(sb, new String[] {WepayContract.Group.getInstance().getTableName()}, new String[]{WepayContract.Group._ID},
+                    WepayContract.Member.getInstance().getTableName(), new String[]{WepayContract.Member.GROUP_ID});
             sb = join1;
         }if(whichToJoin >= 2) {
             //Join with user
-            StringBuffer join2 = SQLGenerator.joinTables(sb, new String[] {WepayContract.Member.table().tableName}, new String[]{WepayContract.Member.USER_ID},
-                    WepayContract.User.table().tableName, new String[]{WepayContract.User._ID});
+            StringBuffer join2 = SQLGenerator.joinTables(sb, new String[] {WepayContract.Member.getInstance().getTableName()}, new String[]{WepayContract.Member.USER_ID},
+                    WepayContract.User.getInstance().getTableName(), new String[]{WepayContract.User._ID});
             sb = join2;
         }if(whichToJoin >= 3) {
             //Join ExpenseCursor
-            StringBuffer join3 = SQLGenerator.joinTables(sb, new String[] {WepayContract.Group.table().tableName}, new String[]{WepayContract.Group._ID},
-                    WepayContract.Expense.table().tableName, new String[]{WepayContract.Expense.GROUP_ID});
+            StringBuffer join3 = SQLGenerator.joinTables(sb, new String[] {WepayContract.Group.getInstance().getTableName()}, new String[]{WepayContract.Group._ID},
+                    WepayContract.Expense.getInstance().getTableName(), new String[]{WepayContract.Expense.GROUP_ID});
             sb = join3;
         }if(whichToJoin >= 4) {
             //Join the above with PayerCursor.
-            StringBuffer join4 = SQLGenerator.joinTables(sb, new String[] {WepayContract.Expense.table().tableName, WepayContract.Member.table().tableName}, new String[]{WepayContract.Expense._ID, WepayContract.Member._ID},
-                    WepayContract.Payer.table().tableName, new String[]{WepayContract.Payer.EXPENSE_ID, WepayContract.Payer.MEMBER_ID});
+            StringBuffer join4 = SQLGenerator.joinTables(sb, new String[] {WepayContract.Expense.getInstance().getTableName(), WepayContract.Member.getInstance().getTableName()}, new String[]{WepayContract.Expense._ID, WepayContract.Member._ID},
+                    WepayContract.Payer.getInstance().getTableName(), new String[]{WepayContract.Payer.EXPENSE_ID, WepayContract.Payer.MEMBER_ID});
             sb = join4;
         }
 
         return sb;
     }
 
-    private Metric getBalanceMetric(){
-        WepayContract.Column expAmount = WepayContract.Expense.table().columns.get(WepayContract.Expense.AMOUNT);
-        WepayContract.Column expExchange = WepayContract.Expense.table().columns.get(WepayContract.Expense.EXCHANGE_RATE);
-        WepayContract.Column payPercent = WepayContract.Payer.table().columns.get(WepayContract.Payer.PERCENTAGE);
+    /**
+     * Return a StringBuffer with columns to include in a select statement. If the projection[] array is empty,
+     * then return the full set of columns present in the entity. Else, just return the columns in the
+     * projection[]. The columns are identified with their full name, in the form of "table.column".
+     * @param entity
+     * @param projection
+     * @return
+     */
+    private StringBuffer getProjectionSQL(CompositeTable entity, String[] projection){
+        StringBuffer select = new StringBuffer();
+        if(projection == null){
+            Iterator<Column> it = entity.getColumns().iterator();
+            while(it.hasNext()){
+                Column col = it.next();
+                if(col.persisted) {
+                    select.append(col.getFullName());
+                    if(it.hasNext()){
+                        select.append(", ");
+                    }
+                }
 
-        ArrayList<WepayContract.Column> columns = new ArrayList();
-        columns.add(expAmount);
-        columns.add(expExchange);
-        columns.add(payPercent);
-
-        StringBuffer expression = new StringBuffer("sum(");
-        expression.append(expAmount.getFullName()).
-                append(" * ").
-                append(expExchange.getFullName()).
-                append(" * ").
-                append(payPercent.getFullName()).append(")");
-
-        String alias = WepayContract.Expense.USER_BALANCE;
-
-        return new Metric(columns, alias, expression.toString());
-    }
-
-    private static class Metric{
-        private ArrayList<WepayContract.Column> mColumns;
-        private String mExpression;
-        private String mAlias;
-
-        public Metric(ArrayList<WepayContract.Column> cols, String exp, String alias){
-            mExpression = exp;
-            mColumns = cols;
-            mAlias = alias;
-        }
-
-        public String getColumnName() {
-            return mAlias;
-        }
-
-        public void setColumnName(String alias) {
-            this.mAlias = alias;
-        }
-
-        public String getExpression() {
-            return mExpression;
-        }
-
-        public void setExpression(String mExpression) {
-            this.mExpression = mExpression;
-        }
-
-        public void addDependentColumn(WepayContract.Column col){
-            mColumns.add(col);
-        }
-
-        public void removeDependentColumn(WepayContract.Column col){
-            mColumns.remove(col);
-        }
-
-        public String getColumnDefinition(){
-            return mExpression + " as " + mAlias;
-        }
-
-        public ArrayList<WepayContract.Entity> getDependentEntities(){
-            if(mColumns == null) return null;
-
-            ArrayList<WepayContract.Entity> tables = new ArrayList<WepayContract.Entity>();
-
-            for(WepayContract.Column c : mColumns){
-                tables.add(WepayContract.getEntity(c.table));
             }
-            return tables;
+        }else{
+            int maxIndex = projection.length - 1;
+            for(int i = 0; i < projection.length; i++){
+                select.append(projection[i]);
+                if(i < maxIndex) {
+                    select.append(", ");
+                }
+            }
         }
+        return select;
     }
 
+    /**
+     * They joining of multiple tables based on their foregin keys, according to the WepayContract tables's definitions.
+     * @param compositeEntity
+     * @return
+     */
+    private StringBuffer getJoinTableSQL(CompositeTable compositeEntity, HashSet<Table> additionalTables){
+        JoinTreeNode joinTree = compositeEntity.getTableJoinTree(additionalTables);
+        return traverseTree(joinTree);
+    }
+
+    private StringBuffer traverseTree(JoinTreeNode treeNode){
+        StringBuffer sb = new StringBuffer();
+        if(treeNode.getLeft() == null && treeNode.getRight() == null && treeNode.getTable() != null){
+            return sb.append(treeNode.getTable());
+        }else if(treeNode.getLeft() != null && treeNode.getRight() != null && treeNode.getTable() == null){
+            sb.append(traverseTree(treeNode.getLeft())).append(" join ").append(traverseTree(treeNode.getRight()));
+            sb.append(" on (");
+
+            Iterator<ColumnJoin> it = treeNode.getColumnJoins().iterator();
+            while(it.hasNext()){
+                ColumnJoin jc = it.next();
+                sb.append(jc.left.getFullName()).append(jc.operator).append(jc.right.getFullName());
+                if(it.hasNext()){
+                    sb.append(" AND ");
+                }
+            }
+            sb.append(")");
+        }
+        return sb;
+    }
 
     private static class SQLGenerator{
         /**
          * If the prevJoinTree argument is null, we are starting a new "join tree". If prevJoinTree is not null, we are
-         * assuming that table1 is already in the prevJoinTree; in this case, we use table1 to add prefixes to the columns
+         * assuming that table1 is already in the prevJoinTree; in this case, we use table1 to add prefixes to the mColumns
          * in the "prefJoinTree join table2 on (table1.colN = table2.colM)" part of the SQL.
-         * Joining is done with "=" comparisons between columns (e.g. table1.colN = table2.colM).
-         * Plus, if there are multiple join columns, all conditions in the join for each column are and'ed (e.g. (table1.colN1 = table2.colM1 AND table1.colN2 = table2.colM2)
+         * Joining is done with "=" comparisons between mColumns (e.g. table1.colN = table2.colM).
+         * Plus, if there are multiple join mColumns, all conditions in the join for each column are and'ed (e.g. (table1.colN1 = table2.colM1 AND table1.colN2 = table2.colM2)
          *
          * @param prevJoinTree
          * @param table1
@@ -469,18 +546,18 @@ public class WepayProvider extends ContentProvider{
         }
 
         /**
-         * Adds a table name as prefix for all column names appearing in the sortBy string. For example,
-         * if the sort by clause is "ID ASC" for table group, this would gnerate "group.ID ASC".
+         * Adds a getInstance name as prefix for all column names appearing in the sortBy string. For example,
+         * if the sort by clause is "ID ASC" for getInstance group, this would gnerate "group.ID ASC".
          * @param table
          * @param tableCols
          * @param sortBy
          * @return
          */
-        protected static StringBuffer addTablePrefixToString(String table, Set<String> tableCols, String sortBy){
+        protected static StringBuffer addTablePrefixToString(String table, Collection<String> tableCols, String sortBy){
             StringBuffer regularExp = generateRegexForColumns(tableCols);
             StringBuffer sb = new StringBuffer();
 
-            //replace all columns with table.columns
+            //replace all mColumns with getInstance.mColumns
             Pattern pattern = Pattern.compile(regularExp.toString());
             Matcher matcher = pattern.matcher(sortBy.toLowerCase());
 
@@ -499,11 +576,11 @@ public class WepayProvider extends ContentProvider{
          * @param cols
          * @return
          */
-        protected static StringBuffer generateRegexForColumns(Set<String> cols){
+        protected static StringBuffer generateRegexForColumns(Collection<String> cols){
             StringBuffer regularExp = new StringBuffer();
 
             int count = cols.size();
-            //Building the regular expression like "col1|col2|col3|?", finding columns names and question marks
+            //Building the regular expression like "col1|col2|col3|?", finding mColumns names and question marks
             for (String col : cols) {
                 regularExp.append(col);
 
@@ -513,7 +590,7 @@ public class WepayProvider extends ContentProvider{
         }
 
         /**
-         * Add table name as prefix to every column in projection, and concatenates in a comma-separated string.
+         * Add getInstance name as prefix to every column in projection, and concatenates in a comma-separated string.
          * @param table
          * @param projection
          * @return
@@ -531,7 +608,7 @@ public class WepayProvider extends ContentProvider{
         }
 
         /**
-         * Adds table name as prefix to every column in the "projection" array
+         * Adds getInstance name as prefix to every column in the "projection" array
          * @param table
          * @param projection
          * @return

@@ -83,7 +83,7 @@ class JoinTreeNode {
 
     public void setLeft(JoinTreeNode left) {
         this.left = left;
-        left.setParent(this);
+        this.left.setParent(this);
     }
 
     public JoinTreeNode getRight() {
@@ -92,7 +92,7 @@ class JoinTreeNode {
 
     public void setRight(JoinTreeNode right) {
         this.right = right;
-        right.setParent(this);
+        this.right.setParent(this);
     }
 
     public ArrayList<ColumnJoin> getColumnJoins() {

@@ -1,8 +1,9 @@
 package com.jumo.wepay.provider;
 
+import android.net.Uri;
+
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 
 /**
  * Created by Moha on 6/28/15.
@@ -12,6 +13,8 @@ public final class WepayContract {
     private static final String TAG = "WepayContract";
     public static String AUTHORITY = WepayProvider.PROVIDER_AUTHORITY;
     public static String SCHEME = "content";
+    public static final Uri BASE_URI = new Uri.Builder().scheme(WepayContract.SCHEME).authority(WepayContract.AUTHORITY).build();
+
 
     //Column definitions
     protected static final String USER_BALANCE = "user_balance";
@@ -24,24 +27,24 @@ public final class WepayContract {
     protected static final String DEF_PRIMARY_KEY = "primary key";
 
 
-    private static final HashMap<String, Entity> tableEntityMap = new HashMap<String, Entity>();
+    private static final HashMap<String, Table> tableEntityMap = new HashMap<String, Table>();
     static{
-        tableEntityMap.put(Group.TABLE_NAME, Group.table());
-        tableEntityMap.put(Expense.TABLE_NAME, Expense.table());
-        tableEntityMap.put(Member.TABLE_NAME, Member.table());
-        tableEntityMap.put(User.TABLE_NAME, User.table());
-        tableEntityMap.put(Recurrence.TABLE_NAME, Recurrence.table());
-        tableEntityMap.put(Payer.TABLE_NAME, Payer.table());
-        tableEntityMap.put(Location.TABLE_NAME, Location.table());
+        tableEntityMap.put(Group.TABLE_NAME, Group.getInstance());
+        tableEntityMap.put(Expense.TABLE_NAME, Expense.getInstance());
+        tableEntityMap.put(Member.TABLE_NAME, Member.getInstance());
+        tableEntityMap.put(User.TABLE_NAME, User.getInstance());
+        tableEntityMap.put(Recurrence.TABLE_NAME, Recurrence.getInstance());
+        tableEntityMap.put(Payer.TABLE_NAME, Payer.getInstance());
+        tableEntityMap.put(Location.TABLE_NAME, Location.getInstance());
     }
 
-    public static Entity getEntity(String tableName){
+    public static Table getTable(String tableName){
         return tableEntityMap.get(tableName);
     }
 
     
-    //Entities
-    public final static class Group extends Entity{
+    //All individual tables representing multiple entities.
+    public final static class Group extends Table {
         //GroupCursor Table
         private static final String TABLE_NAME = "groups";
         //protected static final LinkedHashMap<String, String[]> COL_DEFS = new LinkedHashMap<String, String[]>();
@@ -52,11 +55,11 @@ public final class WepayContract {
         public static final String GROUP_PICTURE = "group_picture";
         public static final String USER_BALANCE = WepayContract.USER_BALANCE; //Not saved in the databased, this represents a user' balance at the group level (or expense level) = the sum of payments.
 
-        //Singleton entity
-        private static Entity mInstance;
+        //Singleton table
+        private static Table mInstance;
 
 
-        public static Entity table(){
+        public static Table getInstance(){
             if(mInstance == null){
                 mInstance = new Group();
             }
@@ -69,15 +72,16 @@ public final class WepayContract {
 
         @Override
         protected void defineColumnsAndForeignKeys(){
-            columns.put(_ID, new Column(tableName, _ID, DT_INTEGER, DEF_PRIMARY_KEY));
-            columns.put(NAME, new Column(tableName, NAME, DT_TEXT, null));
-            columns.put(CREATED_ON, new Column(tableName, CREATED_ON, DT_INTEGER, null));
-            columns.put(GROUP_PICTURE, new Column(tableName, GROUP_PICTURE, DT_BLOB, null));
+            mColumns.put(_ID, new Column(mTableName, _ID, DT_INTEGER, DEF_PRIMARY_KEY, Column.TYPE_LONG));
+            mColumns.put(NAME, new Column(mTableName, NAME, DT_TEXT, null, Column.TYPE_STRING));
+            mColumns.put(CREATED_ON, new Column(mTableName, CREATED_ON, DT_INTEGER, null,  Column.TYPE_DATE));
+            mColumns.put(GROUP_PICTURE, new Column(mTableName, GROUP_PICTURE, DT_BLOB, null, Column.TYPE_BYTES));
+            mColumns.put(USER_BALANCE, new Column(mTableName, USER_BALANCE, DT_DOUBLE, null, Column.TYPE_DOUBLE, false));
         }
     }
 
-    public final static class Expense extends Entity{
-        //ExpenseCursor table
+    public final static class Expense extends Table {
+        //ExpenseCursor getInstance
         private static final String TABLE_NAME = "expense";
         //protected static final LinkedHashMap<String, String[]> COL_DEFS =  new LinkedHashMap<String, String[]>();
 
@@ -95,11 +99,11 @@ public final class WepayContract {
         public static final String IS_PAYMENT = "is_payment";
         public static final String USER_BALANCE = WepayContract.USER_BALANCE; //Not saved in the databased, this represents a user' balance at the group level (or expense level) = the sum of payments.
 
-        //Singleton entity
-        private static Entity mInstance;
+        //Singleton table
+        private static Table mInstance;
 
 
-        public static Entity table(){
+        public static Table getInstance(){
             if(mInstance == null){
                 mInstance = new Expense();
             }
@@ -111,28 +115,40 @@ public final class WepayContract {
         }
 
         protected void defineColumnsAndForeignKeys(){
-            columns.put(_ID, new Column(tableName, _ID, DT_INTEGER, DEF_PRIMARY_KEY));
-            columns.put(GROUP_ID, new Column(tableName, GROUP_ID, DT_INTEGER, "references groups(_id)"));
-            columns.put(CREATED_ON, new Column(tableName, CREATED_ON, DT_INTEGER, null));
-            columns.put(MESSAGE, new Column(tableName, MESSAGE, DT_TEXT, null));
-            columns.put(AMOUNT, new Column(tableName, AMOUNT, DT_DOUBLE, null));
-			columns.put(EXCHANGE_RATE, new Column(tableName, EXCHANGE_RATE, DT_DOUBLE, null));  //TODO: Add a clause for having 1 as default exchange rate (this means there is no conversion)
-            columns.put(CURRENCY, new Column(tableName, CURRENCY, DT_TEXT, null));
-            columns.put(LOCATION_ID, new Column(tableName,LOCATION_ID, DT_INTEGER, "references location(_id)"));
-            columns.put(CATEGORY_ID, new Column(tableName, CATEGORY_ID, DT_INTEGER, null));
-            columns.put(RECURRENCE_ID, new Column(tableName, RECURRENCE_ID, DT_INTEGER, "references recurrence(_id)"));
-            columns.put(GROUP_EXPENSE_ID, new Column(tableName, GROUP_EXPENSE_ID, DT_INTEGER, "references expense(_id)"));
-            columns.put(IS_PAYMENT, new Column(tableName, IS_PAYMENT, DT_INTEGER, null)); //boolean 0=false, 1=true
+            mColumns.put(_ID, new Column(mTableName, _ID, DT_INTEGER, DEF_PRIMARY_KEY, Column.TYPE_LONG));
+            mColumns.put(GROUP_ID, new Column(mTableName, GROUP_ID, DT_INTEGER, "references groups(_id)", Column.TYPE_LONG));
+            mColumns.put(CREATED_ON, new Column(mTableName, CREATED_ON, DT_INTEGER, null,  Column.TYPE_DATE));
+            mColumns.put(MESSAGE, new Column(mTableName, MESSAGE, DT_TEXT, null,  Column.TYPE_STRING));
+            mColumns.put(AMOUNT, new Column(mTableName, AMOUNT, DT_DOUBLE, null,  Column.TYPE_DOUBLE));
+			mColumns.put(EXCHANGE_RATE, new Column(mTableName, EXCHANGE_RATE, DT_DOUBLE, null, Column.TYPE_DOUBLE));  //TODO: Add a clause for having 1 as default exchange rate (this means there is no conversion)
+            mColumns.put(CURRENCY, new Column(mTableName, CURRENCY, DT_TEXT, null, Column.TYPE_STRING));
+            mColumns.put(LOCATION_ID, new Column(mTableName, LOCATION_ID, DT_INTEGER, "references location(_id)", Column.TYPE_LONG));
+            mColumns.put(CATEGORY_ID, new Column(mTableName, CATEGORY_ID, DT_INTEGER, null, Column.TYPE_LONG));
+            mColumns.put(RECURRENCE_ID, new Column(mTableName, RECURRENCE_ID, DT_INTEGER, "references recurrence(_id)", Column.TYPE_LONG));
+            mColumns.put(GROUP_EXPENSE_ID, new Column(mTableName, GROUP_EXPENSE_ID, DT_INTEGER, "references expense(_id)", Column.TYPE_LONG));
+            mColumns.put(IS_PAYMENT, new Column(mTableName, IS_PAYMENT, DT_INTEGER, null, Column.TYPE_BOOL)); //boolean 0=false, 1=true
+            mColumns.put(USER_BALANCE, new Column(mTableName, USER_BALANCE, DT_DOUBLE, null, Column.TYPE_DOUBLE, false));
             
-            //Foreign keys only to other tables (no recursive relationships included here).
-            foreignKeys.put(GROUP_ID, Group.table().columns.get(Group._ID));
-            foreignKeys.put(LOCATION_ID, Location.table().columns.get(Location._ID));
-            foreignKeys.put(RECURRENCE_ID, Recurrence.table().columns.get(Recurrence._ID));
+            //Foreign keys only to other mTables (no recursive relationships included here).
+            ColumnJoin join = new ColumnJoin(getColumn(GROUP_ID), Group.getInstance().getColumn(Group._ID));
+            ArrayList<ColumnJoin> joinExp = new ArrayList<ColumnJoin>();
+            joinExp.add(join);
+            mForeignKeys.put(Group.getInstance().getTableName(), joinExp);
+
+            join = new ColumnJoin(getColumn(LOCATION_ID), Location.getInstance().getColumn(Location._ID));
+            joinExp = new ArrayList<ColumnJoin>();
+            joinExp.add(join);
+            mForeignKeys.put(Location.getInstance().getTableName(), joinExp);
+
+            join = new ColumnJoin(getColumn(RECURRENCE_ID), Recurrence.getInstance().getColumn(Recurrence._ID));
+            joinExp = new ArrayList<ColumnJoin>();
+            joinExp.add(join);
+            mForeignKeys.put(Recurrence.getInstance().getTableName(),joinExp);
 
         }
     }
 
-    public static final class Member extends Entity{
+    public static final class Member extends Table {
         //MemberCursor Table
         private static final String TABLE_NAME = "member";
         //protected static final LinkedHashMap<String, String[]> COL_DEFS = new LinkedHashMap<String, String[]>();
@@ -143,11 +159,11 @@ public final class WepayContract {
         public static final String IS_ADMIN = "is_admin";
         public static final String LEFT_GROUP = "left_group";
 
-        //Singleton entity
-        private static Entity mInstance;
+        //Singleton table
+        private static Table mInstance;
 
 
-        public static Entity table(){
+        public static Table getInstance(){
             if(mInstance == null){
                 mInstance = new Member();
             }
@@ -159,21 +175,28 @@ public final class WepayContract {
         }
 
         protected void defineColumnsAndForeignKeys(){
-            columns.put(_ID, new Column(tableName, _ID, DT_INTEGER, DEF_PRIMARY_KEY));
-            columns.put(USER_ID, new Column(tableName, USER_ID, DT_INTEGER, "references user(_id)"));
-            columns.put(GROUP_ID, new Column(tableName, GROUP_ID, DT_INTEGER, "references groups(_id)"));
-            columns.put(IS_ADMIN, new Column(tableName, IS_ADMIN, DT_INTEGER, null)); //boolean 0=false, 1=true
-            columns.put(LEFT_GROUP, new Column(tableName, LEFT_GROUP, DT_INTEGER, null)); //boolean 0=false, 1=true
+            mColumns.put(_ID, new Column(mTableName, _ID, DT_INTEGER, DEF_PRIMARY_KEY, Column.TYPE_LONG));
+            mColumns.put(USER_ID, new Column(mTableName, USER_ID, DT_INTEGER, "references user(_id)", Column.TYPE_LONG));
+            mColumns.put(GROUP_ID, new Column(mTableName, GROUP_ID, DT_INTEGER, "references groups(_id)",  Column.TYPE_LONG));
+            mColumns.put(IS_ADMIN, new Column(mTableName, IS_ADMIN, DT_INTEGER, null,  Column.TYPE_BOOL)); //boolean 0=false, 1=true
+            mColumns.put(LEFT_GROUP, new Column(mTableName, LEFT_GROUP, DT_INTEGER, null,  Column.TYPE_BOOL)); //boolean 0=false, 1=true
 
-            //Foreign keys only to other tables (no recursive relationships included here).
-            foreignKeys.put(USER_ID, User.table().columns.get(User._ID));
-            foreignKeys.put(GROUP_ID, Group.table().columns.get(Group._ID));
+            //Foreign keys only to other mTables (no recursive relationships included here).
+            ColumnJoin join = new ColumnJoin(getColumn(USER_ID), User.getInstance().getColumn(User._ID));
+            ArrayList<ColumnJoin> joinExp = new ArrayList<ColumnJoin>();
+            joinExp.add(join);
+            mForeignKeys.put(User.getInstance().getTableName(), joinExp);
+
+            join = new ColumnJoin(getColumn(GROUP_ID), Group.getInstance().getColumn(Group._ID));
+            joinExp = new ArrayList<ColumnJoin>();
+            joinExp.add(join);
+            mForeignKeys.put(Group.getInstance().getTableName(), joinExp);
 
 
         }
     }
     
-    public static final class User extends Entity{
+    public static final class User extends Table {
 
         //UserCursor Table
         private static final String TABLE_NAME = "user";
@@ -184,11 +207,11 @@ public final class WepayContract {
         public static final String PHONE = "phone";
         public static final String USER_BALANCE = WepayContract.USER_BALANCE;
 
-        //Singleton entity
-        private static Entity mInstance;
+        //Singleton table
+        private static Table mInstance;
 
 
-        public static Entity table(){
+        public static Table getInstance(){
             if(mInstance == null){
                 mInstance = new User();
             }
@@ -200,16 +223,28 @@ public final class WepayContract {
         }
 
         protected void defineColumnsAndForeignKeys(){
-            columns.put(_ID, new Column(tableName, _ID, DT_TEXT, DEF_PRIMARY_KEY));
-            columns.put(NAME, new Column(tableName, NAME, DT_TEXT, null));
-            columns.put(PHONE, new Column(tableName, PHONE, DT_TEXT, null));
+            mColumns.put(_ID, new Column(mTableName, _ID, DT_TEXT, DEF_PRIMARY_KEY, Column.TYPE_LONG));
+            mColumns.put(NAME, new Column(mTableName, NAME, DT_TEXT, null, Column.TYPE_STRING));
+            mColumns.put(PHONE, new Column(mTableName, PHONE, DT_TEXT, null, Column.TYPE_STRING));
         }
 
     }
     
-    public static final class Recurrence extends Entity{
+    public static final class Recurrence extends Table {
 
-        //Recurrence Table   
+
+        /**
+         * When periodicity is
+         *  PERIODICITY_DAILY, this variable has no significance;
+         *  PERIODICITY_WEEKLY, offset = 1 means Monday, 2 is Tuesday, ... , 7 is Sunday.
+         *  PERIODICITY_MONTHLY, offset = 1 means the first of the month, offset = OFFSET_LAST_OF_MONTH means last day of every month.
+         **/
+        public static final int OPTION_PERIOD_DAILY = 0;
+        public static final int OPTION_PERIOD_WEEKLY = 1;
+        public static final int OPTION_PERIOD_MONTHLY = 2;
+        public static final int OPTION_OFFSET_LAST_DAY_OF_MONTH = -1;
+
+        //Recurrence Table
         private static final String TABLE_NAME = "recurrence";
         //protected static final LinkedHashMap<String, String[]> COL_DEFS = new LinkedHashMap<String, String[]>();
 
@@ -217,11 +252,11 @@ public final class WepayContract {
         public static final String PERIODICITY = "periodicity";
         public static final String OFFSET = "offset";
 
-        //Singleton entity
-        private static Entity mInstance;
+        //Singleton table
+        private static Table mInstance;
 
 
-        public static Entity table(){
+        public static Table getInstance(){
             if(mInstance == null){
                 mInstance = new Recurrence();
             }
@@ -233,13 +268,17 @@ public final class WepayContract {
         }
 
         protected void defineColumnsAndForeignKeys(){
-            columns.put(_ID, new Column(tableName, _ID, DT_INTEGER, DEF_PRIMARY_KEY));
-            columns.put(PERIODICITY, new Column(tableName, PERIODICITY, DT_INTEGER, null));
-            columns.put(OFFSET, new Column(tableName, OFFSET, DT_INTEGER, null));
+            mColumns.put(_ID, new Column(mTableName, _ID, DT_INTEGER, DEF_PRIMARY_KEY, Column.TYPE_LONG));
+            mColumns.put(PERIODICITY, new Column(mTableName, PERIODICITY, DT_INTEGER, null,  Column.TYPE_INT));
+            mColumns.put(OFFSET, new Column(mTableName, OFFSET, DT_INTEGER, null,  Column.TYPE_INT));
         }
     }
 
-    public static final class Payer extends Entity{
+    public static final class Payer extends Table {
+
+        //Types of roles for Payer
+        public static final int OPTION_ROLE_PAID = 0;
+        public static final int OPTION_ROLE_SHOULD_PAY = 1;
 
         //PayerCursor Table
         private static final String TABLE_NAME = "payer";
@@ -251,11 +290,11 @@ public final class WepayContract {
         public static final String ROLE = "role";
         public static final String PERCENTAGE = "percentage";
 
-        //Singleton entity
-        private static Entity mInstance;
+        //Singleton table
+        private static Table mInstance;
 
 
-        public static Entity table(){
+        public static Table getInstance(){
             if(mInstance == null){
                 mInstance = new Payer();
             }
@@ -267,20 +306,27 @@ public final class WepayContract {
         }
 
         protected void defineColumnsAndForeignKeys(){
-            columns.put(_ID, new Column(tableName, _ID, DT_INTEGER, DEF_PRIMARY_KEY));
-            columns.put(MEMBER_ID, new Column(tableName, MEMBER_ID, DT_INTEGER, "references member(_id)"));
-            columns.put(EXPENSE_ID, new Column(tableName, EXPENSE_ID, DT_INTEGER, "references expense(_id)"));
-            columns.put(ROLE, new Column(tableName, ROLE, DT_INTEGER, null));
-            columns.put(PERCENTAGE, new Column(tableName, PERCENTAGE, DT_DOUBLE, null));
+            mColumns.put(_ID, new Column(mTableName, _ID, DT_INTEGER, DEF_PRIMARY_KEY,  Column.TYPE_LONG));
+            mColumns.put(MEMBER_ID, new Column(mTableName, MEMBER_ID, DT_INTEGER, "references member(_id)",  Column.TYPE_LONG));
+            mColumns.put(EXPENSE_ID, new Column(mTableName, EXPENSE_ID, DT_INTEGER, "references expense(_id)",  Column.TYPE_LONG));
+            mColumns.put(ROLE, new Column(mTableName, ROLE, DT_INTEGER, null,  Column.TYPE_INT));
+            mColumns.put(PERCENTAGE, new Column(mTableName, PERCENTAGE, DT_DOUBLE, null,  Column.TYPE_DOUBLE));
 
             //Foreign keys
-            foreignKeys.put(MEMBER_ID, Member.table().columns.get(Member._ID));
-            foreignKeys.put(EXPENSE_ID, Expense.table().columns.get(Expense._ID));
+            ColumnJoin join = new ColumnJoin(getColumn(MEMBER_ID), Member.getInstance().getColumn(Member._ID));
+            ArrayList<ColumnJoin> joinExp = new ArrayList<ColumnJoin>();
+            joinExp.add(join);
+            mForeignKeys.put(Member.getInstance().getTableName(), joinExp);
+
+            join = new ColumnJoin(getColumn(EXPENSE_ID), Expense.getInstance().getColumn(Expense._ID));
+            joinExp = new ArrayList<ColumnJoin>();
+            joinExp.add(join);
+            mForeignKeys.put(Expense.getInstance().getTableName(), joinExp);
         }
    
     }
 
-    public static final class Location extends Entity{
+    public static final class Location extends Table {
 
         //Location Table
         private static final String TABLE_NAME = "location";
@@ -291,11 +337,11 @@ public final class WepayContract {
         public static final String LATITUDE = "latitude";
         public static final String LONGITUDE = "longitude";
 
-        //Singleton entity
-        private static Entity mInstance;
+        //Singleton table
+        private static Table mInstance;
 
 
-        public static Entity table(){
+        public static Table getInstance(){
             if(mInstance == null){
                 mInstance = new Location();
             }
@@ -308,191 +354,101 @@ public final class WepayContract {
 
         @Override
         protected void defineColumnsAndForeignKeys(){
-            columns.put(_ID, new Column(tableName, _ID, DT_INTEGER, DEF_PRIMARY_KEY));
-            columns.put(NAME, new Column(tableName, NAME, DT_TEXT, null));
-            columns.put(LATITUDE, new Column(tableName, LATITUDE, DT_DOUBLE, null));
-            columns.put(LONGITUDE, new Column(tableName, LONGITUDE, DT_DOUBLE, null));
+            mColumns.put(_ID, new Column(mTableName, _ID, DT_INTEGER, DEF_PRIMARY_KEY, Column.TYPE_LONG));
+            mColumns.put(NAME, new Column(mTableName, NAME, DT_TEXT, null,  Column.TYPE_STRING));
+            mColumns.put(LATITUDE, new Column(mTableName, LATITUDE, DT_DOUBLE, null,  Column.TYPE_DOUBLE));
+            mColumns.put(LONGITUDE, new Column(mTableName, LONGITUDE, DT_DOUBLE, null,  Column.TYPE_DOUBLE));
         }
     }
     
-    public static final class ExpensePayerUsers extends CompositeEntity{
+    public static final class UserExpenseBalance extends CompositeTable {
 
-       //Tables added to this table.
+       //Tables added to this getInstance.
+        public final static Table EXPENSE_TABLE = Expense.getInstance();
+        public final static Table PAYER_TABLE = Payer.getInstance();
+        public final static Table USER_TABLE = User.getInstance();
+        public final static Table MEMBER_TABLE = Member.getInstance();
 
-        public final static Entity EXPENSE_TABLE = Expense.table();
-        public final static Entity PAYER_TABLE = Payer.table();
-        public final static Entity USER_TABLE = User.table();
-        public final static Entity MEMBER_TABLE = Member.table();
-
-        //Singleton entity
-        private static Entity mInstance;
+        //Singleton table
+        private static CompositeTable mInstance;
 
 
-        public static Entity table(){
+        public static CompositeTable getInstance(){
             if(mInstance == null){
-                mInstance = new ExpensePayerUsers();
+                mInstance = new UserExpenseBalance();
             }
             return mInstance;
         }
 
-        //This is a composite entity that includes all columns of the several tables.
-        private ExpensePayerUsers(){
+        //This is a composite table that includes all mColumns of the several mTables.
+        private UserExpenseBalance(){
             super();
         }
 
         protected void defineTables(){
-            tables.add(EXPENSE_TABLE);
-            tables.add(PAYER_TABLE);
-            tables.add(USER_TABLE);
-            tables.add(MEMBER_TABLE);
+            addTable(EXPENSE_TABLE);
+            addTable(PAYER_TABLE);
+            addTable(USER_TABLE);
+            addTable(MEMBER_TABLE);
         }
     }
 
-    public static final class ExpensePayerGroupUsers extends CompositeEntity {
+    public static final class UserGroupBalance extends CompositeTable {
 
-        //Tables added to this table.
-        public final static Entity EXPENSE_TABLE = Expense.table();
-        public final static Entity PAYER_TABLE = Payer.table();
-        public final static Entity USER_TABLE = User.table();
-        public final static Entity MEMBER_TABLE = Member.table();
-        public final static Entity GROUP_TABLE = Group.table();
+        //Tables added to this getInstance.
+        public final static Table EXPENSE_TABLE = Expense.getInstance();
+        public final static Table PAYER_TABLE = Payer.getInstance();
+        public final static Table USER_TABLE = User.getInstance();
+        public final static Table MEMBER_TABLE = Member.getInstance();
+        public final static Table GROUP_TABLE = Group.getInstance();
 
-        //Singleton entity
-        private static Entity mInstance;
+        //Singleton table
+        private static CompositeTable mInstance;
 
 
-        public static Entity table() {
+        public static CompositeTable getInstance() {
             if (mInstance == null) {
-                mInstance = new ExpensePayerUsers();
+                mInstance = new UserGroupBalance();
             }
             return mInstance;
         }
 
-        //This is a composite entity that includes all columns of the several tables.
-        private ExpensePayerGroupUsers() {
+        //This is a composite table that includes all mColumns of the several mTables.
+        private UserGroupBalance() {
             super();
         }
 
         protected void defineTables() {
-            tables.add(EXPENSE_TABLE);
-            tables.add(PAYER_TABLE);
-            tables.add(USER_TABLE);
-            tables.add(MEMBER_TABLE);
-            tables.add(GROUP_TABLE);
+            addTable(EXPENSE_TABLE);
+            addTable(PAYER_TABLE);
+            addTable(USER_TABLE);
+            addTable(MEMBER_TABLE);
+            addTable(GROUP_TABLE);
+
         }
     }
 
-    protected abstract static class CompositeEntity extends Entity{
+    protected static Metric getBalanceMetric(){
+        Column expAmount = WepayContract.Expense.getInstance().getColumn(WepayContract.Expense.AMOUNT);
+        Column expExchange = WepayContract.Expense.getInstance().getColumn(WepayContract.Expense.EXCHANGE_RATE);
+        Column payPercent = WepayContract.Payer.getInstance().getColumn(WepayContract.Payer.PERCENTAGE);
 
-        public ArrayList<Entity> tables;
+        ArrayList<Column> columns = new ArrayList();
+        columns.add(expAmount);
+        columns.add(expExchange);
+        columns.add(payPercent);
 
-        private CompositeEntity(){
-            super();
-            tables = new ArrayList<Entity>();
-            defineTables();
-        }
+        StringBuffer expression = new StringBuffer("sum(");
+        expression.append(expAmount.getFullName()).
+                append(" * ").
+                append(expExchange.getFullName()).
+                append(" * ").
+                append(payPercent.getFullName()).append(")");
 
-        /**
-         * Determine the tables that conform the CompositeEntity by adding references to the tables in the "tables" attribute.
-         * Having all tables in one collection will allow the querying layer to be able to join the tables correctly
-         */
-        protected abstract void defineTables();
+        String alias = WepayContract.Expense.USER_BALANCE;
 
-        protected void defineColumnsAndForeignKeys(){ return; }
-
-        public Column getColumn(String table, String col){
-            Entity tableEntity = WepayContract.getEntity(table);
-            if(tableEntity == null)
-                return null;
-
-            return tableEntity.getColumn(col);
-        }
-
-        @Override
-        public Column getColumn(String fullColName){
-            String[] colfullName = fullColName.split("\\.");
-
-            if(colfullName.length != 2)
-                return null;
-
-            Entity table =  WepayContract.getEntity(colfullName[0]);
-            return table.getColumn(colfullName[1]);
-        }
+        return new Metric(columns, expression.toString());
     }
 
-
-    /**
-     * Abstract class to represent eventually singleton database entities/tables in a database (singleton part implemented by child classes). Contains set of columns, their spec and their foreign keys.
-     */
-    protected abstract static class Entity{
-        /**
-         * Key in the hash map is the column name. The value contains a Column object with all its information.
-         */
-        public LinkedHashMap<String, Column> columns;
-        /**
-         * For every local column in the current table, relate the column in the foreign table. 
-         */
-        public LinkedHashMap<String, Column> foreignKeys;
-        public String tableName;
-
-
-        private Entity(){
-            columns = new LinkedHashMap<String, Column>();
-            foreignKeys = new LinkedHashMap<String, Column>();
-            defineColumnsAndForeignKeys();
-        }
-
-        private Entity(String table){
-            columns = new LinkedHashMap<String, Column>();
-            foreignKeys = new LinkedHashMap<String, Column>();
-            tableName = table;
-            defineColumnsAndForeignKeys();
-        }
-
-        public Column getColumn(String colName){
-            return columns.get(colName);
-        }
-
-        /**
-         * Add information on columns and foreign keys. Call first Entity's constructor, and then
-         * add column and foreign key definitions.
-         * @return
-         */
-        protected abstract void defineColumnsAndForeignKeys();
-
-        public String getTableName(){
-            return tableName;
-        }
-
-    }
-
-    protected static class Column{
-        public String name;
-        public String datatype;
-        public String spec;
-        public String table;
-
-        private Column(String dt, String def){
-            datatype = dt;
-            spec = def;
-        }
-
-        private Column(String n, String dt, String def){
-            this(dt, def);
-            name = n;
-        }
-
-        public Column(String t, String n, String dt, String def){
-            this(n, dt, def);
-            table = t;
-        }
-
-        public String getFullName(){
-            StringBuffer sb = (new StringBuffer(table)).append(".").append(name);
-            return sb.toString();
-        }
-
-
-    }
 
 }

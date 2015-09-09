@@ -6,22 +6,22 @@ import java.util.ArrayList;
  * Created by Moha on 9/7/15.
  */
 class Metric {
-    private ArrayList<Column> mColumns;
+    private ArrayList<Column> mDependedColumns;
     private String mExpression;
-    private String mAlias;
+    private Column mColumn;
 
-    public Metric(ArrayList<Column> cols, String exp, String alias) {
+    public Metric(ArrayList<Column> cols, String exp) {
         mExpression = exp;
-        mColumns = cols;
-        mAlias = alias;
+        mDependedColumns = cols;
+    }
+
+    public Metric(ArrayList<Column> cols, String exp, Column col){
+        this(cols, exp);
+        mColumn = col;
     }
 
     public String getColumnName() {
-        return mAlias;
-    }
-
-    public void setColumnName(String alias) {
-        this.mAlias = alias;
+        return (mColumn == null)? "unNamedMetric" : mColumn.getFullName();
     }
 
     public String getExpression() {
@@ -33,25 +33,37 @@ class Metric {
     }
 
     public void addDependentColumn(Column col) {
-        mColumns.add(col);
+        mDependedColumns.add(col);
     }
 
     public void removeDependentColumn(Column col) {
-        mColumns.remove(col);
+        mDependedColumns.remove(col);
     }
 
     public String getColumnDefinition() {
-        return mExpression + " as " + mAlias;
+        StringBuilder sb = new StringBuilder();
+        sb.append(mExpression).append(" as ")
+                .append("\"").append(getColumnName()).append("\"");
+
+        return sb.toString();
     }
 
-    public ArrayList<Entity> getDependentEntities() {
-        if (mColumns == null) return null;
+    public ArrayList<Table> getDependentEntities() {
+        if (mDependedColumns == null) return null;
 
-        ArrayList<Entity> tables = new ArrayList<Entity>();
+        ArrayList<Table> tables = new ArrayList<Table>();
 
-        for (Column c : mColumns) {
-            tables.add(WepayContract.getEntity(c.table));
+        for (Column c : mDependedColumns) {
+            tables.add(WepayContract.getTable(c.table));
         }
         return tables;
+    }
+
+    public Column getColumn() {
+        return mColumn;
+    }
+
+    public void setColumn(Column mColumn) {
+        this.mColumn = mColumn;
     }
 }

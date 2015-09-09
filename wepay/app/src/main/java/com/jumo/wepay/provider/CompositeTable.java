@@ -13,12 +13,10 @@ import java.util.Set;
 abstract class CompositeTable extends Table {
 
     private HashSet<Table> mTables;
-    private HashSet<Metric> mMetrics;
 
     protected CompositeTable() {
         super();
         mTables = new HashSet<Table>();
-        mMetrics = new HashSet<Metric>();
         defineTables();
     }
 
@@ -64,7 +62,7 @@ abstract class CompositeTable extends Table {
         if (colfullName.length != 2)
             return null;
 
-        Table table = WepayContract.getEntity(colfullName[0]);
+        Table table = WepayContract.getTable(colfullName[0]);
         return table.getColumn(colfullName[1]);
     }
 
@@ -81,60 +79,53 @@ abstract class CompositeTable extends Table {
         mTables.add(e);
     }
 
-    public void addMetric(Metric m) {
-        mMetrics.add(m);
-    }
-
-
     /**
-     * Creates a join tree with the set of tables that compose the composite entity. If
+     * Creates a join tree with the set of tables that compose the composite table. If
      * additional base entitites are passed on, then these are also considered in the join tree.
      *
+     * @param additionalTables this may be null or an arraylist of tables; null will add no additional tables to the ones that conform the composite table.
      * @return the root of the join tree.
      */
-    public JoinTree getTableJoinTree() {
-        HashMap<String, JoinTree> tableToJoinTreeMap = new HashMap<String, JoinTree>();
+    public JoinTreeNode getTableJoinTree(HashSet<Table> additionalTables) {
+        HashMap<String, JoinTreeNode> tableToJoinTreeMap = new HashMap<String, JoinTreeNode>();
 
         //Get the set of tables to join
         HashSet<Table> tablesToJoin = new HashSet<Table>();
         tablesToJoin.addAll(mTables);
-        if (mMetrics != null) {
-            for(Metric m : mMetrics){
-                tablesToJoin.addAll(m.getDependentEntities());
-            }
-
+        if (additionalTables != null) {
+            tablesToJoin.addAll(additionalTables);
         }
 
         //Add every table, and every table's foreign tables to join tree.
         for (Table e : tablesToJoin) {
             // if a table has foreign keys, add the foreign tables to join tree as long as they are
-            // part of this composite entity.
+            // part of this composite table.
             if (e.getForeignKeys() != null) {
                 Set<String> foreignTables = e.getForeignKeys().keySet();
                 for (String foreignTable : foreignTables) {
                     // One table may have foreign keys to tables that are not included in this
-                    // composite entity' table; only add the ones in this composite entity
-                    if (tablesToJoin.contains(WepayContract.getEntity(foreignTable))) {
-                        JoinTree leftTableNode = tableToJoinTreeMap.get(e.tableName());
-                        JoinTree rightTableNode = tableToJoinTreeMap.get(foreignTable);
+                    // composite table' table; only add the ones in this composite table
+                    if (tablesToJoin.contains(WepayContract.getTable(foreignTable))) {
+                        JoinTreeNode leftTableNode = tableToJoinTreeMap.get(e.getTableName());
+                        JoinTreeNode rightTableNode = tableToJoinTreeMap.get(foreignTable);
 
                         // if the join trees for these tables are null, then create a new join trees;
                         // and add them to the map to refer back to them.
                         if (leftTableNode == null) {
-                            leftTableNode = new JoinTree(e.tableName());
-                            tableToJoinTreeMap.put(e.tableName(), leftTableNode);
+                            leftTableNode = new JoinTreeNode(e.getTableName());
+                            tableToJoinTreeMap.put(e.getTableName(), leftTableNode);
                         }
                         if (rightTableNode == null) {
-                            rightTableNode = new JoinTree(foreignTable);
+                            rightTableNode = new JoinTreeNode(foreignTable);
                             tableToJoinTreeMap.put(foreignTable, rightTableNode);
                         }
 
                         //The right node should be a table only; the left can be a branch. If right node has already a parent, need to change parents.
-                        JoinTree parentOfRightNode = rightTableNode.getParent(); //get a reference to the right' parent.
+                        JoinTreeNode parentOfRightNode = rightTableNode.getParent(); //get a reference to the right' parent.
                         leftTableNode = leftTableNode.getRoot();
 
-                        JoinTree newJoin = new JoinTree(leftTableNode, rightTableNode); //this already sets the parents for the children
-                        newJoin.setJoinColumns(e.getForeignKeys().get(foreignTable));
+                        JoinTreeNode newJoin = new JoinTreeNode(leftTableNode, rightTableNode); //this already sets the parents for the children
+                        newJoin.setColumnJoins(e.getForeignKeys().get(foreignTable));
 
                         if (parentOfRightNode != null) {
                             if (parentOfRightNode.getRight() == rightTableNode) {
@@ -151,22 +142,22 @@ abstract class CompositeTable extends Table {
                 }
             } else {
                 //If a table has no foreign key, it will be added eventually with the tables that have references to it. At the end; if these tables end up not joined through referencing tables, they are cross joined at the end
-                tableToJoinTreeMap.put(e.tableName(), new JoinTree(e.tableName()));
+                tableToJoinTreeMap.put(e.getTableName(), new JoinTreeNode(e.getTableName()));
             }
         }
 
         //Here, we need to identify the distinct disjoint jointrees, or all the distinct roots.
         // Then, we join them through crossjoin, and return the root.
-        HashSet<JoinTree> distinctJoinTrees = new HashSet<>();
-        for (JoinTree jt : tableToJoinTreeMap.values()) {
+        HashSet<JoinTreeNode> distinctJoinTrees = new HashSet<>();
+        for (JoinTreeNode jt : tableToJoinTreeMap.values()) {
             distinctJoinTrees.add(jt.getRoot());
         }
 
-        Iterator<JoinTree> it = distinctJoinTrees.iterator();
-        JoinTree root = (it.hasNext()) ? it.next() : null;
+        Iterator<JoinTreeNode> it = distinctJoinTrees.iterator();
+        JoinTreeNode root = (it.hasNext()) ? it.next() : null;
         while (it.hasNext()) {
-            JoinTree xJoinTree = it.next();
-            root = new JoinTree(root, xJoinTree);
+            JoinTreeNode xJoinTreeNode = it.next();
+            root = new JoinTreeNode(root, xJoinTreeNode);
         }
 
         return root;

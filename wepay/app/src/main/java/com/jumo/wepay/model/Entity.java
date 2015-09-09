@@ -9,7 +9,7 @@ import java.util.Date;
  */
 public interface Entity {
 
-    public Table entity();
+    public Table table();
 
     public int getInt(String column);
 

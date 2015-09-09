@@ -1,45 +1,38 @@
 package com.jumo.wepay.model;
 
+import com.jumo.wepay.provider.Table;
+import com.jumo.wepay.provider.WepayContract;
+
+import java.util.Date;
+
 /**
  * Created by Moha on 6/26/15.
  */
-public class Recurrence {
+public class Recurrence implements Entity {
+    private Entity entity;
 
-    //Constants
-    public static final int PERIOD_DAILY = 0;
-    public static final int PERIOD_WEEKLY = 1;
-    public static final int PERIOD_MONTHLY = 2;
+    public Recurrence(Entity m){
+        entity = m;
+    }
 
-    public static final int OFFSET_LAST_DAY_OF_MONTH = -1;
-
-
-    private long id;
-    private long periodicity;
-
-    private long offset;
-
-    public String toString(){
-        StringBuilder toString = new StringBuilder("Recurrence: {");
-        toString.append(id).append(", ")
-                .append(periodicity).append(", ")
-                .append(offset).append("}");
-        return toString.toString();
+    public Recurrence(){
+        entity = new ActualEntity(WepayContract.Recurrence.getInstance());
     }
 
     public long getId() {
-        return id;
+        return getLong(WepayContract.Recurrence._ID);
     }
 
     public void setId(long id) {
-        this.id = id;
+        setField(WepayContract.Recurrence._ID, id);
     }
 
     public long getPeriodicity() {
-        return periodicity;
+        return getLong(WepayContract.Recurrence.PERIODICITY);
     }
 
     public void setPeriodicity(long periodicity) {
-        this.periodicity = periodicity;
+        setField(WepayContract.Recurrence.PERIODICITY, periodicity);
     }
 
     /**
@@ -49,10 +42,68 @@ public class Recurrence {
      *  PERIODICITY_MONTHLY, offset = 1 means the first of the month, offset = OFFSET_LAST_OF_MONTH means last day of every month.
      **/
     public long getOffset() {
-        return offset;
+        return getLong(WepayContract.Recurrence.OFFSET);
     }
 
     public void setOffset(long offset) {
-        this.offset = offset;
+        setField(WepayContract.Recurrence.OFFSET, offset);
+    }
+
+    @Override
+    public Table table(){
+        return entity.table();
+    }
+
+    @Override
+    public int getInt(String column) {
+        return entity.getInt(column);
+    }
+
+    @Override
+    public long getLong(String column) {
+        return entity.getLong(column);
+    }
+
+    @Override
+    public double getDouble(String column) {
+        return entity.getDouble(column);
+    }
+
+    @Override
+    public boolean getBoolean(String column) {
+        return entity.getBoolean(column);
+    }
+
+    @Override
+    public String getText(String column) {
+        return entity.getText(column);
+    }
+
+    @Override
+    public Date getDate(String column) {
+        return entity.getDate(column);
+    }
+
+    @Override
+    public byte[] getBytes(String column) {
+        return entity.getBytes(column);
+    }
+
+    @Override
+    public void setField(String column, Object val) {
+        entity.setField(column, val);
+    }
+
+    @Override
+    public String toString(){
+        return entity.toString();
+    }
+
+    public Entity getEntity() {
+        return entity;
+    }
+
+    public void setEntity(Entity m){
+        entity = m;
     }
 }

@@ -10,19 +10,15 @@ import com.jumo.wepay.model.Group;
 import com.jumo.wepay.model.Member;
 import com.jumo.wepay.model.User;
 import com.jumo.wepay.model.Payer;
-import com.jumo.wepay.provider.dao.EntityDao;
+import com.jumo.wepay.provider.dao.EntityWriter;
 import com.jumo.wepay.provider.WepayContract;
-import com.jumo.wepay.provider.dao.GroupCursor;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
 
-import android.util.Log;
-import android.widget.*;
 import android.database.*;
-import com.jumo.wepay.provider.dao.*;
 
 /**
  * Created by Moha on 7/10/15.
@@ -56,7 +52,7 @@ public class ExpenseManager {
     // I will not use this
     public GroupCursor getUserGroups(String userId){
         ContentResolver content = mContext.getContentResolver();
-        Uri uri = baseUri.buildUpon().appendPath(WepayContract.User.TABLE_NAME)
+        Uri uri = baseUri.buildUpon().appendPath(WepayContract.User.getInstance().getTableName())
                 .appendPath(userId).appendPath("groups")
                 .build();
 
@@ -66,7 +62,7 @@ public class ExpenseManager {
     /*
 	public ExpenseCursor getUserGroupExpenses(String userId, long groupId){
 		ContentResolver content = mContext.getContentResolver();
-		Uri uri = baseUri.buildUpon().appendPath(WepayContract.Expense.TABLE_NAME)
+		Uri uri = baseUri.buildUpon().appendPath(WepayContract.Expense.getInstance().getTableName())
 				.appendPath("user").appendPath(userId).appendPath("group").appendPath(Long.toString(groupId))
 				.build();
 		
@@ -78,7 +74,7 @@ public class ExpenseManager {
     public void createSampleData(){
         ContentResolver content = mContext.getContentResolver();
 
-        Uri seeGroups = baseUri.buildUpon().appendPath(WepayContract.Group.TABLE_NAME).build();
+        Uri seeGroups = baseUri.buildUpon().appendPath(WepayContract.Group.getInstance().getTableName()).build();
         Cursor groupsCursor = content.query(seeGroups, null, null, null, null);
 		
 
@@ -98,19 +94,19 @@ public class ExpenseManager {
         	createSamplePayers(newGroupMembers, newGroupExpenses);
         }
 
-        /*EntityDao.UserCursor userCursor = new EntityDao.UserCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.User.TABLE_NAME).build() ,null, null, null, null));
+        /*EntityWriter.UserCursor userCursor = new EntityWriter.UserCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.User.getInstance().getTableName()).build() ,null, null, null, null));
         Log.d(TAG, userCursor.toString());
 
-        EntityDao.GroupCursor groupCursor = new EntityDao.GroupCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.Group.TABLE_NAME).build() ,null, null, null, null));
+        EntityWriter.GroupCursor groupCursor = new EntityWriter.GroupCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.Group.getInstance().getTableName()).build() ,null, null, null, null));
         Log.d(TAG, groupCursor.toString());
 
-        EntityDao.MemberCursor memberCursor = new EntityDao.MemberCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.Member.TABLE_NAME).build() ,null, null, null, null));
+        EntityWriter.MemberCursor memberCursor = new EntityWriter.MemberCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.Member.getInstance().getTableName()).build() ,null, null, null, null));
         Log.d(TAG, memberCursor.toString());
 
-        EntityDao.ExpenseCursor expenseCursor = new EntityDao.ExpenseCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.Expense.TABLE_NAME).build() ,null, null, null, null));
+        EntityWriter.ExpenseCursor expenseCursor = new EntityWriter.ExpenseCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.Expense.getInstance().getTableName()).build() ,null, null, null, null));
         Log.d(TAG, expenseCursor.toString());
 
-        PayerCursor payerCursor = new PayerCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.Payer.TABLE_NAME).build() ,null, null, null, null));
+        PayerCursor payerCursor = new PayerCursor(content.query(baseUri.buildUpon().appendPath(WepayContract.Payer.getInstance().getTableName()).build() ,null, null, null, null));
         Log.d(TAG, payerCursor.toString());
         */
 
@@ -123,11 +119,11 @@ public class ExpenseManager {
 
     public void deleteAllData(){
         ContentResolver content = mContext.getContentResolver();
-        content.delete(baseUri.buildUpon().appendPath(WepayContract.Payer.TABLE_NAME).build(), null, null);
-        content.delete(baseUri.buildUpon().appendPath(WepayContract.Expense.TABLE_NAME).build(), null, null);
-        content.delete(baseUri.buildUpon().appendPath(WepayContract.Member.TABLE_NAME).build(), null, null);
-        content.delete(baseUri.buildUpon().appendPath(WepayContract.Group.TABLE_NAME).build(), null, null);
-        content.delete(baseUri.buildUpon().appendPath(WepayContract.User.TABLE_NAME).build(), null, null);
+        content.delete(baseUri.buildUpon().appendPath(WepayContract.Payer.getInstance().getTableName()).build(), null, null);
+        content.delete(baseUri.buildUpon().appendPath(WepayContract.Expense.getInstance().getTableName()).build(), null, null);
+        content.delete(baseUri.buildUpon().appendPath(WepayContract.Member.getInstance().getTableName()).build(), null, null);
+        content.delete(baseUri.buildUpon().appendPath(WepayContract.Group.getInstance().getTableName()).build(), null, null);
+        content.delete(baseUri.buildUpon().appendPath(WepayContract.User.getInstance().getTableName()).build(), null, null);
     }
 
     public ArrayList<User> createSampleUsers(){
@@ -136,7 +132,7 @@ public class ExpenseManager {
 
         String[] names = {"Luis", "Moha", "Julieta", "María", "Benjamín", "Pedro"};
         String[] lastNames = { "Carrillo", "Vishar", "Pineda", "Wilson", "Potter", "Schwartz" };
-        Uri usersTable = baseUri.buildUpon().appendPath(WepayContract.User.TABLE_NAME).build();
+        Uri usersTable = baseUri.buildUpon().appendPath(WepayContract.User.getInstance().getTableName()).build();
 
         int offset = 0;
 
@@ -152,7 +148,7 @@ public class ExpenseManager {
 
 
             //insert user
-            mContext.getContentResolver().insert(usersTable, EntityDao.toContentValues(user));
+            mContext.getContentResolver().insert(usersTable, EntityWriter.toContentValues(user));
             newUsers.add(user);
 
             //we want to create name-lastName with an offset of phased alignment between the arrays to create new names with diferent combinations of names and last names.
@@ -163,7 +159,7 @@ public class ExpenseManager {
 
     public ArrayList<Group> createSampleGroups(){
         ArrayList<Group> newGroups = new ArrayList<Group>();
-        Uri groupTable = baseUri.buildUpon().appendPath(WepayContract.Group.TABLE_NAME).build();
+        Uri groupTable = baseUri.buildUpon().appendPath(WepayContract.Group.getInstance().getTableName()).build();
 
         long time = new Date().getTime();
 
@@ -174,7 +170,7 @@ public class ExpenseManager {
             group.setCreatedOn(new Date());
             group.setName("GroupCursor " + i);
 
-            mContext.getContentResolver().insert(groupTable, EntityDao.toContentValues(group));
+            mContext.getContentResolver().insert(groupTable, EntityWriter.toContentValues(group));
             newGroups.add(group);
         }
 
@@ -183,7 +179,7 @@ public class ExpenseManager {
 
     public HashMap<Long, ArrayList<Member>> createSampleMembers(ArrayList<User> users, ArrayList<Group> groups){
         HashMap<Long, ArrayList<Member>> groupMembers = new HashMap();
-        Uri memberTable = baseUri.buildUpon().appendPath(WepayContract.Member.TABLE_NAME).build();
+        Uri memberTable = baseUri.buildUpon().appendPath(WepayContract.Member.getInstance().getTableName()).build();
 
         for(Group group : groups){
 
@@ -203,7 +199,7 @@ public class ExpenseManager {
                 member.setUserId(users.get(addUserAt).getId());
 
                 //Insert member into the database.
-                mContext.getContentResolver().insert(memberTable, EntityDao.toContentValues(member));
+                mContext.getContentResolver().insert(memberTable, EntityWriter.toContentValues(member));
                 members.add(member);
             }
 
@@ -216,7 +212,7 @@ public class ExpenseManager {
     public HashMap<Long, ArrayList<Expense>> createSampleExpenses(HashMap<Long, ArrayList<Member>> groupMembers){
 
         HashMap<Long, ArrayList<Expense>> groupExpenses = new HashMap();
-        Uri expenseTable = baseUri.buildUpon().appendPath(WepayContract.Expense.TABLE_NAME).build();
+        Uri expenseTable = baseUri.buildUpon().appendPath(WepayContract.Expense.getInstance().getTableName()).build();
 
         Set<Long> groups = groupMembers.keySet();
 
@@ -244,7 +240,7 @@ public class ExpenseManager {
                 expense.setCategoryId(categoryId);
 
                 //Insert member into the database.
-                mContext.getContentResolver().insert(expenseTable, EntityDao.toContentValues(expense));
+                mContext.getContentResolver().insert(expenseTable, EntityWriter.toContentValues(expense));
                 expenses.add(expense);
             }
 
@@ -255,7 +251,7 @@ public class ExpenseManager {
 
     public HashMap<Long, ArrayList<Payer>> createSamplePayers(HashMap<Long, ArrayList<Member>> groupMembers, HashMap<Long, ArrayList<Expense>> groupExpenses){
         HashMap<Long, ArrayList<Payer>> expensePayers = new HashMap();
-        Uri payerTable = baseUri.buildUpon().appendPath(WepayContract.Payer.TABLE_NAME).build();
+        Uri payerTable = baseUri.buildUpon().appendPath(WepayContract.Payer.getInstance().getTableName()).build();
 
         Set<Long> groupIds = groupExpenses.keySet();
 
@@ -277,16 +273,16 @@ public class ExpenseManager {
 
                     for (Member member : members) {
 
-                        //Add payer as ROLE_SHOULD_PAY
+                        //Add payer as OPTION_ROLE_SHOULD_PAY
                         Payer payerShouldPay = new Payer();
                         payerShouldPay.setId(expense.getId()*100 + currentMember*2);
                         payerShouldPay.setMemberId(member.getId());
                         payerShouldPay.setExpenseId(expense.getId());
-                        payerShouldPay.setRole(Payer.ROLE_SHOULD_PAY);
+                        payerShouldPay.setRole(WepayContract.Payer.OPTION_ROLE_SHOULD_PAY);
                         payerShouldPay.setPercentage(percentagePerPerson);
 
 
-                        //Add payer as ROLE_PAID
+                        //Add payer as OPTION_ROLE_PAID
                         //Make only the first member to pay all; though, for even expenses, make the first two members pay all
                         Payer payerPaid = null;
                         //double percentagePayer = 0;
@@ -309,16 +305,16 @@ public class ExpenseManager {
                             payerPaid.setId(expense.getId() * 100 + currentMember * 2 + 1);
                             payerPaid.setMemberId(member.getId());
                             payerPaid.setExpenseId(expense.getId());
-                            payerPaid.setRole(Payer.ROLE_PAID);
+                            payerPaid.setRole(WepayContract.Payer.OPTION_ROLE_PAID);
                             payerPaid.setPercentage(1);
                         }
 
                         //Insert Payers.
-                        mContext.getContentResolver().insert(payerTable, EntityDao.toContentValues(payerShouldPay));
+                        mContext.getContentResolver().insert(payerTable, EntityWriter.toContentValues(payerShouldPay));
                         payers.add(payerShouldPay);
 
                         if(payerPaid != null) {
-                            mContext.getContentResolver().insert(payerTable, EntityDao.toContentValues(payerPaid));
+                            mContext.getContentResolver().insert(payerTable, EntityWriter.toContentValues(payerPaid));
                             payers.add(payerPaid);
                         }
                         currentMember++;

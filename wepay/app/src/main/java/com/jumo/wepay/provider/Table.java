@@ -9,19 +9,19 @@ import java.util.LinkedHashMap;
  */
 public abstract class Table {
     protected LinkedHashMap<String, Column> mColumns;
-    protected LinkedHashMap<String, ArrayList<JoinColumn>> mForeignKeys;
+    protected LinkedHashMap<String, ArrayList<ColumnJoin>> mForeignKeys;
     protected String mTableName;
 
 
     protected Table(){
         mColumns = new LinkedHashMap<String, Column>();
-        mForeignKeys = new LinkedHashMap<String, ArrayList<JoinColumn>>();
+        mForeignKeys = new LinkedHashMap<String, ArrayList<ColumnJoin>>();
         defineColumnsAndForeignKeys();
     }
 
     protected Table(String table){
         mColumns = new LinkedHashMap<String, Column>();
-        mForeignKeys = new LinkedHashMap<String, ArrayList<JoinColumn>>();
+        mForeignKeys = new LinkedHashMap<String, ArrayList<ColumnJoin>>();
         mTableName = table;
         defineColumnsAndForeignKeys();
     }
@@ -33,7 +33,7 @@ public abstract class Table {
      */
     protected abstract void defineColumnsAndForeignKeys();
 
-    public String tableName(){
+    public String getTableName(){
         return mTableName;
     }
 
@@ -66,9 +66,9 @@ public abstract class Table {
     }
 
     /**
-     * For every local column in the current getEntity, relate the column in the foreign getEntity.
+     * For every local column in the current getInstance, relate the column in the foreign getInstance.
      */
-    public LinkedHashMap<String, ArrayList<JoinColumn>> getForeignKeys() {
+    public LinkedHashMap<String, ArrayList<ColumnJoin>> getForeignKeys() {
         return mForeignKeys;
     }
 }

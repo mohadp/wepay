@@ -4,7 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import java.util.LinkedHashMap;
+import java.util.Collection;
 
 /**
  * Created by Moha on 6/28/15.
@@ -21,13 +21,13 @@ public class WepayDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db){
-        db.execSQL(createTableSQL(WepayContract.User.table().tableName, WepayContract.User.table().columns));
-        db.execSQL(createTableSQL(WepayContract.Group.table().tableName, WepayContract.Group.table().columns));
-        db.execSQL(createTableSQL(WepayContract.Recurrence.table().tableName, WepayContract.Recurrence.table().columns));
-        db.execSQL(createTableSQL(WepayContract.Location.table().tableName, WepayContract.Location.table().columns));
-        db.execSQL(createTableSQL(WepayContract.Expense.table().tableName, WepayContract.Expense.table().columns));
-        db.execSQL(createTableSQL(WepayContract.Member.table().tableName, WepayContract.Member.table().columns));
-        db.execSQL(createTableSQL(WepayContract.Payer.table().tableName, WepayContract.Payer.table().columns));
+        db.execSQL(createTableSQL(WepayContract.User.getInstance().getTableName(), WepayContract.User.getInstance().getColumns()));
+        db.execSQL(createTableSQL(WepayContract.Group.getInstance().getTableName(), WepayContract.Group.getInstance().getColumns()));
+        db.execSQL(createTableSQL(WepayContract.Recurrence.getInstance().getTableName(), WepayContract.Recurrence.getInstance().getColumns()));
+        db.execSQL(createTableSQL(WepayContract.Location.getInstance().getTableName(), WepayContract.Location.getInstance().getColumns()));
+        db.execSQL(createTableSQL(WepayContract.Expense.getInstance().getTableName(), WepayContract.Expense.getInstance().getColumns()));
+        db.execSQL(createTableSQL(WepayContract.Member.getInstance().getTableName(), WepayContract.Member.getInstance().getColumns()));
+        db.execSQL(createTableSQL(WepayContract.Payer.getInstance().getTableName(), WepayContract.Payer.getInstance().getColumns()));
 
     }
 
@@ -37,13 +37,13 @@ public class WepayDatabaseHelper extends SQLiteOpenHelper {
     }
 
 
-    private String createTableSQL(String tableName, LinkedHashMap<String, WepayContract.Column> columns){
-        StringBuilder insertSQL = (new StringBuilder("create table ")).append(tableName).append(" ( ");
+    private String createTableSQL(String tableName, Collection<Column> columns){
+        StringBuilder insertSQL = (new StringBuilder("create getInstance ")).append(tableName).append(" ( ");
 
         int count = columns.size();
-        for(WepayContract.Column column : columns.values()){
+        for(Column column : columns){
             insertSQL.append(column.name).append(" ")                    //column name
-                .append(column.datatype).append(" ")    // column type
+                .append(column.dbtype).append(" ")    // column type
                 .append((column.spec == null)? "" : column.spec) // column specifications (primary key, etc.)
                 .append((count-- > 1) ? ", " : ""); //add comma at the end except for the last column.
         }
