@@ -1,8 +1,14 @@
 package com.jumo.wepay.view;
 
+import android.app.LoaderManager;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +21,7 @@ import android.widget.*;
 import android.os.*;
 
 import com.jumo.wepay.model.Group;
+import com.jumo.wepay.provider.WepayContract;
 import com.jumo.wepay.provider.dao.*;
 
 /**
@@ -26,16 +33,15 @@ import com.jumo.wepay.provider.dao.*;
  * Activities containing this fragment MUST implement the {@links OnFragmentInteractionListener}
  * interface.
  */
-public class GroupFragment extends Fragment {
+public class GroupFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = "GroupFragment";
 
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String EXTRA_USER = "com.jumo.wepay.user_id";
 
-    private ExpenseManager expenseManager;
-
-
+    //Loaders
+    private static final int GROUPS_LOADER = 0;
 
     //private OnFragmentInteractionListener mListener;
 
@@ -48,8 +54,6 @@ public class GroupFragment extends Fragment {
      * The Adapter which will be used to populate the ListView/GridView with
      * Views.
      */
-    private GroupCursorAdapter mAdapter;
-	private GroupCursor mGroups;
 	private String mUserName;
 
     public static GroupFragment newInstance(String userId) {
@@ -69,7 +73,7 @@ public class GroupFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        expenseManager = ExpenseManager.newInstance(this.getActivity());
+        //expenseManager = ExpenseManager.newInstance(this.getActivity());
 		
         mUserName = getArguments().getString(EXTRA_USER);
         
@@ -84,30 +88,42 @@ public class GroupFragment extends Fragment {
 
         // Set the adapter
         mListView = (ListView) view.findViewById(android.R.id.list);
+        mListView.setAdapter(new GroupCursorAdapter(getActivity(),null));
         mListView.setOnItemClickListener(new GroupListListener());
-		//mListView.setEmptyView(inflater.inflate(R.layout.list_empty, container, false));
-		
-		
-		//Calling the adapter setup in the AsynchTaskl
-        //mListView.setAdapter(mAdapter);
-		new GroupLoaderTask().execute();
 
-        // Set OnItemClickListener so we can be notified on item clicks
-        //mListView.setOnItemClickListener(this);
-		
+        getLoaderManager().initLoader(GROUPS_LOADER, null, this);
+
         return view;
     }
-	
-	protected void setupAdapter(){
-		if(this.getActivity() == null || mListView == null) return;
-		
-		if(mGroups != null){
-			mAdapter = new GroupCursorAdapter(this.getActivity(), mGroups);
-		}else{
-			mAdapter = null;
-		}
-		mListView.setAdapter(mAdapter);
-	}
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
+        //no need to check for GROUPS_LOADER
+        Uri uri = WepayContract.BASE_URI.buildUpon().appendPath(WepayContract.User.TABLE_NAME)
+                .appendPath(mUserName).appendPath("groups")
+                .build();
+
+        ExpenseManager.newInstance(getActivity()).createSampleData();
+
+        return new CursorLoader(getActivity(), uri, null, null, null, null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        Log.d(TAG, "onLoadFinished");
+        if(this.getActivity() == null || mListView == null) return;
+
+        ((GroupCursorAdapter)mListView.getAdapter()).changeCursor(new GroupCursor(data));
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        Log.d(TAG, "onLoadReset");
+        if(mListView == null) return;
+
+        ((GroupCursorAdapter)mListView.getAdapter()).changeCursor(null);
+    }
 
     /*
     @Override
@@ -128,40 +144,9 @@ public class GroupFragment extends Fragment {
     }*/
 
     /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
+     * List item listener to respond to list items.
      */
-    /*public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        public void onFragmentInteraction(String id);
-    }*/
-	
-	private class GroupLoaderTask extends AsyncTask<Void, Void,GroupCursor>{
-
-		@Override
-		protected GroupCursor doInBackground(Void... p1){
-			//All the database work is done here
-			expenseManager.createSampleData();
-			return expenseManager.getUserGroups(mUserName);
-		}
-
-		//Updating the UI on this method, which is executed in the main thread.
-		@Override
-		protected void onPostExecute(GroupCursor userGroups){
-			mGroups = userGroups;
-			setupAdapter();
-		}
-	}
-
     private class GroupListListener implements AbsListView.OnItemClickListener{
-
-
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             GroupCursorAdapter groups = (GroupCursorAdapter) parent.getAdapter();
@@ -175,4 +160,19 @@ public class GroupFragment extends Fragment {
             startActivity(i);
         }
     }
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p/>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    /*public interface OnFragmentInteractionListener {
+        // TODO: Update argument type and name
+        public void onFragmentInteraction(String id);
+    }*/
 }

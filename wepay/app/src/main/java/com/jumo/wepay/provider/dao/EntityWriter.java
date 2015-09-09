@@ -5,6 +5,11 @@ import android.database.CursorWrapper;
 import android.database.Cursor;
 
 
+import com.jumo.wepay.model.Expense;
+import com.jumo.wepay.model.Group;
+import com.jumo.wepay.model.Member;
+import com.jumo.wepay.model.Payer;
+import com.jumo.wepay.model.User;
 import com.jumo.wepay.provider.WepayContract;
 
 import java.util.Date;
@@ -12,11 +17,11 @@ import java.util.Date;
 /**
  * Created by Moha on 7/4/15.
  */
-public class EntityDao {
+public class EntityWriter {
 
     //List of toContentValues functions that convert objects into ContentValues.
 
-    public static ContentValues toContentValues(com.jumo.wepay.model.Group g){
+    public static ContentValues toContentValues(Group g){
         ContentValues cv = new ContentValues();
 
         if(g.getId() != 0) cv.put(WepayContract.Group._ID, g.getId());
@@ -29,7 +34,7 @@ public class EntityDao {
         return cv;
     }
 
-    public static ContentValues toContentValues(com.jumo.wepay.model.Member m){
+    public static ContentValues toContentValues(Member m){
         ContentValues cv = new ContentValues();
 
         if(m.getId() != 0) cv.put(WepayContract.Member._ID, m.getId());
@@ -43,7 +48,7 @@ public class EntityDao {
         return cv;
     }
 
-    public static ContentValues toContentValues(com.jumo.wepay.model.Payer p){
+    public static ContentValues toContentValues(Payer p){
         ContentValues cv = new ContentValues();
 
         if(p.getId() != 0) cv.put(WepayContract.Payer._ID, p.getId());
@@ -57,7 +62,7 @@ public class EntityDao {
         return cv;
     }
 
-    public static ContentValues toContentValues(com.jumo.wepay.model.User u){
+    public static ContentValues toContentValues(User u){
         ContentValues cv = new ContentValues();
 
 
@@ -71,7 +76,7 @@ public class EntityDao {
     }
 
 
-    public static ContentValues toContentValues(com.jumo.wepay.model.Expense e){
+    public static ContentValues toContentValues(Expense e){
         ContentValues cv = new ContentValues();
 
         if(e.getId() != 0) cv.put(WepayContract.Expense._ID, e.getId());
@@ -92,53 +97,5 @@ public class EntityDao {
         return cv;
     }
 
-    /*    public static <T> ContentValues toContentValues(T entity){
-        ContentValues cv = new ContentValues();
-        Field[] fields = entity.getClass().getDeclaredFields();
-
-        for(Field field : fields){
-            String columnName = null;
-            if(field.getName() == "id") {
-                columnName = "_id";
-            }else{
-                columnName = toColumnNameFormat(field.getName());
-            }
-
-            Type type = field.getType();
-            if(type.equals(int.class)){
-
-            }else if(type.equals(long.class)){
-
-            }else if(type.equals(boolean.class)){
-
-            }else if(type.equals(double.class)){
-
-            }else if(type.equals(float.class)){
-
-            }else if(type.equals(String.class)){
-
-            }
-
-                //cv.put("_id", )
-        }
-
-
-        return null;
-    }
-
-
-    private static String toColumnNameFormat(String colName){
-        Pattern pattern = Pattern.compile("\\p{javaUpperCase}");
-        Matcher matcher = pattern.matcher(colName);
-        StringBuffer sb = new StringBuffer();
-        while(matcher.find()){
-            String replacement = "_"+ matcher.group(0).toLowerCase();
-            matcher.appendReplacement(sb, replacement);
-        }
-        matcher.appendTail(sb);
-
-        return sb.toString();
-    }
-*/
 
 }
