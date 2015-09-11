@@ -2,6 +2,7 @@ package com.jumo.wepay.provider.dao;
 
 import android.database.Cursor;
 import android.database.CursorWrapper;
+import android.util.Log;
 
 import com.jumo.wepay.model.ActualEntity;
 import com.jumo.wepay.model.Entity;
@@ -15,36 +16,10 @@ import java.util.Date;
 */
 public class EntityCursor extends CursorWrapper {
 
-    private boolean considerPrefix;
+    private static final String TAG = "EntityCursor";
 
     public EntityCursor(Cursor c){
         super(c);
-        recognizeIfUsingPrefixes();
-    }
-
-    /**
-     * The second parameter, a boolean, considers wether to look for column values based on only
-     * column names, or considering their table prefix (in the form of table.column"). The latter
-     * is useful when querying multiple tables, joined together with columns that have the same name.
-     * In this case, the only way to differentiate them is through the table.
-     * @param c
-     * @param useFullNames true to consider column prefixes (the table name), or not (false).
-     */
-    public EntityCursor(Cursor c, boolean useFullNames){
-        super(c);
-        considerPrefix = useFullNames;
-    }
-
-    private void recognizeIfUsingPrefixes(){
-        //Verify that all columns have a dot in their name; if yes, the query is using column prefixes.
-        String[] cols = this.getColumnNames();
-        boolean usesPrefixes = true;
-
-        for(String c : cols){
-            usesPrefixes = usesPrefixes && c.contains(".");
-        }
-
-        setConsiderPrefix(usesPrefixes);
     }
 
     public Entity getEntity(Table table){
@@ -55,7 +30,10 @@ public class EntityCursor extends CursorWrapper {
 
         int colIndex = -1;
         for(Column column : table.getColumns()){
-            colIndex = getColumnIndex(considerPrefix ? column.getFullName() : column.name);
+
+            colIndex = getColumnIndex(column.name);     //try first getting the column without any prefixes
+            colIndex = (colIndex >= 0)? colIndex : getColumnIndex("\"" + column.getFullName() + "\"");    //then, get the prefixed column name column index if we found nothing before:
+
             if(colIndex >= 0){
                 entity.setField(column.name, getColumnValue(column, colIndex));
             }
@@ -95,13 +73,5 @@ public class EntityCursor extends CursorWrapper {
 
         this.moveToPosition(pos);
         return sb.toString();
-    }
-
-    public boolean considerPrefix() {
-        return considerPrefix;
-    }
-
-    public void setConsiderPrefix(boolean considerPrefix) {
-        this.considerPrefix = considerPrefix;
     }
 }

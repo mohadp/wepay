@@ -102,41 +102,42 @@ abstract class CompositeTable extends Table {
             // part of this composite table.
             if (e.getForeignKeys() != null) {
                 Set<String> foreignTables = e.getForeignKeys().keySet();
-                for (String foreignTable : foreignTables) {
-                    // One table may have foreign keys to tables that are not included in this
-                    // composite table' table; only add the ones in this composite table
-                    if (tablesToJoin.contains(WepayContract.getTable(foreignTable))) {
-                        JoinTreeNode leftTableNode = tableToJoinTreeMap.get(e.getTableName());
-                        JoinTreeNode rightTableNode = tableToJoinTreeMap.get(foreignTable);
-
-                        // if the join trees for these tables are null, then create a new join trees;
-                        // and add them to the map to refer back to them.
-                        if (leftTableNode == null) {
-                            leftTableNode = new JoinTreeNode(e.getTableName());
-                            tableToJoinTreeMap.put(e.getTableName(), leftTableNode);
+                JoinTreeNode leftJoinNode = tableToJoinTreeMap.get(e.getTableName());
+                // if the join trees for these tables are null, then create a new join trees;
+                // and add them to the map to refer back to them.
+                if (leftJoinNode == null) {
+                    leftJoinNode = new JoinTreeNode(e.getTableName());
+                    tableToJoinTreeMap.put(e.getTableName(), leftJoinNode);
+                }
+                for (String foreignTableName : foreignTables) {
+                    if (tablesToJoin.contains(WepayContract.getTable(foreignTableName))) {
+                        JoinTreeNode rightJoinNode = tableToJoinTreeMap.get(foreignTableName);
+                        if (rightJoinNode == null) {
+                            rightJoinNode = new JoinTreeNode(foreignTableName);
+                            tableToJoinTreeMap.put(foreignTableName, rightJoinNode);
                         }
-                        if (rightTableNode == null) {
-                            rightTableNode = new JoinTreeNode(foreignTable);
-                            tableToJoinTreeMap.put(foreignTable, rightTableNode);
-                        }
+                        JoinTreeNode leftParent = leftJoinNode.getParent();
+                        JoinTreeNode rightParent = rightJoinNode.getParent();
+                        JoinTreeNode leftRoot = leftJoinNode.getRoot();
+                        JoinTreeNode rightRoot = rightJoinNode.getRoot();
+                        boolean notInSameTreeAlready = leftRoot != rightRoot;
 
-                        //The right node should be a table only; the left can be a branch. If right node has already a parent, need to change parents.
-                        JoinTreeNode parentOfRightNode = rightTableNode.getParent(); //get a reference to the right' parent.
-                        leftTableNode = leftTableNode.getRoot();
-
-                        JoinTreeNode newJoin = new JoinTreeNode(leftTableNode, rightTableNode); //this already sets the parents for the children
-                        newJoin.setColumnJoins(e.getForeignKeys().get(foreignTable));
-
-                        if (parentOfRightNode != null) {
-                            if (parentOfRightNode.getRight() == rightTableNode) {
-                                // the "rightTableNode" will be the child of the new join, and the new join should be the new
-                                // left child of the "parentOfRightNode"; the new join should appear on the left to be able to
-                                // create a join expression such as "table join table2 on (...) join table3 on (...)", in which the
-                                // left part of a join is always a join tree while the right is always just a table.
-                                parentOfRightNode.setRight(parentOfRightNode.getLeft());
-
-                            }
-                            parentOfRightNode.setLeft(newJoin);
+                        //Construct a tree of joins such that the left nodes in joins can be tables or other joins, and the right only tables.
+                        if(leftParent == null && rightParent == null){
+                            JoinTreeNode newJoin = new JoinTreeNode(leftJoinNode, rightJoinNode); //this already sets the parents for the children
+                            newJoin.setColumnJoins(e.getForeignKeys().get(foreignTableName));
+                        }else if(leftParent != null && rightParent == null){
+                            JoinTreeNode newJoin = new JoinTreeNode(leftRoot, rightJoinNode); //this already sets the parents for the children
+                            newJoin.setColumnJoins(e.getForeignKeys().get(foreignTableName));
+                        }else if(leftParent == null && rightParent != null){
+                            JoinTreeNode newJoin = new JoinTreeNode(rightRoot, leftJoinNode); //this already sets the parents for the children
+                            newJoin.setColumnJoins(e.getForeignKeys().get(foreignTableName));
+                        }else if(leftParent != null && rightParent != null && notInSameTreeAlready){ //move right to left's tree with a new join, and make that join the left child of rightParent.
+                            rightParent.moveLeft(rightJoinNode); //make sure the table to move to left's tree is on the left (we'l clear left in parent).
+                            rightParent.setLeft(null);
+                            JoinTreeNode newJoin = new JoinTreeNode(leftRoot, rightJoinNode); //this already sets the parents for the children
+                            newJoin.setColumnJoins(e.getForeignKeys().get(foreignTableName));
+                            rightParent.setLeft(newJoin);
                         }
                     }
                 }

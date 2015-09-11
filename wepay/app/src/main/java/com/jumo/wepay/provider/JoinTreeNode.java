@@ -7,13 +7,16 @@ import java.util.ArrayList;
  */
 class JoinTreeNode {
     private ArrayList<ColumnJoin> columnJoins;
-    private String table;
-    private JoinTreeNode left;
-    private JoinTreeNode right;
-    private JoinTreeNode parent;
+    private String mTableName;
+    private JoinTreeNode mLeft;
+    private JoinTreeNode mRight;
+    private JoinTreeNode mParent;
 
     protected JoinTreeNode(String tableName) {
-        table = tableName;
+        this.mTableName = tableName;
+        mParent = null;
+        mLeft = null;
+        mRight = null;
     }
 
     protected JoinTreeNode() {
@@ -25,10 +28,10 @@ class JoinTreeNode {
     }
 
     protected JoinTreeNode getRoot() {
-        if (parent == null) {
+        if (mParent == null) {
             return this;
         } else {
-            return parent.getRoot();
+            return mParent.getRoot();
         }
     }
 
@@ -47,16 +50,16 @@ class JoinTreeNode {
 
     protected boolean isInTableJoinTree(String tableName) {
         boolean isInJoinTree = false;
-        if (table != null) {
-            if (table.equals(tableName)) {
+        if (this.mTableName != null) {
+            if (this.mTableName.equals(tableName)) {
                 isInJoinTree = true;
             }
         } else {
-            if (left != null) {
-                isInJoinTree = left.isInTableJoinTree(tableName);
+            if (mLeft != null) {
+                isInJoinTree = mLeft.isInTableJoinTree(tableName);
             }
-            if (right != null) {
-                isInJoinTree = isInJoinTree || right.isInTableJoinTree(tableName);
+            if (mRight != null) {
+                isInJoinTree = isInJoinTree || mRight.isInTableJoinTree(tableName);
             }
         }
         return isInJoinTree;
@@ -64,35 +67,48 @@ class JoinTreeNode {
 
     protected int numberOfTablesInJoinTree() {
         int noTables = 0;
-        if (table != null) {
+        if (mTableName != null) {
             noTables = 1;
         } else {
-            if (left != null) {
-                noTables += left.numberOfTablesInJoinTree();
+            if (mLeft != null) {
+                noTables += mLeft.numberOfTablesInJoinTree();
             }
-            if (right != null) {
-                noTables += right.numberOfTablesInJoinTree();
+            if (mRight != null) {
+                noTables += mRight.numberOfTablesInJoinTree();
             }
         }
         return noTables;
     }
 
+    /**
+     * If a Node exists in the current JoinTreeNode, position it on the left position. If the node was on the right, then the left position and the right positions are switched.
+     * @param node
+     */
+    public void moveLeft(JoinTreeNode node){
+        if(mLeft == node) return;
+        if(mRight == node){
+            JoinTreeNode prevLeft = mLeft;
+            mLeft = mRight;
+            mRight = prevLeft;
+        }
+    }
+
     public JoinTreeNode getLeft() {
-        return left;
+        return mLeft;
     }
 
     public void setLeft(JoinTreeNode left) {
-        this.left = left;
-        this.left.setParent(this);
+        this.mLeft = left;
+        if(mLeft != null) mLeft.setParent(this);
     }
 
     public JoinTreeNode getRight() {
-        return right;
+        return mRight;
     }
 
     public void setRight(JoinTreeNode right) {
-        this.right = right;
-        this.right.setParent(this);
+        this.mRight = right;
+        if(mRight != null) mRight.setParent(this);
     }
 
     public ArrayList<ColumnJoin> getColumnJoins() {
@@ -104,18 +120,18 @@ class JoinTreeNode {
     }
 
     public JoinTreeNode getParent() {
-        return parent;
+        return mParent;
     }
 
-    public void setParent(JoinTreeNode parent) {
-        this.parent = parent;
+    private void setParent(JoinTreeNode parent) {
+        this.mParent = parent;
     }
 
-    public String getTable() {
-        return table;
+    public String getTableName() {
+        return mTableName;
     }
 
-    public void setTable(String table) {
-        this.table = table;
+    public void setTableName(String tableName) {
+        this.mTableName = tableName;
     }
 }

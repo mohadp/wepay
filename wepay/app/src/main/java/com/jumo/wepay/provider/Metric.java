@@ -21,7 +21,7 @@ class Metric {
     }
 
     public String getColumnName() {
-        return (mColumn == null)? "unNamedMetric" : mColumn.getFullName();
+        return (mColumn == null)? "unNamedMetric" : mColumn.name;
     }
 
     public String getExpression() {
