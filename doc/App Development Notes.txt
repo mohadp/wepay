@@ -1,0 +1,28 @@
+***** About Datastore: Consistency ******
+
+Where: https://cloud.google.com/appengine/docs/java/datastore/entities
+
+To maintain the consistency of the data, the transaction ensures that all of the operations it contains are applied to Datastore as a unit or, if any of the operations fails, that none of them are applied. Furthermore, all strongly-consistent reads (ancestory queries or gets) performed within the same transaction observe a consistent snapshot of the data.
+
+
+***** Samples ******
+
+// Sample creation of Entities
+import java.util.Date;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+
+DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+Entity employee = new Entity("Employee");
+
+employee.setProperty("firstName", "Antonio");
+employee.setProperty("lastName", "Salieri");
+
+Date hireDate = new Date();
+employee.setProperty("hireDate", hireDate);
+
+employee.setProperty("attendedHrTraining", true);
+
+datastore.put(employee);
