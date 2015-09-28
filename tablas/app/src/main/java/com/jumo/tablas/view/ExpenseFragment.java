@@ -11,11 +11,18 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.util.LruCache;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 
 import com.jumo.tablas.R;
 import com.jumo.tablas.provider.WepayContract;
@@ -48,6 +55,17 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
      * The fragment's ListView/GridView.
      */
     private ListView mListView;
+    private LinearLayout mConversationLayout;
+    private PopupWindow mCustomKeyboard;
+    private ImageButton mCurrencyButton;
+    private EditText mConversationEditText;
+    private EditText mAmountEditText;
+
+    private FrameLayout mCustomKeyboardSpacer;
+
+    //Other control variables
+    private float mCustomKeyboardHeight;
+
 
     //Fragment's attributes
     private String mUserName;
@@ -55,6 +73,7 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
     private LruCache<String, Bitmap> mCache;
     //private LruCache<Long, ImageViewRow> mCacheImageRow;
     private ExpenseUserThreadHandler mPayerLoader;
+
 
 
     public static ExpenseFragment newInstance(String userId, long groupId) {
@@ -81,6 +100,7 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
         setRetainInstance(true);
 
         mUserName = getArguments().getString(EXTRA_USER_ID);
@@ -94,30 +114,71 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
                 return bitmap.getByteCount() / 1024; // The cache size will be measured in kilobytes
             }
         };
-        //mCacheImageRow = new LruCache<Long, ImageViewRow>(15);
 
         mPayerLoader = new ExpenseUserThreadHandler(getActivity(), mCache, new Handler());
         mPayerLoader.start();
         mPayerLoader.getLooper();
     }
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_conversation, container, false);
 
+
         // Set the adapter
         mListView = (ListView) view.findViewById(android.R.id.list);
 		mListView.setAdapter(new ExpenseCursorAdapter(getActivity(), null, mCache, mPayerLoader));
 
-        FrameLayout inputMethod = (FrameLayout) view.findViewById(R.id.inputMethod);
-        //inputMethod.
+        //Set the references to the components in the fragment layout
+        mConversationLayout = (LinearLayout) view.findViewById(R.id.view_conversations);
+        mCustomKeyboardSpacer = (FrameLayout) view.findViewById(R.id.inputMethod);
+        mCurrencyButton = (ImageButton) view.findViewById(R.id.button_currency);
+        mConversationEditText = (EditText) view.findViewById(R.id.edit_message);
+        mAmountEditText = (EditText) view.findViewById(R.id.edit_amount);
+
 
         // Set OnItemClickListener so we can be notified on item clicks
         //mListView.setOnItemClickListener(this);
+
+        //Setting up the custom input
+        mCustomKeyboard = new PopupWindow(inflater.inflate(R.layout.popup_input_methods, null));
+        //mCustomKeyboard.setFocusable(true);
+        //mCustomKeyboard.setOutsideTouchable(true);
+        prepareCustomKeyboard();
+
 		
         return view;
     }
+
+    public void prepareCustomKeyboard(){
+        //TODO: need to set the keyboardHeight
+        mCustomKeyboardHeight = getResources().getDimension(R.dimen.keyboard_height);
+
+        mCurrencyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCustomKeyboardSpacer.setVisibility(View.VISIBLE);
+                mCustomKeyboard.setHeight((int) mCustomKeyboardHeight);
+                mCustomKeyboard.showAtLocation(mConversationLayout, Gravity.BOTTOM, 0, 0);
+            }
+        });
+
+        View.OnClickListener dismissKeyboard = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mCustomKeyboard.isShowing()){
+                    mCustomKeyboard.dismiss();
+                    mCustomKeyboardSpacer.setVisibility(View.GONE);
+                }
+            }
+        };
+
+        mConversationEditText.setOnClickListener(dismissKeyboard);
+        mAmountEditText.setOnClickListener(dismissKeyboard);
+    }
+
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -172,6 +233,12 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
     public void onDestroy(){
         super.onDestroy();
         mPayerLoader.quit();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.default_menu, menu);
     }
 
     /**

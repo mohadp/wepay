@@ -4,6 +4,8 @@
     <string name="text_hint_amount">Amount</string>
     <string name="text_hint_message">Add description...</string>
 
+    <string name="menu_item">Settings...</string>
+
 
     <!-- To be deleted; sample labels to delete stuff -->
     <string name="list_group_name">Group name</string>

@@ -13,6 +13,8 @@ import android.app.Fragment;
 import android.util.Log;
 import android.util.LruCache;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
@@ -91,6 +93,7 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //expenseManager = ExpenseManager.newInstance(this.getActivity());
+        setHasOptionsMenu(true);
         setRetainInstance(true);
 
         /*Log.d(TAG, "onCreate()");
@@ -225,6 +228,12 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
             i.putExtra(ExpenseFragment.EXTRA_USER_ID, mUserName);
             startActivity(i);
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.default_menu, menu);
     }
 
     /**
