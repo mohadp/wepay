@@ -206,6 +206,9 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
     }
 
     private void showCustomKeyboard(){
+        InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(mConversationLayout.getWindowToken(), 0);
+
         mCustomKeyboardSpacer.setVisibility(View.VISIBLE);
         mCustomKeyboardSpacer.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (int) mCustomKeyboardHeight));
         int spacerHeight = mCustomKeyboardSpacer.getHeight();
@@ -215,9 +218,6 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
         mCustomKeyboard.setHeight(spacerKeyboardHeight);
         mCustomKeyboard.setAnimationStyle(0);
         mCustomKeyboard.showAsDropDown(mChatControlsLayout, 0, 0);
-
-        InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(mConversationLayout.getWindowToken(), 0);
     }
 
     private void dismissCustomKeyboard(){
