@@ -9,25 +9,25 @@ import java.util.Collection;
 /**
  * Created by Moha on 6/28/15.
  */
-public class WepayDatabaseHelper extends SQLiteOpenHelper {
+public class TablasDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "wepay.sqlite";
     private static final int VERSION = 1;
 
 
-    public WepayDatabaseHelper(Context context){
+    public TablasDatabaseHelper(Context context){
         super(context, DB_NAME, null, VERSION);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db){
-        db.execSQL(createTableSQL(WepayContract.User.getInstance().getTableName(), WepayContract.User.getInstance().getColumns()));
-        db.execSQL(createTableSQL(WepayContract.Group.getInstance().getTableName(), WepayContract.Group.getInstance().getColumns()));
-        db.execSQL(createTableSQL(WepayContract.Recurrence.getInstance().getTableName(), WepayContract.Recurrence.getInstance().getColumns()));
-        db.execSQL(createTableSQL(WepayContract.Location.getInstance().getTableName(), WepayContract.Location.getInstance().getColumns()));
-        db.execSQL(createTableSQL(WepayContract.Expense.getInstance().getTableName(), WepayContract.Expense.getInstance().getColumns()));
-        db.execSQL(createTableSQL(WepayContract.Member.getInstance().getTableName(), WepayContract.Member.getInstance().getColumns()));
-        db.execSQL(createTableSQL(WepayContract.Payer.getInstance().getTableName(), WepayContract.Payer.getInstance().getColumns()));
+        db.execSQL(createTableSQL(TablasContract.User.getInstance().getTableName(), TablasContract.User.getInstance().getColumns()));
+        db.execSQL(createTableSQL(TablasContract.Group.getInstance().getTableName(), TablasContract.Group.getInstance().getColumns()));
+        db.execSQL(createTableSQL(TablasContract.Recurrence.getInstance().getTableName(), TablasContract.Recurrence.getInstance().getColumns()));
+        db.execSQL(createTableSQL(TablasContract.Location.getInstance().getTableName(), TablasContract.Location.getInstance().getColumns()));
+        db.execSQL(createTableSQL(TablasContract.Expense.getInstance().getTableName(), TablasContract.Expense.getInstance().getColumns()));
+        db.execSQL(createTableSQL(TablasContract.Member.getInstance().getTableName(), TablasContract.Member.getInstance().getColumns()));
+        db.execSQL(createTableSQL(TablasContract.Payer.getInstance().getTableName(), TablasContract.Payer.getInstance().getColumns()));
 
     }
 

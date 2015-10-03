@@ -2,6 +2,7 @@ package com.jumo.tablas.view;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
@@ -11,12 +12,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.util.LruCache;
-import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -25,8 +28,9 @@ import android.widget.ListView;
 import android.widget.PopupWindow;
 
 import com.jumo.tablas.R;
-import com.jumo.tablas.provider.WepayContract;
+import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.EntityCursor;
+import com.jumo.tablas.view.custom.OnKeyEventListener;
 import com.jumo.tablas.view.loaders.ExpenseUserThreadHandler;
 
 /**
@@ -38,13 +42,15 @@ import com.jumo.tablas.view.loaders.ExpenseUserThreadHandler;
  * Activities containing this fragment MUST implement the {@linkx OnFragmentInteractionListener}
  * interface.
  */
-public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
+public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, OnKeyEventListener{
 
     private static final String TAG = "ExpenseFragment";
 
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     public static final String EXTRA_GROUP_ID = "com.jumo.wepay.group_id";
     public static final String EXTRA_USER_ID = "com.jumo.wepay.user_id";
+    private static final int KEYBOARD_THRESHOLD = 300;
+    private static final int UNSET_PREVIOUS_HEIGHT = -1283013084;
 
     //Loaders
     public static final int LOADER_EXPENSES = 0;
@@ -56,15 +62,20 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
      */
     private ListView mListView;
     private LinearLayout mConversationLayout;
+    private LinearLayout mChatControlsLayout;
     private PopupWindow mCustomKeyboard;
     private ImageButton mCurrencyButton;
     private EditText mConversationEditText;
     private EditText mAmountEditText;
 
+
     private FrameLayout mCustomKeyboardSpacer;
+    private View mPopupView;
 
     //Other control variables
     private float mCustomKeyboardHeight;
+    //private float mPreviousHeight;
+
 
 
     //Fragment's attributes
@@ -133,62 +144,139 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
 
         //Set the references to the components in the fragment layout
         mConversationLayout = (LinearLayout) view.findViewById(R.id.view_conversations);
+        mChatControlsLayout = (LinearLayout) view.findViewById(R.id.layout_chat_controls);
         mCustomKeyboardSpacer = (FrameLayout) view.findViewById(R.id.inputMethod);
         mCurrencyButton = (ImageButton) view.findViewById(R.id.button_currency);
         mConversationEditText = (EditText) view.findViewById(R.id.edit_message);
         mAmountEditText = (EditText) view.findViewById(R.id.edit_amount);
 
+        //Setting up the custom input
+        mPopupView = inflater.inflate(R.layout.popup_input_methods, container, false);
+
+        //popupView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        mCustomKeyboard = new PopupWindow(mPopupView);
 
         // Set OnItemClickListener so we can be notified on item clicks
         //mListView.setOnItemClickListener(this);
-
-        //Setting up the custom input
-        mCustomKeyboard = new PopupWindow(inflater.inflate(R.layout.popup_input_methods, null));
-        //mCustomKeyboard.setFocusable(true);
-        //mCustomKeyboard.setOutsideTouchable(true);
         prepareCustomKeyboard();
 
-		
         return view;
     }
 
     public void prepareCustomKeyboard(){
-        //TODO: need to set the keyboardHeight
+        //first we update the height to be the dimension in the resource
         mCustomKeyboardHeight = getResources().getDimension(R.dimen.keyboard_height);
+        //mPreviousHeight = UNSET_PREVIOUS_HEIGHT;
 
         mCurrencyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mCustomKeyboardSpacer.setVisibility(View.VISIBLE);
-                mCustomKeyboard.setHeight((int) mCustomKeyboardHeight);
-                mCustomKeyboard.showAtLocation(mConversationLayout, Gravity.BOTTOM, 0, 0);
+                if(mCustomKeyboard.isShowing()){
+                    dismissCustomKeyboard();
+                }else {
+                    showCustomKeyboard();
+                    mCustomKeyboard.update();
+                }
             }
         });
 
-        View.OnClickListener dismissKeyboard = new View.OnClickListener() {
+        View.OnClickListener clickDismissKeyboard = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mCustomKeyboard.isShowing()){
-                    mCustomKeyboard.dismiss();
-                    mCustomKeyboardSpacer.setVisibility(View.GONE);
+            if(mCustomKeyboard.isShowing()) {
+                dismissCustomKeyboard();
+            }
+            }
+        };
+        View.OnFocusChangeListener focusDismissKeyboard = new View.OnFocusChangeListener(){
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+            if(mCustomKeyboard.isShowing()) {
+                dismissCustomKeyboard();
+            }
+            }
+        };
+
+        mConversationEditText.setOnClickListener(clickDismissKeyboard);
+        mConversationEditText.setOnFocusChangeListener(focusDismissKeyboard);
+
+        mAmountEditText.setOnClickListener(clickDismissKeyboard);
+        mAmountEditText.setOnFocusChangeListener(focusDismissKeyboard);
+        //keepUpdatingCustomKeyboardHeight();
+    }
+
+    private void showCustomKeyboard(){
+        mCustomKeyboardSpacer.setVisibility(View.VISIBLE);
+        mCustomKeyboardSpacer.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (int) mCustomKeyboardHeight));
+        int spacerHeight = mCustomKeyboardSpacer.getHeight();
+        int spacerKeyboardHeight = (spacerHeight == 0)? mCustomKeyboardSpacer.getLayoutParams().height : spacerHeight;
+
+        mCustomKeyboard.setWidth(WindowManager.LayoutParams.MATCH_PARENT);
+        mCustomKeyboard.setHeight(spacerKeyboardHeight);
+        mCustomKeyboard.setAnimationStyle(0);
+        mCustomKeyboard.showAsDropDown(mChatControlsLayout, 0, 0);
+
+        InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(mConversationLayout.getWindowToken(), 0);
+    }
+
+    private void dismissCustomKeyboard(){
+        mCustomKeyboard.dismiss();
+        mCustomKeyboardSpacer.setVisibility(View.GONE);
+    }
+
+    /*private void keepUpdatingCustomKeyboardHeight(){
+        ViewTreeObserver.OnGlobalLayoutListener softKeyboardAndOrientation = new ViewTreeObserver.OnGlobalLayoutListener(){
+            @Override
+            public void onGlobalLayout() {
+                Rect visibleFrame = getVisibleDisplayFrame(); //Get the current conversation layout's height.
+                int globalHeight = mConversationLayout.getRootView().getHeight(); //Get the current total Height
+
+                if (mPreviousHeight == UNSET_PREVIOUS_HEIGHT) { //only set mPreviousHeight to current height; we have not shown anything.
+                    mPreviousHeight = visibleFrame.height();
+                } else {
+                    int tentativeKeyboardHeight = (int) mPreviousHeight - visibleFrame.height();
+                    //if previousHeight is greater than current one,
+                    // that means keyboard is showing, and the difference is the keyboard height
+                    if (tentativeKeyboardHeight > KEYBOARD_THRESHOLD) {
+                        mCustomKeyboardHeight = (tentativeKeyboardHeight > mCustomKeyboardHeight)? tentativeKeyboardHeight : mCustomKeyboardHeight;
+                        Log.d(TAG, "New keyboard size: " + mCustomKeyboardHeight);
+                    }
+
+                    mPreviousHeight = visibleFrame.height();
                 }
             }
         };
 
-        mConversationEditText.setOnClickListener(dismissKeyboard);
-        mAmountEditText.setOnClickListener(dismissKeyboard);
-    }
+        mConversationLayout.getViewTreeObserver().addOnGlobalLayoutListener(softKeyboardAndOrientation);
+    }*/
 
+    /*private Rect getVisibleDisplayFrame(){
+        Rect rect = new Rect();
+        mConversationLayout.getWindowVisibleDisplayFrame(rect);
+        return rect;
+    }*/
+
+    @Override
+    public boolean onKeyPress(int keyEvent, KeyEvent event){
+        if(keyEvent == KeyEvent.KEYCODE_BACK){
+            if(mCustomKeyboard.isShowing()){
+                dismissCustomKeyboard();
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Log.d(TAG, "onCreateLoader");
 
-        Uri uri = WepayContract.BASE_URI.buildUpon().appendPath(WepayContract.Expense.getInstance().getTableName())
+        Uri uri = TablasContract.BASE_URI.buildUpon().appendPath(TablasContract.Expense.getInstance().getTableName())
                 .appendPath("user").appendPath(mUserName).appendPath("group").appendPath(Long.toString(mGroupId))
                 .build();
 
-        StringBuilder sortBy = new StringBuilder(WepayContract.Expense.CREATED_ON).append(" ASC");
+        StringBuilder sortBy = new StringBuilder(TablasContract.Expense.CREATED_ON).append(" ASC");
         return new CursorLoader(getActivity(), uri, null, null, null, sortBy.toString());
     }
 
@@ -241,6 +329,7 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
         inflater.inflate(R.menu.default_menu, menu);
     }
 
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -251,9 +340,10 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    /*public interface OnFragmentInteractionListener {
+    public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
-        public void onFragmentInteraction(String id);
-    }*/
+        //public void onFragmentInteraction(String id);
+        public void onBackButtonPress();
+    }
 
 }

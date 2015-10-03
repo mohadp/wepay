@@ -12,7 +12,7 @@ import android.util.LruCache;
 
 import com.jumo.tablas.R;
 import com.jumo.tablas.model.User;
-import com.jumo.tablas.provider.WepayContract;
+import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.EntityCursor;
 import com.jumo.tablas.view.custom.ImageViewRow;
 
@@ -122,9 +122,9 @@ public class ExpenseUserThreadHandler extends HandlerThread {
         }
 
         private void getExpenseUserImages(String expenseId, ArrayList<String> imageIds, ArrayList<Bitmap> images){
-            Uri uri = WepayContract.BASE_URI.buildUpon().appendPath(WepayContract.Expense.getInstance().getTableName())
+            Uri uri = TablasContract.BASE_URI.buildUpon().appendPath(TablasContract.Expense.getInstance().getTableName())
                     .appendPath(expenseId).appendPath("users").build();
-            String sortOrder = WepayContract.Member.getInstance().getFullColumnName(WepayContract.Member.USER_ID) + " ASC";
+            String sortOrder = TablasContract.Member.getInstance().getFullColumnName(TablasContract.Member.USER_ID) + " ASC";
 
             Cursor cursor = mContextReference.get().getContentResolver().query(uri, null, null, null, sortOrder);
             EntityCursor entityCursor = new EntityCursor(cursor);
@@ -134,7 +134,7 @@ public class ExpenseUserThreadHandler extends HandlerThread {
 
             int counter = 0;
             while(entityCursor.moveToNext()){
-                User user = new User(entityCursor.getEntity(WepayContract.User.getInstance()));
+                User user = new User(entityCursor.getEntity(TablasContract.User.getInstance()));
                 //TODO: Need to update the image to load dynamically based on user
                 Bitmap bitmap = getUserBitmap(R.drawable.moha);
                 images.add(bitmap);

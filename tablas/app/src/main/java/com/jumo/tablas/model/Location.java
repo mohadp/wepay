@@ -1,7 +1,7 @@
 package com.jumo.tablas.model;
 
+import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.Table;
-import com.jumo.tablas.provider.WepayContract;
 
 import java.util.Date;
 
@@ -16,39 +16,39 @@ public class Location implements Entity {
     }
 
     public Location(){
-        entity = new ActualEntity(WepayContract.Location.getInstance());
+        entity = new ActualEntity(TablasContract.Location.getInstance());
     }
 
     public long getId() {
-        return getLong(WepayContract.Location._ID);
+        return getLong(TablasContract.Location._ID);
     }
 
     public void setId(long id) {
-        setField(WepayContract.Location._ID, id);
+        setField(TablasContract.Location._ID, id);
     }
 
     public String getName() {
-        return getText(WepayContract.Location.NAME);
+        return getText(TablasContract.Location.NAME);
     }
 
     public void setName(String name) {
-        setField(WepayContract.Location.NAME, name);
+        setField(TablasContract.Location.NAME, name);
     }
 
     public double getLatitude() {
-        return getDouble(WepayContract.Location.LATITUDE);
+        return getDouble(TablasContract.Location.LATITUDE);
     }
 
     public void setLatitude(double latitude) {
-        setField(WepayContract.Location.LATITUDE, latitude);
+        setField(TablasContract.Location.LATITUDE, latitude);
     }
 
     public double getLongitude() {
-        return getDouble(WepayContract.Location.LONGITUDE);
+        return getDouble(TablasContract.Location.LONGITUDE);
     }
 
     public void setLongitude(double longitude) {
-        setField(WepayContract.Location.LONGITUDE, longitude);
+        setField(TablasContract.Location.LONGITUDE, longitude);
     }
 
     @Override

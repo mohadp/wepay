@@ -1,7 +1,7 @@
 package com.jumo.tablas.model;
 
+import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.Table;
-import com.jumo.tablas.provider.WepayContract;
 
 import java.util.Date;
 
@@ -16,23 +16,23 @@ public class Recurrence implements Entity {
     }
 
     public Recurrence(){
-        entity = new ActualEntity(WepayContract.Recurrence.getInstance());
+        entity = new ActualEntity(TablasContract.Recurrence.getInstance());
     }
 
     public long getId() {
-        return getLong(WepayContract.Recurrence._ID);
+        return getLong(TablasContract.Recurrence._ID);
     }
 
     public void setId(long id) {
-        setField(WepayContract.Recurrence._ID, id);
+        setField(TablasContract.Recurrence._ID, id);
     }
 
     public long getPeriodicity() {
-        return getLong(WepayContract.Recurrence.PERIODICITY);
+        return getLong(TablasContract.Recurrence.PERIODICITY);
     }
 
     public void setPeriodicity(long periodicity) {
-        setField(WepayContract.Recurrence.PERIODICITY, periodicity);
+        setField(TablasContract.Recurrence.PERIODICITY, periodicity);
     }
 
     /**
@@ -42,11 +42,11 @@ public class Recurrence implements Entity {
      *  PERIODICITY_MONTHLY, offset = 1 means the first of the month, offset = OFFSET_LAST_OF_MONTH means last day of every month.
      **/
     public long getOffset() {
-        return getLong(WepayContract.Recurrence.OFFSET);
+        return getLong(TablasContract.Recurrence.OFFSET);
     }
 
     public void setOffset(long offset) {
-        setField(WepayContract.Recurrence.OFFSET, offset);
+        setField(TablasContract.Recurrence.OFFSET, offset);
     }
 
     @Override

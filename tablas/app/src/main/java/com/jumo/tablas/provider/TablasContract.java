@@ -8,12 +8,12 @@ import java.util.HashMap;
 /**
  * Created by Moha on 6/28/15.
  */
-public final class WepayContract {
+public final class TablasContract {
 
-    private static final String TAG = "WepayContract";
+    private static final String TAG = "TablasContract";
     public static String AUTHORITY = "com.jumo.tablas.provider";
     public static String SCHEME = "content";
-    public static final Uri BASE_URI = new Uri.Builder().scheme(WepayContract.SCHEME).authority(WepayContract.AUTHORITY).build();
+    public static final Uri BASE_URI = new Uri.Builder().scheme(TablasContract.SCHEME).authority(TablasContract.AUTHORITY).build();
 
 
     //Column definitions
@@ -53,7 +53,7 @@ public final class WepayContract {
         public static final String NAME = "name";
         public static final String CREATED_ON = "created_on";
         public static final String GROUP_PICTURE = "group_picture";
-        public static final String USER_BALANCE = WepayContract.USER_BALANCE; //Not saved in the databased, this represents a user' balance at the group level (or expense level) = the sum of payments.
+        public static final String USER_BALANCE = TablasContract.USER_BALANCE; //Not saved in the databased, this represents a user' balance at the group level (or expense level) = the sum of payments.
 
         //Singleton table
         private static Table mInstance;
@@ -97,7 +97,7 @@ public final class WepayContract {
         public static final String RECURRENCE_ID = "recurrence_id";
         public static final String GROUP_EXPENSE_ID = "group_expense_id";
         public static final String IS_PAYMENT = "is_payment";
-        public static final String USER_BALANCE = WepayContract.USER_BALANCE; //Not saved in the databased, this represents a user' balance at the group level (or expense level) = the sum of payments.
+        public static final String USER_BALANCE = TablasContract.USER_BALANCE; //Not saved in the databased, this represents a user' balance at the group level (or expense level) = the sum of payments.
 
         //Singleton table
         private static Table mInstance;
@@ -205,7 +205,7 @@ public final class WepayContract {
         public static final String _ID = "_id";
         public static final String NAME = "name";
         public static final String PHONE = "phone";
-        public static final String USER_BALANCE = WepayContract.USER_BALANCE;
+        public static final String USER_BALANCE = TablasContract.USER_BALANCE;
 
         //Singleton table
         private static Table mInstance;
@@ -429,9 +429,9 @@ public final class WepayContract {
     }
 
     protected static Metric getBalanceMetric(){
-        Column expAmount = WepayContract.Expense.getInstance().getColumn(WepayContract.Expense.AMOUNT);
-        Column expExchange = WepayContract.Expense.getInstance().getColumn(WepayContract.Expense.EXCHANGE_RATE);
-        Column payPercent = WepayContract.Payer.getInstance().getColumn(WepayContract.Payer.PERCENTAGE);
+        Column expAmount = TablasContract.Expense.getInstance().getColumn(TablasContract.Expense.AMOUNT);
+        Column expExchange = TablasContract.Expense.getInstance().getColumn(TablasContract.Expense.EXCHANGE_RATE);
+        Column payPercent = TablasContract.Payer.getInstance().getColumn(TablasContract.Payer.PERCENTAGE);
 
         ArrayList<Column> columns = new ArrayList();
         columns.add(expAmount);
@@ -445,7 +445,7 @@ public final class WepayContract {
                 append(" * ").
                 append(payPercent.getFullName()).append(")");
 
-        String alias = WepayContract.Expense.USER_BALANCE;
+        String alias = TablasContract.Expense.USER_BALANCE;
 
         return new Metric(columns, expression.toString());
     }

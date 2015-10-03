@@ -18,8 +18,8 @@ import java.util.Iterator;
 /**
  * Created by Moha on 7/3/15.
  */
-public class WepayProvider extends ContentProvider{
-    private static final String TAG = "WepayProvider";
+public class TablasProvider extends ContentProvider{
+    private static final String TAG = "TablasProvider";
 
     //TODO: need to close database
 
@@ -31,7 +31,7 @@ public class WepayProvider extends ContentProvider{
     private static final boolean NO_BALANCE = false;
 
 
-    protected static final String PROVIDER_AUTHORITY = WepayContract.AUTHORITY;
+    protected static final String PROVIDER_AUTHORITY = TablasContract.AUTHORITY;
     private static final int USER_ID = 1;
     private static final int USERS = 18;
     private static final int USER_GROUPS = 2;
@@ -59,34 +59,34 @@ public class WepayProvider extends ContentProvider{
 
     static
     {   //TODO: possibly add a GROUP_USERS
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.User.getInstance().getTableName() + "/*", USER_ID);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.User.getInstance().getTableName(), USERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.User.getInstance().getTableName() + "/*/groups", USER_GROUPS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.getInstance().getTableName(), GROUPS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.getInstance().getTableName() + "/#", GROUP_ID);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.getInstance().getTableName() + "/#/users", GROUP_MEMBER_USERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.getInstance().getTableName() + "/#/expense/#/payers", GROUP_EXPENSE_PAYERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Group.getInstance().getTableName() + "/#/payers", GROUP_PAYERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Member.getInstance().getTableName() + "/#", MEMBER_ID);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Member.getInstance().getTableName(), MEMBERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Member.getInstance().getTableName() + "/#/users", MEMBER_USER);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.getInstance().getTableName() + "/#", EXPENSE_ID);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.getInstance().getTableName() + "/#/users", EXPENSE_USERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.getInstance().getTableName() + "/user/*/group/#", USER_GROUP_EXPENSES);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Expense.getInstance().getTableName(), EXPENSES);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Payer.getInstance().getTableName() + "/expense/#", EXPENSE_PAYER_USERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Payer.getInstance().getTableName(), PAYERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Location.getInstance().getTableName() + "/#", LOCATION_ID);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Location.getInstance().getTableName() + "/expense/#", EXPENSE_LOCATION);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Recurrence.getInstance().getTableName() + "/#", RECURRENCE_ID);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, WepayContract.Recurrence.getInstance().getTableName() + "/recurrence/#", EXPENSE_RECURRENCE);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.User.getInstance().getTableName() + "/*", USER_ID);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.User.getInstance().getTableName(), USERS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.User.getInstance().getTableName() + "/*/groups", USER_GROUPS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Group.getInstance().getTableName(), GROUPS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Group.getInstance().getTableName() + "/#", GROUP_ID);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Group.getInstance().getTableName() + "/#/users", GROUP_MEMBER_USERS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Group.getInstance().getTableName() + "/#/expense/#/payers", GROUP_EXPENSE_PAYERS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Group.getInstance().getTableName() + "/#/payers", GROUP_PAYERS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Member.getInstance().getTableName() + "/#", MEMBER_ID);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Member.getInstance().getTableName(), MEMBERS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Member.getInstance().getTableName() + "/#/users", MEMBER_USER);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Expense.getInstance().getTableName() + "/#", EXPENSE_ID);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Expense.getInstance().getTableName() + "/#/users", EXPENSE_USERS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Expense.getInstance().getTableName() + "/user/*/group/#", USER_GROUP_EXPENSES);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Expense.getInstance().getTableName(), EXPENSES);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Payer.getInstance().getTableName() + "/expense/#", EXPENSE_PAYER_USERS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Payer.getInstance().getTableName(), PAYERS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Location.getInstance().getTableName() + "/#", LOCATION_ID);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Location.getInstance().getTableName() + "/expense/#", EXPENSE_LOCATION);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Recurrence.getInstance().getTableName() + "/#", RECURRENCE_ID);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Recurrence.getInstance().getTableName() + "/recurrence/#", EXPENSE_RECURRENCE);
 
     }
 
-    private WepayDatabaseHelper mDBHelper;
+    private TablasDatabaseHelper mDBHelper;
 
     public boolean onCreate(){
-        mDBHelper = new WepayDatabaseHelper(getContext());
+        mDBHelper = new TablasDatabaseHelper(getContext());
         return true;
     }
 
@@ -109,69 +109,69 @@ public class WepayProvider extends ContentProvider{
 
         switch(sURIMatcher.match(uri)){
             case USERS:
-                cursorResult = dbConnection.query(WepayContract.User.getInstance().getTableName(),projection, selection /*filter*/,
+                cursorResult = dbConnection.query(TablasContract.User.getInstance().getTableName(),projection, selection /*filter*/,
                         selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
                 break;
 
             case USER_GROUPS: //This also adds a balance from the perspective of a user.
-                appendToProjection(WepayContract.UserGroupBalance.GROUP_TABLE.getColumns(), newProjection);
-                appendToFilter(newSelection, newSelectArgs, WepayContract.UserGroupBalance.MEMBER_TABLE.getColumn(WepayContract.Member.USER_ID), uri.getPathSegments().get(1)); // get the user ID from the path.
+                appendToProjection(TablasContract.UserGroupBalance.GROUP_TABLE.getColumns(), newProjection);
+                appendToFilter(newSelection, newSelectArgs, TablasContract.UserGroupBalance.MEMBER_TABLE.getColumn(TablasContract.Member.USER_ID), uri.getPathSegments().get(1)); // get the user ID from the path.
 
-                //cursorResult = mDBHelper.getReadableDatabase().rawQuery(selectEntity(WepayContract.Group.getInstance().getTableName(), WepayContract.Group.getInstance().getColumnNames(), projection, true, JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER, selection, sortOrder, userId, null), selectionArgs);
-                metric = WepayContract.getBalanceMetric();
-                metric.setColumn(WepayContract.Group.getInstance().getColumn(WepayContract.Group.USER_BALANCE));
+                //cursorResult = mDBHelper.getReadableDatabase().rawQuery(selectEntity(TablasContract.Group.getInstance().getTableName(), TablasContract.Group.getInstance().getColumnNames(), projection, true, JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER, selection, sortOrder, userId, null), selectionArgs);
+                metric = TablasContract.getBalanceMetric();
+                metric.setColumn(TablasContract.Group.getInstance().getColumn(TablasContract.Group.USER_BALANCE));
                 metrics.add(metric);
 
-                sqlQuery = select(WepayContract.UserGroupBalance.getInstance(), metrics,
+                sqlQuery = select(TablasContract.UserGroupBalance.getInstance(), metrics,
                         newProjection.toArray(new String[]{}), newSelection.toString(), sortOrder, false);
-                Log.d(TAG, sqlQuery);
+                //Log.d(TAG, sqlQuery);
                 cursorResult = dbConnection.rawQuery(sqlQuery, newSelectArgs.toArray(new String[]{}));
                 break;
 
             case GROUPS:
-                cursorResult = dbConnection.query(WepayContract.Group.getInstance().getTableName(),projection, selection /*filter*/,
+                cursorResult = dbConnection.query(TablasContract.Group.getInstance().getTableName(),projection, selection /*filter*/,
                         selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
                 break;
 
             case MEMBERS:
-                cursorResult = dbConnection.query(WepayContract.Member.getInstance().getTableName(), projection, selection /*filter*/,
+                cursorResult = dbConnection.query(TablasContract.Member.getInstance().getTableName(), projection, selection /*filter*/,
                         selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
                 break;
 
             case EXPENSES:
-                cursorResult = dbConnection.query(WepayContract.Expense.getInstance().getTableName(), projection, selection /*filter*/,
+                cursorResult = dbConnection.query(TablasContract.Expense.getInstance().getTableName(), projection, selection /*filter*/,
                         selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
                 break;
 
             case PAYERS:
-                cursorResult = dbConnection.query(WepayContract.Payer.getInstance().getTableName(), projection, selection /*filter*/,
+                cursorResult = dbConnection.query(TablasContract.Payer.getInstance().getTableName(), projection, selection /*filter*/,
                         selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
                 break;
 
             case USER_GROUP_EXPENSES:
-                appendToProjection(WepayContract.UserExpenseBalance.EXPENSE_TABLE.getColumns(), newProjection);
+                appendToProjection(TablasContract.UserExpenseBalance.EXPENSE_TABLE.getColumns(), newProjection);
                 appendToFilter(newSelection, newSelectArgs,
-                        WepayContract.UserExpenseBalance.USER_TABLE.getColumn(WepayContract.User._ID),
+                        TablasContract.UserExpenseBalance.USER_TABLE.getColumn(TablasContract.User._ID),
                         uri.getPathSegments().get(2)); // get the user ID from the path.
                 appendToFilter(newSelection, newSelectArgs,
-                        WepayContract.UserExpenseBalance.EXPENSE_TABLE.getColumn(WepayContract.Expense.GROUP_ID),
+                        TablasContract.UserExpenseBalance.EXPENSE_TABLE.getColumn(TablasContract.Expense.GROUP_ID),
                         uri.getPathSegments().get(4)); // // get the group ID from the path.
-                metric = WepayContract.getBalanceMetric();
-                metric.setColumn(WepayContract.UserExpenseBalance.EXPENSE_TABLE.getColumn(WepayContract.Expense.USER_BALANCE));
+                metric = TablasContract.getBalanceMetric();
+                metric.setColumn(TablasContract.UserExpenseBalance.EXPENSE_TABLE.getColumn(TablasContract.Expense.USER_BALANCE));
                 metrics.add(metric);
-                sqlQuery = select(WepayContract.UserExpenseBalance.getInstance(), metrics,
+                sqlQuery = select(TablasContract.UserExpenseBalance.getInstance(), metrics,
                         newProjection.toArray(new String[]{}), newSelection.toString(), sortOrder, false);
                 //Log.d(TAG, sqlQuery);
                 cursorResult = dbConnection.rawQuery(sqlQuery, newSelectArgs.toArray(new String[]{}));
                 break;
 
             case EXPENSE_USERS: //returns entities for both Payer and Member (so both can be read throught their respective entities
-                appendToProjection(WepayContract.UserExpenseBalance.USER_TABLE.getColumns(), newProjection);
-                //appendToProjection(WepayContract.UserExpenseBalance.PAYER_TABLE.getColumns(), newProjection);
+                appendToProjection(TablasContract.UserExpenseBalance.USER_TABLE.getColumns(), newProjection);
+                //appendToProjection(TablasContract.UserExpenseBalance.PAYER_TABLE.getColumns(), newProjection);
                 appendToFilter(newSelection, newSelectArgs,
-                        WepayContract.UserExpenseBalance.PAYER_TABLE.getColumn(WepayContract.Payer.EXPENSE_ID),
+                        TablasContract.UserExpenseBalance.PAYER_TABLE.getColumn(TablasContract.Payer.EXPENSE_ID),
                         uri.getPathSegments().get(1)); //get the expense ID
-                sqlQuery = select(WepayContract.UserExpenseBalance.getInstance(), null,
+                sqlQuery = select(TablasContract.UserExpenseBalance.getInstance(), null,
                         newProjection.toArray(new String[]{}), newSelection.toString(), null, true);
 
                 cursorResult = dbConnection.rawQuery(sqlQuery, newSelectArgs.toArray(new String[]{}));
@@ -190,23 +190,23 @@ public class WepayProvider extends ContentProvider{
         StringBuilder str = new StringBuilder("vnd.android.cursor");
         switch(sURIMatcher.match(uri)){
             case USER_ID:
-                return str.append(".item/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.User.getInstance().getTableName()).toString();
+                return str.append(".item/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.User.getInstance().getTableName()).toString();
             case USERS:
-                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.User.getInstance().getTableName()).toString();
+                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.User.getInstance().getTableName()).toString();
             case USER_GROUPS:
-                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.Group.getInstance().getTableName()).toString();
+                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.Group.getInstance().getTableName()).toString();
             case GROUPS:
-                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.Group.getInstance().getTableName()).toString();
+                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.Group.getInstance().getTableName()).toString();
             case MEMBERS:
-                return str.append("dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.Member.getInstance().getTableName()).toString();
+                return str.append("dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.Member.getInstance().getTableName()).toString();
             case EXPENSES:
-                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.Expense.getInstance().getTableName()).toString();
+                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.Expense.getInstance().getTableName()).toString();
             case PAYERS:
-                return str.append("dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.Payer.getInstance().getTableName()).toString();
+                return str.append("dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.Payer.getInstance().getTableName()).toString();
             case GROUP_MEMBER_USERS:
-                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.User.getInstance().getTableName()).toString();
+                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.User.getInstance().getTableName()).toString();
             case USER_GROUP_EXPENSES:
-                return str.append("dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(WepayContract.Expense.getInstance().getTableName()).toString();
+                return str.append("dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.Expense.getInstance().getTableName()).toString();
         }
 
         return null;
@@ -249,19 +249,19 @@ public class WepayProvider extends ContentProvider{
 
         switch(sURIMatcher.match(uri)){
             case USERS:
-                table = WepayContract.User.getInstance().getTableName();
+                table = TablasContract.User.getInstance().getTableName();
                 break;
             case GROUPS:
-                table = WepayContract.Group.getInstance().getTableName();
+                table = TablasContract.Group.getInstance().getTableName();
                 break;
             case MEMBERS:
-                table = WepayContract.Member.getInstance().getTableName();
+                table = TablasContract.Member.getInstance().getTableName();
                 break;
             case EXPENSES:
-                table = WepayContract.Expense.getInstance().getTableName();
+                table = TablasContract.Expense.getInstance().getTableName();
                 break;
             case PAYERS:
-                table = WepayContract.Payer.getInstance().getTableName();
+                table = TablasContract.Payer.getInstance().getTableName();
                 break;
         }
         return table;
@@ -378,7 +378,7 @@ public class WepayProvider extends ContentProvider{
     }
 
     /**
-     * They joining of multiple tables based on their foregin keys, according to the WepayContract tables's definitions.
+     * They joining of multiple tables based on their foregin keys, according to the TablasContract tables's definitions.
      * @param compositeEntity
      * @return
      */

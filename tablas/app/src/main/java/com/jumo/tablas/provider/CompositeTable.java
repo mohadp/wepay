@@ -63,7 +63,7 @@ public abstract class CompositeTable extends Table {
         if (colfullName.length != 2)
             return null;
 
-        Table table = WepayContract.getTable(colfullName[0]);
+        Table table = TablasContract.getTable(colfullName[0]);
         return table.getColumn(colfullName[1]);
     }
 
@@ -111,7 +111,7 @@ public abstract class CompositeTable extends Table {
                     tableToJoinTreeMap.put(table.getTableName(), leftJoinNode);
                 }
                 for (String foreignTableName : foreignTables) {
-                    if (tablesToJoin.contains(WepayContract.getTable(foreignTableName))) {
+                    if (tablesToJoin.contains(TablasContract.getTable(foreignTableName))) {
                         JoinTreeNode rightJoinNode = tableToJoinTreeMap.get(foreignTableName);
                         if (rightJoinNode == null) {
                             rightJoinNode = new JoinTreeNode(foreignTableName);

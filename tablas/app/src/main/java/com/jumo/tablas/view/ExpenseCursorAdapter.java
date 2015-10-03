@@ -5,7 +5,8 @@ import android.graphics.Bitmap;
 import android.os.HandlerThread;
 import android.util.LruCache;
 
-import com.jumo.tablas.provider.WepayContract;
+import com.jumo.tablas.provider.TablasContract;
+
 import android.content.Context;
 import android.view.*;
 import com.jumo.tablas.model.*;
@@ -75,7 +76,7 @@ class ExpenseCursorAdapter extends DrawableCursorAdapter {
             return;
 
         // get the run for the current row
-        final Expense expense = new Expense(expenseCursor.getEntity(WepayContract.Expense.getInstance()));
+        final Expense expense = new Expense(expenseCursor.getEntity(TablasContract.Expense.getInstance()));
         //Log.d(TAG, "Position " + getCursor().getPosition() + ": " + expense.toString());
 
 

@@ -1,7 +1,7 @@
 package com.jumo.tablas.model;
 
+import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.Table;
-import com.jumo.tablas.provider.WepayContract;
 
 import java.util.Date;
 
@@ -17,72 +17,72 @@ public class Expense implements Entity {
 	}
 
     public Expense(){
-        entity = new ActualEntity(WepayContract.Expense.getInstance());
+        entity = new ActualEntity(TablasContract.Expense.getInstance());
         setExchangeRate(1);
     }
 
 	public double getExchangeRate(){
-		return getDouble(WepayContract.Expense.EXCHANGE_RATE);
+		return getDouble(TablasContract.Expense.EXCHANGE_RATE);
 	}
 	
 	public void setExchangeRate(double rate){
-        setField(WepayContract.Expense.EXCHANGE_RATE, rate);
+        setField(TablasContract.Expense.EXCHANGE_RATE, rate);
 	}
 
     public long getId() {
-        return getLong(WepayContract.Expense._ID);
+        return getLong(TablasContract.Expense._ID);
     }
 
     public void setId(long id) {
-        setField(WepayContract.Expense._ID, id);
+        setField(TablasContract.Expense._ID, id);
     }
 
     public Date getCreatedOn() {
-        return getDate(WepayContract.Expense.CREATED_ON);
+        return getDate(TablasContract.Expense.CREATED_ON);
     }
 
     public void setCreatedOn(Date createdOn) {
-        setField(WepayContract.Expense.CREATED_ON, createdOn);
+        setField(TablasContract.Expense.CREATED_ON, createdOn);
     }
 
     public String getMessage() {
-        return getText(WepayContract.Expense.MESSAGE);
+        return getText(TablasContract.Expense.MESSAGE);
     }
 
     public void setMessage(String message) {
-        setField(WepayContract.Expense.MESSAGE, message);
+        setField(TablasContract.Expense.MESSAGE, message);
     }
 
     public double getAmount() {
-        return getDouble(WepayContract.Expense.AMOUNT);
+        return getDouble(TablasContract.Expense.AMOUNT);
     }
 
     public void setAmount(double amount) {
-        setField(WepayContract.Expense.AMOUNT, amount);
+        setField(TablasContract.Expense.AMOUNT, amount);
     }
 
     public String getCurrencyId() {
-        return getText(WepayContract.Expense.CURRENCY);
+        return getText(TablasContract.Expense.CURRENCY);
     }
 
     public void setCurrencyId(String currencyId) {
-        setField(WepayContract.Expense.CURRENCY, currencyId);
+        setField(TablasContract.Expense.CURRENCY, currencyId);
     }
 
     public long getLocationId() {
-        return getLong(WepayContract.Expense.LOCATION_ID);
+        return getLong(TablasContract.Expense.LOCATION_ID);
     }
 
     public void setLocationId(long locationId) {
-        setField(WepayContract.Expense.LOCATION_ID, locationId);
+        setField(TablasContract.Expense.LOCATION_ID, locationId);
     }
 
     public long getCategoryId() {
-        return getLong(WepayContract.Expense.CATEGORY_ID);
+        return getLong(TablasContract.Expense.CATEGORY_ID);
     }
 
     public void setCategoryId(long categoryId) {
-        setField(WepayContract.Expense.CATEGORY_ID, categoryId);
+        setField(TablasContract.Expense.CATEGORY_ID, categoryId);
     }
 
     /**
@@ -94,43 +94,43 @@ public class Expense implements Entity {
      * @return
      */
     public long getRecurrenceId() {
-        return getLong(WepayContract.Expense.RECURRENCE_ID);
+        return getLong(TablasContract.Expense.RECURRENCE_ID);
     }
 
     public void setRecurrenceId(long recurrenceId) {
-        setField(WepayContract.Expense.RECURRENCE_ID, recurrenceId);
+        setField(TablasContract.Expense.RECURRENCE_ID, recurrenceId);
     }
 
     public long getGroupExpenseId() {
-        return getLong(WepayContract.Expense.GROUP_EXPENSE_ID);
+        return getLong(TablasContract.Expense.GROUP_EXPENSE_ID);
     }
 
     public void setGroupExpenseId(long groupExpenseId) {
-        setField(WepayContract.Expense.GROUP_EXPENSE_ID, groupExpenseId);
+        setField(TablasContract.Expense.GROUP_EXPENSE_ID, groupExpenseId);
     }
 
     public boolean isPayment() {
-        return getBoolean(WepayContract.Expense.IS_PAYMENT);
+        return getBoolean(TablasContract.Expense.IS_PAYMENT);
     }
 
     public void setPayment(boolean isPayment) {
-        setField(WepayContract.Expense.IS_PAYMENT, isPayment);
+        setField(TablasContract.Expense.IS_PAYMENT, isPayment);
     }
 
     public long getGroupId() {
-        return getLong(WepayContract.Expense.GROUP_ID);
+        return getLong(TablasContract.Expense.GROUP_ID);
     }
 
     public void setGroupId(long groupId) {
-        setField(WepayContract.Expense.GROUP_ID, groupId);
+        setField(TablasContract.Expense.GROUP_ID, groupId);
     }
 
     public double getUserBalance() {
-        return getDouble(WepayContract.Expense.USER_BALANCE);
+        return getDouble(TablasContract.Expense.USER_BALANCE);
     }
 
     public void setUserBalance(double userBalance) {
-        setField(WepayContract.Expense.USER_BALANCE, userBalance);
+        setField(TablasContract.Expense.USER_BALANCE, userBalance);
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.jumo.tablas.model;
 
+import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.Table;
-import com.jumo.tablas.provider.WepayContract;
 
 import java.util.Date;
 
@@ -17,47 +17,47 @@ public class Member implements Entity {
     }
 
     public Member(){
-        entity = new ActualEntity(WepayContract.Member.getInstance());
+        entity = new ActualEntity(TablasContract.Member.getInstance());
     }
 
     public long getId() {
-        return getLong(WepayContract.Member._ID);
+        return getLong(TablasContract.Member._ID);
     }
 
     public void setId(long id) {
-        setField(WepayContract.Member._ID, id);
+        setField(TablasContract.Member._ID, id);
     }
 
     public String getUserId() {
-        return getText(WepayContract.Member.USER_ID);
+        return getText(TablasContract.Member.USER_ID);
     }
 
     public void setUserId(String userId) {
-        setField(WepayContract.Member.USER_ID, userId);
+        setField(TablasContract.Member.USER_ID, userId);
     }
 
     public boolean isAdmin() {
-        return getBoolean(WepayContract.Member.IS_ADMIN);
+        return getBoolean(TablasContract.Member.IS_ADMIN);
     }
 
     public void setAdmin(boolean isAdmin) {
-        setField(WepayContract.Member.IS_ADMIN, isAdmin);
+        setField(TablasContract.Member.IS_ADMIN, isAdmin);
     }
 
     public boolean hasLeftGroup() {
-        return getBoolean(WepayContract.Member.LEFT_GROUP);
+        return getBoolean(TablasContract.Member.LEFT_GROUP);
     }
 
     public void setLeftGroup(boolean leftGroup) {
-        setField(WepayContract.Member.LEFT_GROUP, leftGroup);
+        setField(TablasContract.Member.LEFT_GROUP, leftGroup);
     }
 
     public long getGroupId() {
-        return getLong(WepayContract.Member.GROUP_ID);
+        return getLong(TablasContract.Member.GROUP_ID);
     }
 
     public void setGroupId(long groupId) {
-        setField(WepayContract.Member.GROUP_ID, groupId);
+        setField(TablasContract.Member.GROUP_ID, groupId);
     }
 
 

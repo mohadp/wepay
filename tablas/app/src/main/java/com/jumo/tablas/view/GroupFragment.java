@@ -24,7 +24,7 @@ import com.jumo.tablas.controller.ExpenseManager;
 import android.widget.*;
 
 import com.jumo.tablas.model.Group;
-import com.jumo.tablas.provider.WepayContract;
+import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.*;
 
 /**
@@ -180,7 +180,7 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
         //no need to check for GROUPS_LOADER
-        Uri uri = WepayContract.BASE_URI.buildUpon().appendPath(WepayContract.User.getInstance().getTableName())
+        Uri uri = TablasContract.BASE_URI.buildUpon().appendPath(TablasContract.User.getInstance().getTableName())
                 .appendPath(mUserName).appendPath("groups")
                 .build();
 

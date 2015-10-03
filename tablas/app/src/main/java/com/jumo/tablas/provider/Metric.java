@@ -54,7 +54,7 @@ class Metric {
         ArrayList<Table> tables = new ArrayList<Table>();
 
         for (Column c : mDependedColumns) {
-            tables.add(WepayContract.getTable(c.table));
+            tables.add(TablasContract.getTable(c.table));
         }
         return tables;
     }

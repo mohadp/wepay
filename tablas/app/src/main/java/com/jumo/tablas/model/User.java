@@ -1,7 +1,7 @@
 package com.jumo.tablas.model;
 
+import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.Table;
-import com.jumo.tablas.provider.WepayContract;
 
 import java.util.Date;
 
@@ -16,39 +16,39 @@ public class User implements Entity {
     }
 
     public User(){
-        entity = new ActualEntity(WepayContract.User.getInstance());
+        entity = new ActualEntity(TablasContract.User.getInstance());
     }
 
     public String getId() {
-        return getText(WepayContract.User._ID);
+        return getText(TablasContract.User._ID);
     }
 
     public void setId(String id) {
-        setField(WepayContract.User._ID, id);
+        setField(TablasContract.User._ID, id);
     }
 
     public String getName() {
-        return getText(WepayContract.User.NAME);
+        return getText(TablasContract.User.NAME);
     }
 
     public void setName(String name) {
-        setField(WepayContract.User.NAME, name);
+        setField(TablasContract.User.NAME, name);
     }
 
     public String getPhone() {
-        return getText(WepayContract.User.PHONE);
+        return getText(TablasContract.User.PHONE);
     }
 
     public void setPhone(String phone) {
-        setField(WepayContract.User.PHONE, phone);
+        setField(TablasContract.User.PHONE, phone);
     }
 
     public double getUserBalance() {
-        return getDouble(WepayContract.User.USER_BALANCE);
+        return getDouble(TablasContract.User.USER_BALANCE);
     }
 
     public void setUserBalance(double userBalance) {
-        setField(WepayContract.User.USER_BALANCE, userBalance);
+        setField(TablasContract.User.USER_BALANCE, userBalance);
     }
 
     @Override

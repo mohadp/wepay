@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import com.jumo.tablas.R;
 import com.jumo.tablas.model.Group;
-import com.jumo.tablas.provider.WepayContract;
+import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.EntityCursor;
 import com.jumo.tablas.view.custom.RoundImageView;
 import com.jumo.tablas.view.loaders.DrawableCursorAdapter;
@@ -54,7 +54,7 @@ public class GroupCursorAdapter extends DrawableCursorAdapter {
         if(groupCursor == null) return;
 
         // get the run for the current row
-        Group group = new Group(groupCursor.getEntity(WepayContract.Group.getInstance()));
+        Group group = new Group(groupCursor.getEntity(TablasContract.Group.getInstance()));
         //Log.d(TAG, group.toString());
 
         // set up the start date text view
@@ -72,7 +72,7 @@ public class GroupCursorAdapter extends DrawableCursorAdapter {
         if(groupCursor == null) return null;
 
         groupCursor.moveToPosition(i);
-        return new Group(groupCursor.getEntity(WepayContract.Group.getInstance()));
+        return new Group(groupCursor.getEntity(TablasContract.Group.getInstance()));
     }
 
 }
