@@ -4,7 +4,7 @@
         android:icon="@drawable/ic_launcher" android:theme="@style/AppTheme">
 
         <activity
-            android:name=".view.GroupActivity"
+            android:name=".ui.GroupActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme">
             <intent-filter>
@@ -13,14 +13,14 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".view.ExpenseActivity"
+            android:name=".ui.ExpenseActivity"
             android:label="@string/app_name"
             android:windowSoftInputMode="stateHidden"
             android:theme="@style/AppTheme">
         </activity>
         <provider
             android:authorities="com.jumo.tablas.provider"
-            android:name=".provider.WepayProvider">
+            android:name=".provider.TablasProvider">
         </provider>
 
 
