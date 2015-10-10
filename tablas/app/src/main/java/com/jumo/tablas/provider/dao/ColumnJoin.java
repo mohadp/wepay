@@ -1,12 +1,12 @@
-package com.jumo.tablas.provider;
+package com.jumo.tablas.provider.dao;
 
 /**
  * Created by Moha on 9/7/15.
  */
-class ColumnJoin {
-    protected Column left;
-    protected Column right;
-    protected String operator;
+public class ColumnJoin {
+    public Column left;
+    public Column right;
+    public String operator;
 
     public ColumnJoin(Column first, Column second) {
         left = first;

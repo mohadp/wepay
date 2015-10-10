@@ -1,4 +1,4 @@
-package com.jumo.tablas.controller;
+package com.jumo.tablas.util;
 
 import android.content.ContentResolver;
 import android.content.Context;

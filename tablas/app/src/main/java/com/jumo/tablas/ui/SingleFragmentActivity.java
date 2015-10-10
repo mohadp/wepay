@@ -1,4 +1,4 @@
-package com.jumo.tablas.view;
+package com.jumo.tablas.ui;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -7,7 +7,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.KeyEvent;
 
 import com.jumo.tablas.R;
-import com.jumo.tablas.view.custom.OnKeyEventListener;
+import com.jumo.tablas.ui.util.OnKeyEventListener;
 
 
 /**

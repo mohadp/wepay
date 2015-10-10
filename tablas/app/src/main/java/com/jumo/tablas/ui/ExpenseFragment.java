@@ -1,4 +1,4 @@
-package com.jumo.tablas.view;
+package com.jumo.tablas.ui;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
@@ -30,8 +30,9 @@ import android.widget.PopupWindow;
 import com.jumo.tablas.R;
 import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.EntityCursor;
-import com.jumo.tablas.view.custom.OnKeyEventListener;
-import com.jumo.tablas.view.loaders.ExpenseUserThreadHandler;
+import com.jumo.tablas.ui.adapters.ExpenseCursorAdapter;
+import com.jumo.tablas.ui.util.OnKeyEventListener;
+import com.jumo.tablas.ui.loaders.ExpenseUserThreadHandler;
 
 /**
  * A fragment representing a list of Items.

@@ -1,7 +1,7 @@
 package com.jumo.tablas.model;
 
 import com.jumo.tablas.provider.TablasContract;
-import com.jumo.tablas.provider.Table;
+import com.jumo.tablas.provider.dao.Table;
 
 import java.util.Date;
 

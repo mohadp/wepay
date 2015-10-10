@@ -1,10 +1,10 @@
-package com.jumo.tablas.view;
+package com.jumo.tablas.ui;
 import android.app.*;
 import android.os.*;
 import android.view.*;
 import android.widget.*;
 import com.jumo.tablas.*;
-import com.jumo.tablas.controller.*;
+import com.jumo.tablas.util.*;
 
 public class ConversationFragment extends Fragment{
 	

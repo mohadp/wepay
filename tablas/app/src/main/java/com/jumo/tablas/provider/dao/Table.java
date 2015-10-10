@@ -1,4 +1,4 @@
-package com.jumo.tablas.provider;
+package com.jumo.tablas.provider.dao;
 
 import java.util.ArrayList;
 import java.util.Collection;

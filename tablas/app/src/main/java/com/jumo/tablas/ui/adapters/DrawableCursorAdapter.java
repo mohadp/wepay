@@ -1,4 +1,4 @@
-package com.jumo.tablas.view.loaders;
+package com.jumo.tablas.ui.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -8,6 +8,8 @@ import android.widget.CursorAdapter;
 import android.widget.ImageView;
 
 import com.jumo.tablas.provider.dao.EntityCursor;
+import com.jumo.tablas.ui.loaders.BitmapTask;
+import com.jumo.tablas.ui.loaders.DrawableAsync;
 
 import java.lang.ref.WeakReference;
 

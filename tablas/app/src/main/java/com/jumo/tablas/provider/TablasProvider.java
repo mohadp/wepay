@@ -7,7 +7,14 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.util.Log;
+
+import com.jumo.tablas.provider.dao.Column;
+import com.jumo.tablas.provider.dao.ColumnJoin;
+import com.jumo.tablas.provider.dao.CompositeTable;
+import com.jumo.tablas.provider.dao.JoinTreeNode;
+import com.jumo.tablas.provider.dao.Metric;
+import com.jumo.tablas.provider.dao.Table;
+import com.jumo.tablas.provider.db.TablasDatabaseHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;

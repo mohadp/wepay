@@ -2,8 +2,8 @@ package com.jumo.tablas.model;
 
 import android.util.Log;
 
-import com.jumo.tablas.provider.Column;
-import com.jumo.tablas.provider.Table;
+import com.jumo.tablas.provider.dao.Column;
+import com.jumo.tablas.provider.dao.Table;
 
 import java.util.Date;
 import java.util.HashMap;

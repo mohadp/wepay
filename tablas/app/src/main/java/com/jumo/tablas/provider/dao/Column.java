@@ -1,4 +1,4 @@
-package com.jumo.tablas.provider;
+package com.jumo.tablas.provider.dao;
 
 /**
  * Created by Moha on 9/7/15.

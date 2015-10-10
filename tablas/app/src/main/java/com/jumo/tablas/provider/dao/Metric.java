@@ -1,11 +1,13 @@
-package com.jumo.tablas.provider;
+package com.jumo.tablas.provider.dao;
+
+import com.jumo.tablas.provider.TablasContract;
 
 import java.util.ArrayList;
 
 /**
  * Created by Moha on 9/7/15.
  */
-class Metric {
+public class Metric {
     private ArrayList<Column> mDependedColumns;
     private String mExpression;
     private Column mColumn;

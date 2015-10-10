@@ -2,6 +2,12 @@ package com.jumo.tablas.provider;
 
 import android.net.Uri;
 
+import com.jumo.tablas.provider.dao.Column;
+import com.jumo.tablas.provider.dao.ColumnJoin;
+import com.jumo.tablas.provider.dao.CompositeTable;
+import com.jumo.tablas.provider.dao.Metric;
+import com.jumo.tablas.provider.dao.Table;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 

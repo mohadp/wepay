@@ -5,8 +5,6 @@ import android.database.CursorWrapper;
 
 import com.jumo.tablas.model.ActualEntity;
 import com.jumo.tablas.model.Entity;
-import com.jumo.tablas.provider.Table;
-import com.jumo.tablas.provider.Column;
 
 import java.util.Date;
 

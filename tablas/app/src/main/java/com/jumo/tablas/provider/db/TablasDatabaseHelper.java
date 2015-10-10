@@ -1,8 +1,11 @@
-package com.jumo.tablas.provider;
+package com.jumo.tablas.provider.db;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import com.jumo.tablas.provider.dao.Column;
+import com.jumo.tablas.provider.TablasContract;
 
 import java.util.Collection;
 

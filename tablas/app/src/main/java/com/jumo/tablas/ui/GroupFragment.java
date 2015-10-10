@@ -1,4 +1,4 @@
-package com.jumo.tablas.view;
+package com.jumo.tablas.ui;
 
 import android.app.Activity;
 import android.app.LoaderManager;
@@ -20,7 +20,8 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import com.jumo.tablas.R;
-import com.jumo.tablas.controller.ExpenseManager;
+import com.jumo.tablas.ui.adapters.GroupCursorAdapter;
+import com.jumo.tablas.util.ExpenseManager;
 import android.widget.*;
 
 import com.jumo.tablas.model.Group;

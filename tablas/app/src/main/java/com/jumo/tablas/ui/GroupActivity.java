@@ -1,4 +1,4 @@
-package com.jumo.tablas.view;
+package com.jumo.tablas.ui;
 
 import android.app.Fragment;
 

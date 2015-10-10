@@ -1,11 +1,11 @@
-package com.jumo.tablas.provider;
+package com.jumo.tablas.provider.dao;
 
 import java.util.ArrayList;
 
 /**
  * Created by Moha on 9/7/15.
  */
-class JoinTreeNode {
+public class JoinTreeNode {
     private ArrayList<ColumnJoin> mColumnJoins;
     private String mTableName;
     private JoinTreeNode mLeft;

@@ -1,7 +1,6 @@
-package com.jumo.tablas.view;
+package com.jumo.tablas.ui;
 
 import android.app.Fragment;
-import android.view.KeyEvent;
 
 /**
  * Created by Moha on 7/3/15.

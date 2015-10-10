@@ -1,4 +1,4 @@
-package com.jumo.tablas.provider.dummy;
+package com.jumo.tablas.provider.db;
 
 import java.util.Collection;
 import java.util.regex.Matcher;

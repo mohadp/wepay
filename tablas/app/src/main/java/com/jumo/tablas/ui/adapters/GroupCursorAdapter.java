@@ -1,4 +1,4 @@
-package com.jumo.tablas.view;
+package com.jumo.tablas.ui.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -12,8 +12,7 @@ import com.jumo.tablas.R;
 import com.jumo.tablas.model.Group;
 import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.EntityCursor;
-import com.jumo.tablas.view.custom.RoundImageView;
-import com.jumo.tablas.view.loaders.DrawableCursorAdapter;
+import com.jumo.tablas.ui.views.RoundImageView;
 
 import java.lang.ref.WeakReference;
 

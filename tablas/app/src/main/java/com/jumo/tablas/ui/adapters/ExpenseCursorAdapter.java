@@ -1,4 +1,4 @@
-package com.jumo.tablas.view;
+package com.jumo.tablas.ui.adapters;
 
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -14,15 +14,14 @@ import android.widget.*;
 
 import com.jumo.tablas.R;
 import com.jumo.tablas.provider.dao.*;
-import com.jumo.tablas.view.custom.ImageViewRow;
-import com.jumo.tablas.view.custom.RoundImageView;
-import com.jumo.tablas.view.loaders.DrawableCursorAdapter;
-import com.jumo.tablas.view.loaders.ExpenseUserThreadHandler;
+import com.jumo.tablas.ui.views.ImageViewRow;
+import com.jumo.tablas.ui.views.RoundImageView;
+import com.jumo.tablas.ui.loaders.ExpenseUserThreadHandler;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-class ExpenseCursorAdapter extends DrawableCursorAdapter {
+public class ExpenseCursorAdapter extends DrawableCursorAdapter {
 	private static final String TAG = "ExpenseCursorAdapter";
 	
 	//To get balances on a per-user basis for a particular group

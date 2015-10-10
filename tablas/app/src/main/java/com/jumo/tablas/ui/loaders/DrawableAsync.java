@@ -1,4 +1,4 @@
-package com.jumo.tablas.view.loaders;
+package com.jumo.tablas.ui.loaders;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;

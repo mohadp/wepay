@@ -1,4 +1,4 @@
-package com.jumo.tablas.view.custom;
+package com.jumo.tablas.ui.views;
 import android.view.View;
 import android.widget.*;
 import android.content.*;

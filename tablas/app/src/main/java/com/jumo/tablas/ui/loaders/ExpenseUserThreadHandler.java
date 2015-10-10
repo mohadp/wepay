@@ -1,4 +1,4 @@
-package com.jumo.tablas.view.loaders;
+package com.jumo.tablas.ui.loaders;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -14,7 +14,7 @@ import com.jumo.tablas.R;
 import com.jumo.tablas.model.User;
 import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.EntityCursor;
-import com.jumo.tablas.view.custom.ImageViewRow;
+import com.jumo.tablas.ui.views.ImageViewRow;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
