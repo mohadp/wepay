@@ -121,15 +121,15 @@ public class TablasProvider extends ContentProvider{
                 break;
 
             case USER_GROUPS: //This also adds a balance from the perspective of a user.
-                appendToProjection(TablasContract.UserGroupBalance.GROUP_TABLE.getColumns(), newProjection);
-                appendToFilter(newSelection, newSelectArgs, TablasContract.UserGroupBalance.MEMBER_TABLE.getColumn(TablasContract.Member.USER_ID), uri.getPathSegments().get(1)); // get the user ID from the path.
+                appendToProjection(TablasContract.Compound.GroupBalance.GROUP_TABLE.getColumns(), newProjection);
+                appendToFilter(newSelection, newSelectArgs, TablasContract.Compound.GroupBalance.MEMBER_TABLE.getColumn(TablasContract.Member.USER_ID), uri.getPathSegments().get(1)); // get the user ID from the path.
 
                 //cursorResult = mDBHelper.getReadableDatabase().rawQuery(selectEntity(TablasContract.Group.getInstance().getTableName(), TablasContract.Group.getInstance().getColumnNames(), projection, true, JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER, selection, sortOrder, userId, null), selectionArgs);
                 metric = TablasContract.getBalanceMetric();
                 metric.setColumn(TablasContract.Group.getInstance().getColumn(TablasContract.Group.USER_BALANCE));
                 metrics.add(metric);
 
-                sqlQuery = select(TablasContract.UserGroupBalance.getInstance(), metrics,
+                sqlQuery = select(TablasContract.Compound.GroupBalance.getInstance(), metrics,
                         newProjection.toArray(new String[]{}), newSelection.toString(), sortOrder, false);
                 //Log.d(TAG, sqlQuery);
                 cursorResult = dbConnection.rawQuery(sqlQuery, newSelectArgs.toArray(new String[]{}));
@@ -156,29 +156,29 @@ public class TablasProvider extends ContentProvider{
                 break;
 
             case USER_GROUP_EXPENSES:
-                appendToProjection(TablasContract.UserExpenseBalance.EXPENSE_TABLE.getColumns(), newProjection);
+                appendToProjection(TablasContract.Compound.ExpenseBalance.EXPENSE_TABLE.getColumns(), newProjection);
                 appendToFilter(newSelection, newSelectArgs,
-                        TablasContract.UserExpenseBalance.USER_TABLE.getColumn(TablasContract.User._ID),
+                        TablasContract.Compound.ExpenseBalance.MEMBER_TABLE.getColumn(TablasContract.Member.USER_ID),
                         uri.getPathSegments().get(2)); // get the user ID from the path.
                 appendToFilter(newSelection, newSelectArgs,
-                        TablasContract.UserExpenseBalance.EXPENSE_TABLE.getColumn(TablasContract.Expense.GROUP_ID),
+                        TablasContract.Compound.ExpenseBalance.EXPENSE_TABLE.getColumn(TablasContract.Expense.GROUP_ID),
                         uri.getPathSegments().get(4)); // // get the group ID from the path.
                 metric = TablasContract.getBalanceMetric();
-                metric.setColumn(TablasContract.UserExpenseBalance.EXPENSE_TABLE.getColumn(TablasContract.Expense.USER_BALANCE));
+                metric.setColumn(TablasContract.Compound.ExpenseBalance.EXPENSE_TABLE.getColumn(TablasContract.Expense.USER_BALANCE));
                 metrics.add(metric);
-                sqlQuery = select(TablasContract.UserExpenseBalance.getInstance(), metrics,
+                sqlQuery = select(TablasContract.Compound.ExpenseBalance.getInstance(), metrics,
                         newProjection.toArray(new String[]{}), newSelection.toString(), sortOrder, false);
                 //Log.d(TAG, sqlQuery);
                 cursorResult = dbConnection.rawQuery(sqlQuery, newSelectArgs.toArray(new String[]{}));
                 break;
 
             case EXPENSE_USERS: //returns entities for both Payer and Member (so both can be read throught their respective entities
-                appendToProjection(TablasContract.UserExpenseBalance.USER_TABLE.getColumns(), newProjection);
-                //appendToProjection(TablasContract.UserExpenseBalance.PAYER_TABLE.getColumns(), newProjection);
+                appendToProjection(TablasContract.Compound.ExpenseBalance.MEMBER_TABLE.getColumns(), newProjection);
+                //appendToProjection(TablasContract.ExpenseBalance.PAYER_TABLE.getColumns(), newProjection);
                 appendToFilter(newSelection, newSelectArgs,
-                        TablasContract.UserExpenseBalance.PAYER_TABLE.getColumn(TablasContract.Payer.EXPENSE_ID),
+                        TablasContract.Compound.ExpenseBalance.PAYER_TABLE.getColumn(TablasContract.Payer.EXPENSE_ID),
                         uri.getPathSegments().get(1)); //get the expense ID
-                sqlQuery = select(TablasContract.UserExpenseBalance.getInstance(), null,
+                sqlQuery = select(TablasContract.Compound.ExpenseBalance.getInstance(), null,
                         newProjection.toArray(new String[]{}), newSelection.toString(), null, true);
 
                 cursorResult = dbConnection.rawQuery(sqlQuery, newSelectArgs.toArray(new String[]{}));

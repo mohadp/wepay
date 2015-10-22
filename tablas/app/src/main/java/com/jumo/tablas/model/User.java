@@ -4,6 +4,7 @@ import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.Table;
 
 import java.util.Date;
+import java.util.Iterator;
 
 /**
  * Created by Moha on 6/26/15.
@@ -35,12 +36,12 @@ public class User implements Entity {
         setField(TablasContract.User.NAME, name);
     }
 
-    public String getPhone() {
-        return getText(TablasContract.User.PHONE);
+    public String getEmail() {
+        return getText(TablasContract.User.EMAIL);
     }
 
-    public void setPhone(String phone) {
-        setField(TablasContract.User.PHONE, phone);
+    public void setEmail(String phone) {
+        setField(TablasContract.User.EMAIL, phone);
     }
 
     public double getUserBalance() {
@@ -99,6 +100,11 @@ public class User implements Entity {
     @Override
     public void setField(String column, Object val) {
         entity.setField(column, val);
+    }
+
+    @Override
+    public Iterator<String> getFieldNameIterator(){
+        return entity.getFieldNameIterator();
     }
 
     @Override

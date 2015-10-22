@@ -15,11 +15,14 @@ import com.jumo.tablas.ui.util.OnKeyEventListener;
  */
 public abstract class SingleFragmentActivity extends ActionBarActivity {
     protected abstract Fragment createFragment();
+    protected abstract void setDefaultPreferences();
 
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
 		setContentView(getActivityLayoutResId());
+        setDefaultPreferences();
+
 		
 		FragmentManager fm = getFragmentManager();
         Fragment fragment = fm.findFragmentById(getFragmentLayoutResId());

@@ -4,6 +4,7 @@ import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.Table;
 
 import java.util.Date;
+import java.util.Iterator;
 
 /**
  * Created by Moha on 6/26/15.
@@ -108,6 +109,11 @@ public class Member implements Entity {
     @Override
     public void setField(String column, Object val) {
         entity.setField(column, val);
+    }
+
+    @Override
+    public Iterator<String> getFieldNameIterator(){
+        return entity.getFieldNameIterator();
     }
 
     @Override

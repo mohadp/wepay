@@ -7,6 +7,7 @@ import com.jumo.tablas.provider.dao.Table;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * Created by Moha on 9/7/15.
@@ -117,6 +118,11 @@ public class ActualEntity implements Entity {
     @Override
     public void setField(String column, Object val){
         attributes.put(column, val);
+    }
+
+    @Override
+    public Iterator<String> getFieldNameIterator(){
+        return attributes.keySet().iterator();
     }
 
     @Override

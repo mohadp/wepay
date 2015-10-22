@@ -2,6 +2,7 @@ package com.jumo.tablas.ui;
 
 import android.app.Activity;
 import android.app.LoaderManager;
+import android.content.ContentResolver;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
@@ -10,6 +11,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.util.LruCache;
 import android.view.LayoutInflater;
@@ -20,8 +22,9 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import com.jumo.tablas.R;
+import com.jumo.tablas.account.AccountService;
 import com.jumo.tablas.ui.adapters.GroupCursorAdapter;
-import com.jumo.tablas.util.ExpenseManager;
+import com.jumo.tablas.common.SampleDataUtil;
 import android.widget.*;
 
 import com.jumo.tablas.model.Group;
@@ -93,7 +96,7 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //expenseManager = ExpenseManager.newInstance(this.getActivity());
+        //expenseManager = SampleDataUtil.newInstance(this.getActivity());
         setHasOptionsMenu(true);
         setRetainInstance(true);
 
@@ -132,8 +135,111 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
         mListView.setOnItemClickListener(new GroupListListener());
         mListView.setEmptyView(inflater.inflate(R.layout.list_empty, mListView, false));
 
+        testContactProviderQuery(AccountService.ACCOUNT_TYPE);
+
         return view;
     }
+
+
+    /**
+     * To test querying contacts
+     */
+    private void testContactProviderQuery(String accountType){
+        Uri contactsUri = ContactsContract.RawContacts.CONTENT_URI;
+
+        ContentResolver resolver = getActivity().getContentResolver();
+
+        String[] projection = new String[]{
+                ContactsContract.RawContacts.CONTACT_ID,
+                ContactsContract.RawContacts._ID,
+                ContactsContract.RawContacts.ACCOUNT_TYPE,
+                ContactsContract.RawContacts.ACCOUNT_NAME,
+                ContactsContract.RawContacts.DATA_SET,
+                ContactsContract.RawContacts.SOURCE_ID,
+                ContactsContract.RawContacts.DISPLAY_NAME_PRIMARY
+        };
+
+        String filter = ContactsContract.RawContacts.ACCOUNT_TYPE + " like ? "; //OR " + ContactsContract.RawContacts.ACCOUNT_NAME + " like ?";
+        String[] filterVals = new String[]{ accountType }; //AccountService.ACCOUNT_TYPE};
+
+        Cursor cursor = resolver.query(contactsUri, projection, filter, filterVals, null);
+        if(cursor != null) cursor.moveToFirst();
+
+        Log.d(TAG, "Queried Contacts:");
+        while(cursor != null && !cursor.isAfterLast()){
+            long rawContactId = cursor.getLong(1);
+            StringBuilder sb = new StringBuilder();
+            sb.append("Contact [").append(rawContactId).append(", ").append(cursor.getString(3)).append(", ").append(cursor.getString(2)).append(", ").append(cursor.getString(6)).append("]:");
+            Log.d(TAG, sb.toString());
+
+            ContentResolver resolverDetail = getActivity().getContentResolver();
+            Uri contactDetailUri = ContactsContract.Data.CONTENT_URI;
+            //ContactsContract.Data.CONTENT_URI;
+            //Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, ContactsContract.Contacts.Entity.CONTENT_DIRECTORY);
+
+            //Log.d(TAG, contactDetailUri.toString());
+
+            projection = new String[]{
+                    //ContactsContract.Contacts.Entity.CONTACT_ID,
+                    //ContactsContract.Contacts.Entity.RAW_CONTACT_ID,
+                    //ContactsContract.Contacts.Entity.DISPLAY_NAME,
+                    //ContactsContract.RawContacts.DISPLAY_NAME_PRIMARY
+                    //ContactsContract.Contacts.Entity.MIMETYPE,
+                    //ContactsContract.CommonDataKinds.Phone.RAW_CONTACT_ID,
+                    ContactsContract.CommonDataKinds.Phone.MIMETYPE,
+                    //ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                    //ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME,
+                    //ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME,
+                    ContactsContract.CommonDataKinds.Phone.NUMBER,
+                    ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER,
+                    ContactsContract.Data.ACCOUNT_TYPE_AND_DATA_SET
+                    //ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET
+                    //ContactsContract.Contacts.Entity.DATA1,
+                    //ContactsContract.Contacts.Entity.DATA2,
+                    //ContactsContract.Contacts.Entity.DATA3,
+                    //ContactsContract.Contacts.Entity.DATA4,
+                    //ContactsContract.Contacts.Entity.DATA5,
+                    //ContactsContract.Contacts.Entity.DATA6,
+                    //ContactsContract.Contacts.Entity.DATA7,
+                    //ContactsContract.Contacts.Entity.DATA8,
+                    //ContactsContract.Contacts.Entity.DATA9,
+                    //ContactsContract.Contacts.Entity.DATA10,
+                    //ContactsContract.Contacts.Entity.DATA11,
+                    //ContactsContract.Contacts.Entity.DATA12,
+                    //ContactsContract.Contacts.Entity.DATA13,
+                    //ContactsContract.Contacts.Entity.DATA14
+            };
+
+            //filter = ContactsContract.Contacts.Entity.RAW_CONTACT_ID + " = ?";
+            //filterVals = new String[]{ String.valueOf(rawContactId) };
+
+            filter = /*"(" + ContactsContract.Contacts.Entity.MIMETYPE + " = ?  " + /*AND " + ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER + " IS NOT NULL) */ /*" OR " + ContactsContract.Contacts.Entity.MIMETYPE  + " = ?) AND " + ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET + " = ? AND " + */ContactsContract.CommonDataKinds.Phone.RAW_CONTACT_ID + " = ?";
+            filterVals = new String[]{ /*ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE,  AccountService.ACCOUNT_TYPE, */String.valueOf(rawContactId)};
+
+            String sortBy = ContactsContract.Contacts.Entity.RAW_CONTACT_ID + " ASC"; //, " + ContactsContract.Contacts.Entity.DISPLAY_NAME + " ASC ";
+
+            //Retrieving all Data elements for every contact.
+            Cursor cursorDetail = resolverDetail.query(contactDetailUri, projection, filter, filterVals, null);
+            cursorDetail.moveToFirst();
+
+            while(cursorDetail != null && !cursorDetail.isAfterLast()){
+                StringBuilder sbDetail = new StringBuilder("{");
+
+                for(int i = 0; i < cursorDetail.getColumnCount(); i++){
+                    sbDetail.append(cursorDetail.getColumnName(i)).append(": ").append(cursorDetail.getString(i));
+                    if(i < cursorDetail.getColumnCount() - 1) {
+                        sbDetail.append("; ");
+                    }
+                }
+                sbDetail.append("}\n");
+                Log.d(TAG, "\t" + sbDetail.toString());
+                cursorDetail.moveToNext();
+            }
+
+            cursor.moveToNext();
+        }
+    }
+
 
     @Override
     public void onResume() {
@@ -185,7 +291,7 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
                 .appendPath(mUserName).appendPath("groups")
                 .build();
 
-        ExpenseManager.newInstance(getActivity()).createSampleData();
+        SampleDataUtil.newInstance(getActivity()).createSampleData();
         Log.d(TAG, "Loader callback: onCreateLoad()");
 
         return new CursorLoader(getActivity(), uri, null, null, null, null);

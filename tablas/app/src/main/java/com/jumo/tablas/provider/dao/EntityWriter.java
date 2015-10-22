@@ -3,12 +3,16 @@ package com.jumo.tablas.provider.dao;
 import android.content.ContentValues;
 
 
+import com.jumo.tablas.model.Entity;
 import com.jumo.tablas.model.Expense;
 import com.jumo.tablas.model.Group;
 import com.jumo.tablas.model.Member;
 import com.jumo.tablas.model.Payer;
 import com.jumo.tablas.model.User;
 import com.jumo.tablas.provider.TablasContract;
+
+import java.util.Date;
+import java.util.Iterator;
 
 /**
  * Created by Moha on 7/4/15.
@@ -18,7 +22,46 @@ public class EntityWriter {
     //List of toContentValues functions that convert objects into ContentValues.
     //TODO: This can be simplified by just iterating over the Entity's fields to get a ContentValues object.
 
-    public static ContentValues toContentValues(Group g){
+    public static ContentValues toContentValues(Entity entity){
+        ContentValues cv = new ContentValues();
+
+        Iterator<String> fieldNameIterator = entity.getFieldNameIterator();
+
+        while(fieldNameIterator.hasNext()){
+            String fieldName = fieldNameIterator.next();
+            Object value = entity.get(fieldName);
+            if(value != null) {
+                putValueBasedOnType(cv, fieldName, value);
+            }
+        }
+
+        if(cv.size() == 0) return null;
+
+        return cv;
+    }
+
+
+    private static void putValueBasedOnType(ContentValues cv, String fieldName, Object value){
+        if(value instanceof Long){
+            cv.put(fieldName, (Long)value);
+        }else if(value instanceof Integer){
+            cv.put(fieldName, (Integer)value);
+        }else if(value instanceof String){
+            cv.put(fieldName, (String)value);
+        }else if(value instanceof Double){
+            cv.put(fieldName, (Double)value);
+        }else if(value instanceof Date){
+            cv.put(fieldName, new Long(((Date)value).getTime()));
+        }else if(value instanceof Boolean){
+            cv.put(fieldName, ((Boolean)value).booleanValue()? 1 : 0);
+        }else if(value instanceof byte[]){
+            cv.put(fieldName, (byte[])value);
+        }else if(value instanceof Float){
+            cv.put(fieldName, (Float)value);
+        }
+    }
+
+    /*public static ContentValues toContentValues(Group g){
         ContentValues cv = new ContentValues();
 
         if(g.getId() != 0) cv.put(TablasContract.Group._ID, g.getId());
@@ -65,7 +108,7 @@ public class EntityWriter {
 
         if(u.getId() != null) cv.put(TablasContract.User._ID, u.getId());
         if(u.getName() != null) cv.put(TablasContract.User.NAME, u.getName());
-        cv.put(TablasContract.User.NAME, u.getPhone());
+        if(u.getEmail() != null) cv.put(TablasContract.User.EMAIL, u.getEmail());
 
         if(cv.size() == 0) return null;
 
@@ -92,7 +135,5 @@ public class EntityWriter {
         if(cv.size() == 0) return null;
 
         return cv;
-    }
-
-
+    }*/
 }

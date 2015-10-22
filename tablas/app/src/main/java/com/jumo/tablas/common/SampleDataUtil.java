@@ -1,4 +1,4 @@
-package com.jumo.tablas.util;
+package com.jumo.tablas.common;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -11,6 +11,7 @@ import com.jumo.tablas.model.Member;
 import com.jumo.tablas.model.User;
 import com.jumo.tablas.model.Payer;
 import com.jumo.tablas.provider.TablasContract;
+import com.jumo.tablas.provider.dao.EntityCursor;
 import com.jumo.tablas.provider.dao.EntityWriter;
 
 import java.util.ArrayList;
@@ -19,20 +20,21 @@ import java.util.HashMap;
 import java.util.Set;
 
 import android.database.*;
+import android.util.Log;
 
 /**
  * Created by Moha on 7/10/15.
  */
-public class ExpenseManager {
+public class SampleDataUtil {
 
-    private static final String TAG = "ExpenseManager";
+    private static final String TAG = "SampleDataUtil";
 
 
     private Context mContext;
     private Uri baseUri;
-    private static ExpenseManager expenseManager;
+    private static SampleDataUtil sampleDataUtil;
 
-    private ExpenseManager(Context context){
+    private SampleDataUtil(Context context){
         mContext = context;
         baseUri = new Uri.Builder().scheme(TablasContract.SCHEME).authority(TablasContract.AUTHORITY).build();
         //String uriString = baseUri.toString();
@@ -41,11 +43,11 @@ public class ExpenseManager {
 
     }
 
-    public static ExpenseManager newInstance(Context context){
-        if(expenseManager == null){
-            expenseManager = new ExpenseManager(context);
+    public static SampleDataUtil newInstance(Context context){
+        if(sampleDataUtil == null){
+            sampleDataUtil = new SampleDataUtil(context);
         }
-        return expenseManager;
+        return sampleDataUtil;
     }
 
     /*
@@ -80,6 +82,12 @@ public class ExpenseManager {
 
         //boolean afterLast = groupsCursor.isAfterLast();
         //boolean beforeFirst = groupsCursor.isBeforeFirst();
+
+        EntityCursor entCursor = new EntityCursor(groupsCursor);
+
+        Log.d(TAG, "Group Cursor size: " + entCursor.getCount());
+        if(entCursor.getCount() > 0)
+            Log.d(TAG, "All Groups: "+ entCursor.toString(TablasContract.Group.getInstance()));
 
 
         if(groupsCursor == null || groupsCursor.getCount() == 0){
@@ -130,29 +138,34 @@ public class ExpenseManager {
         //Insert users, 10 users
         ArrayList<User> newUsers = new ArrayList<User>();
 
-        String[] names = {"Luis", "Moha", "Julieta", "María", "Benjamín", "Pedro"};
-        String[] lastNames = { "Carrillo", "Vishar", "Pineda", "Wilson", "Potter", "Schwartz" };
+        //String[] names = {"Luis", "Moha", "Julieta", "María", "Benjamín", "Pedro"};
+        //String[] lastNames = { "Carrillo", "Vishar", "Pineda", "Wilson", "Potter", "Schwartz" };
+        String[] fullNames = {"Moha", "Luis Carrillo", "Julieta Vishar", "Vijay Anand", "Ismael Diakite", "Cindy Diakite", "Octavio Soto", "Valentina Xavier", "Sean Darling-Hammond"};
+        String[] emails = {"mohadp@gmail.com", "edgardo.carrillo@gmail.com", "julieta.villar.athie@gmail.com", "vijayanand180@gmail.com", "ismaeld@gmail.com", "cindydiakite@gmail.com", "g.octavio.soto@gmail.com", "valentina.xavier@gmail.com", "sean.darling.hammond@gmail.com"};
+        String[] tels = {"+17036566202", "+17037173160", "+17036566203", "+19192188457", "+5215534007789", "+5215540840084", "+5215513725485", "+12026790071", "+16504557014"};
         Uri usersTable = baseUri.buildUpon().appendPath(TablasContract.User.getInstance().getTableName()).build();
 
-        int offset = 0;
+        //int offset = 0;
 
-        for(int i = 0; i < 8; i++) {
+        //for(int i = 0; i < 8; i++) {
+        for(int i = 0; i < emails.length; i++){
 
             User user = new User();
-            int nameIndex = i % (names.length);
-            int lNameIndex = (i + offset) % (lastNames.length);
+            //int nameIndex = i % (names.length);
+            //int lNameIndex = (i + offset) % (lastNames.length);
 
-            user.setId((names[nameIndex].charAt(0) + lastNames[lNameIndex]).toLowerCase() + "@gmail.com");
-            user.setName(names[nameIndex] + " " + lastNames[lNameIndex]);
-            user.setPhone("+1 703656620" + i);
-
+            //user.setId((names[nameIndex].charAt(0) + lastNames[lNameIndex]).toLowerCase() + "@gmail.com");
+            user.setId(tels[i]);
+            //user.setName(names[nameIndex] + " " + lastNames[lNameIndex]);
+            user.setName(fullNames[i]);
+            user.setEmail(emails[i]);
 
             //insert user
             mContext.getContentResolver().insert(usersTable, EntityWriter.toContentValues(user));
             newUsers.add(user);
 
             //we want to create name-lastName with an offset of phased alignment between the arrays to create new names with diferent combinations of names and last names.
-            if((i+1)%lastNames.length == 0) offset++;
+            //if((i+1)%lastNames.length == 0) offset++;
         }
         return newUsers;
     }
@@ -168,7 +181,7 @@ public class ExpenseManager {
             Group group = new Group();
             group.setId(time + i);
             group.setCreatedOn(new Date());
-            group.setName("GroupCursor " + i);
+            group.setName("Group " + i);
 
             mContext.getContentResolver().insert(groupTable, EntityWriter.toContentValues(group));
             newGroups.add(group);

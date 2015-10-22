@@ -210,7 +210,7 @@ public final class TablasContract {
 
         public static final String _ID = "_id";
         public static final String NAME = "name";
-        public static final String PHONE = "phone";
+        public static final String EMAIL = "email";
         public static final String USER_BALANCE = TablasContract.USER_BALANCE;
 
         //Singleton table
@@ -231,7 +231,7 @@ public final class TablasContract {
         protected void defineColumnsAndForeignKeys(){
             mColumns.put(_ID, new Column(mTableName, _ID, DT_TEXT, DEF_PRIMARY_KEY, Column.TYPE_LONG));
             mColumns.put(NAME, new Column(mTableName, NAME, DT_TEXT, null, Column.TYPE_STRING));
-            mColumns.put(PHONE, new Column(mTableName, PHONE, DT_TEXT, null, Column.TYPE_STRING));
+            mColumns.put(EMAIL, new Column(mTableName, EMAIL, DT_TEXT, null, Column.TYPE_STRING));
         }
 
     }
@@ -366,71 +366,75 @@ public final class TablasContract {
             mColumns.put(LONGITUDE, new Column(mTableName, LONGITUDE, DT_DOUBLE, null,  Column.TYPE_DOUBLE));
         }
     }
-    
-    public static final class UserExpenseBalance extends CompositeTable {
-
-       //Tables added to this getInstance.
-        public final static Table EXPENSE_TABLE = Expense.getInstance();
-        public final static Table PAYER_TABLE = Payer.getInstance();
-        public final static Table USER_TABLE = User.getInstance();
-        public final static Table MEMBER_TABLE = Member.getInstance();
-
-        //Singleton table
-        private static CompositeTable mInstance;
 
 
-        public static CompositeTable getInstance(){
-            if(mInstance == null){
-                mInstance = new UserExpenseBalance();
+    public static final class Compound{
+
+        public static final class ExpenseBalance extends CompositeTable {
+
+           //Tables added to this getInstance.
+            public final static Table EXPENSE_TABLE = Expense.getInstance();
+            public final static Table PAYER_TABLE = Payer.getInstance();
+            //public final static Table USER_TABLE = User.getInstance();
+            public final static Table MEMBER_TABLE = Member.getInstance();
+
+            //Singleton table
+            private static CompositeTable mInstance;
+
+
+            public static CompositeTable getInstance(){
+                if(mInstance == null){
+                    mInstance = new ExpenseBalance();
+                }
+                return mInstance;
             }
-            return mInstance;
-        }
 
-        //This is a composite table that includes all mColumns of the several mTables.
-        private UserExpenseBalance(){
-            super();
-        }
-
-        protected void defineTables(){
-            addTable(EXPENSE_TABLE);
-            addTable(PAYER_TABLE);
-            addTable(USER_TABLE);
-            addTable(MEMBER_TABLE);
-        }
-    }
-
-    public static final class UserGroupBalance extends CompositeTable {
-
-        //Tables added to this getInstance.
-        public final static Table EXPENSE_TABLE = Expense.getInstance();
-        public final static Table PAYER_TABLE = Payer.getInstance();
-        public final static Table USER_TABLE = User.getInstance();
-        public final static Table MEMBER_TABLE = Member.getInstance();
-        public final static Table GROUP_TABLE = Group.getInstance();
-
-        //Singleton table
-        private static CompositeTable mInstance;
-
-
-        public static CompositeTable getInstance() {
-            if (mInstance == null) {
-                mInstance = new UserGroupBalance();
+            //This is a composite table that includes all mColumns of the several mTables.
+            private ExpenseBalance(){
+                super();
             }
-            return mInstance;
+
+            protected void defineTables(){
+                addTable(EXPENSE_TABLE);
+                addTable(PAYER_TABLE);
+                //addTable(USER_TABLE);
+                addTable(MEMBER_TABLE);
+            }
         }
 
-        //This is a composite table that includes all mColumns of the several mTables.
-        private UserGroupBalance() {
-            super();
-        }
+        public static final class GroupBalance extends CompositeTable {
 
-        protected void defineTables() {
-            addTable(EXPENSE_TABLE);
-            addTable(PAYER_TABLE);
-            addTable(USER_TABLE);
-            addTable(MEMBER_TABLE);
-            addTable(GROUP_TABLE);
+            //Tables added to this getInstance.
+            public final static Table EXPENSE_TABLE = Expense.getInstance();
+            public final static Table PAYER_TABLE = Payer.getInstance();
+            //public final static Table USER_TABLE = User.getInstance();
+            public final static Table MEMBER_TABLE = Member.getInstance();
+            public final static Table GROUP_TABLE = Group.getInstance();
 
+            //Singleton table
+            private static CompositeTable mInstance;
+
+
+            public static CompositeTable getInstance() {
+                if (mInstance == null) {
+                    mInstance = new GroupBalance();
+                }
+                return mInstance;
+            }
+
+            //This is a composite table that includes all mColumns of the several mTables.
+            private GroupBalance() {
+                super();
+            }
+
+            protected void defineTables() {
+                addTable(EXPENSE_TABLE);
+                addTable(PAYER_TABLE);
+                //addTable(USER_TABLE);
+                addTable(MEMBER_TABLE);
+                addTable(GROUP_TABLE);
+
+            }
         }
     }
 

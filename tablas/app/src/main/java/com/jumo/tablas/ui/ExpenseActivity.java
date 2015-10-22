@@ -17,4 +17,6 @@ public class ExpenseActivity extends SingleFragmentActivity {
         return ExpenseFragment.newInstance(userName, groupId);
     }
 
+    protected void setDefaultPreferences(){ return; }
+
 }
