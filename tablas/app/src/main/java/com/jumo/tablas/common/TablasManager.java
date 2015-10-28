@@ -25,16 +25,16 @@ import android.util.Log;
 /**
  * Created by Moha on 7/10/15.
  */
-public class SampleDataUtil {
+public class TablasManager {
 
-    private static final String TAG = "SampleDataUtil";
+    private static final String TAG = "TablasManager";
 
 
     private Context mContext;
     private Uri baseUri;
-    private static SampleDataUtil sampleDataUtil;
+    private static TablasManager sampleDataUtil;
 
-    private SampleDataUtil(Context context){
+    private TablasManager(Context context){
         mContext = context;
         baseUri = new Uri.Builder().scheme(TablasContract.SCHEME).authority(TablasContract.AUTHORITY).build();
         //String uriString = baseUri.toString();
@@ -43,9 +43,9 @@ public class SampleDataUtil {
 
     }
 
-    public static SampleDataUtil newInstance(Context context){
+    public static TablasManager newInstance(Context context){
         if(sampleDataUtil == null){
-            sampleDataUtil = new SampleDataUtil(context);
+            sampleDataUtil = new TablasManager(context);
         }
         return sampleDataUtil;
     }
@@ -177,7 +177,7 @@ public class SampleDataUtil {
         long time = new Date().getTime();
 
 
-        for(int i = 0; i < 5; i++){
+        for(int i = 0; i < 10; i++){
             Group group = new Group();
             group.setId(time + i);
             group.setCreatedOn(new Date());

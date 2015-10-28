@@ -18,17 +18,18 @@ import java.lang.ref.WeakReference;
  */
 public abstract class DrawableCursorAdapter extends CursorAdapter {
 
-    protected WeakReference<LruCache<String, Bitmap>> mCacheReference;
+    protected WeakReference<LruCache<Object, Bitmap>> mCacheReference;
 
     public DrawableCursorAdapter(Context context, EntityCursor cursor) {
         super(context, cursor, 0);
     }
 
-    public DrawableCursorAdapter(Context context, EntityCursor cursor, LruCache<String, Bitmap> cache) {
+    public DrawableCursorAdapter(Context context, EntityCursor cursor, LruCache<Object, Bitmap> cache) {
         super(context, cursor, 0);
-        mCacheReference = new WeakReference<LruCache<String, Bitmap>>(cache);
+        mCacheReference = new WeakReference<LruCache<Object, Bitmap>>(cache);
     }
 
+    //TODO: need to change resId from int to Obj.
     protected void setBitmapInImageView(Context context, int resId, ImageView imageView){
         //Try to avoid reloading a bitmap if the ImageView already has its a valid bitmap
         String imageViewTag = (String)imageView.getTag();
@@ -39,7 +40,7 @@ public abstract class DrawableCursorAdapter extends CursorAdapter {
 
         Bitmap bitmap = null;
         if(mCacheReference != null && mCacheReference.get() != null) {
-            LruCache<String, Bitmap> cache = mCacheReference.get();
+            LruCache<Object, Bitmap> cache = mCacheReference.get();
             bitmap = cache.get(String.valueOf(resId));
         }
 
@@ -54,11 +55,12 @@ public abstract class DrawableCursorAdapter extends CursorAdapter {
     protected void loadBitmap(Context context, int resId, ImageView imageView, Bitmap placeHolder) {
         if (BitmapTask.cancelPotentialWork(resId, imageView)) {
             //Log.d(TAG, "loadBitmap: cancelPotentialWork is true");
-            final BitmapTask task = new BitmapTask(imageView, context.getResources());
+            final BitmapTask task = new BitmapTask(imageView, context, mCacheReference.get());
             final DrawableAsync drawableAsync = new DrawableAsync(context.getResources(), placeHolder, task);
             imageView.setImageDrawable(drawableAsync);
             task.execute(resId);
         }
-        //Log.d(TAG, "loadBitmap: cancelPotentialWork is false");
     }
+
+
 }

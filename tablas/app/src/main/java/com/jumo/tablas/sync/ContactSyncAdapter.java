@@ -43,8 +43,6 @@ public class ContactSyncAdapter extends AbstractThreadedSyncAdapter {
         existentServiceAccounts.add("+16504557014");
     }
 
-    //TODO: Need to create a Service for the synch adapter that returns this synch adapters @Binder.
-
     public ContactSyncAdapter(Context context, boolean autoInitialize){
         super(context, autoInitialize);
         mResolver = context.getContentResolver();
@@ -58,19 +56,18 @@ public class ContactSyncAdapter extends AbstractThreadedSyncAdapter {
         //deleteContacts(AccountService.ACCOUNT_TYPE);
 
         //This is to recognize newly added contacts.
-        //Get all the local phone numbers that have corresponding tablas account
-        HashMap<String, String> phonesWithoutAccounts = getPhoneNumbersWithoutAccount();
-        //Keep in the original hashmap only the set of phones that have a corresponding account online
-        phonesWithoutAccounts = getContactsWithExistentAccountOnline(phonesWithoutAccounts);
+        //Get all the local phone numbers that have corresponding tablas account and
+        //Keep only the set of phones that have a corresponding accounts online
+        HashMap<String, String> contactsToCreate = getContactsWithExistentAccountOnline(getPhoneNumbersWithoutAccount());
         //Create raw contacts for phones that "exist online"
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
-        Iterator<String> itPhone = phonesWithoutAccounts.keySet().iterator();
+        Iterator<String> itPhone = contactsToCreate.keySet().iterator();
         //int indexOfLastRawContactInsert = 0;
         while(itPhone.hasNext()){
             String phone = itPhone.next();
             //Add 3 rows (three operations) to the Contacts provider: a new raw contact (account name is the phone),
             //plus two data rows (one for Phone number, and one for Display Name)
-            addRawContact(ops, phone, phonesWithoutAccounts.get(phone));
+            addRawContact(ops, phone, contactsToCreate.get(phone));
         }
 
         try {
@@ -133,20 +130,40 @@ public class ContactSyncAdapter extends AbstractThreadedSyncAdapter {
                 //ContactsContract.CommonDataKinds.Phone.MIMETYPE,
                 ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
                 //ContactsContract.CommonDataKinds.Phone.NUMBER,
-                ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER
+                ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER,
+                ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET
         };
 
-        //TODO: Need to change the filter to filter out numbers that have already a corresponding "tablas" contact
-        String filter = ContactsContract.Contacts.Entity.MIMETYPE + " = ?  AND " + ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER + " IS NOT NULL AND " + ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET + " <> ?";
-        String[] filterVals = new String[]{ ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE, AccountService.ACCOUNT_TYPE};
-        Cursor allPhonesCursor = mResolver.query(contactPhonesUri, projection, filter, filterVals, null);
+        String filter = ContactsContract.Contacts.Entity.MIMETYPE + " = ?  AND " + ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER + " IS NOT NULL"; //" AND " + ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET + " <> ?";
+        String[] filterVals = new String[]{ ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE}; // , AccountService.ACCOUNT_TYPE};
+        String sortBy = ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER + " ASC"; //sorted by number
+        Cursor allPhonesCursor = mResolver.query(contactPhonesUri, projection, filter, filterVals, sortBy);
+
 
         if(allPhonesCursor != null && allPhonesCursor.getCount() > 0) {
+            String previousPhone = null;            //iterate over numbers; several rows will have the same number. If any row is part of a Tablas contact, then remove the phone number
+            boolean hasTablasAccount = false;       //by default, add phone number
+
             while (allPhonesCursor.moveToNext()) {
                 //verify if the contact already exists; if not, create
                 String phone = allPhonesCursor.getString(allPhonesCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER));
                 String name = allPhonesCursor.getString(allPhonesCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-                numberContacts.put(phone, name);
+                String accType = allPhonesCursor.getString(allPhonesCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET));
+
+                if(previousPhone == null  || !previousPhone.equals(phone)){
+                    previousPhone = phone;
+                    hasTablasAccount = false;
+                }
+
+                if(accType.equals(AccountService.ACCOUNT_TYPE)){ //hasTablasAccount stays true once encountered until we start processing a different phone
+                    hasTablasAccount = true;
+                }
+
+                if(hasTablasAccount){
+                    numberContacts.remove(phone);  //remove will be called several times; we rely on HashMap to not doing anything when trying to remove an already removed entry
+                }else{
+                    numberContacts.put(phone, name);
+                }
             }
             allPhonesCursor.close();
         }
@@ -182,5 +199,14 @@ public class ContactSyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
 
+    private class ContactDetails {
+        public String name;
+        public String accountType;
+
+        public ContactDetails(String n, String accType){
+            name = n;
+            accountType = accType;
+        }
+    }
 
 }

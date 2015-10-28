@@ -22,14 +22,12 @@ import java.lang.ref.WeakReference;
 public class GroupCursorAdapter extends DrawableCursorAdapter {
     private static final String TAG = "GroupCursorAdapter";
 
-    private WeakReference<LruCache<String, Bitmap>> mCacheReference;
-
     public GroupCursorAdapter(Context context, EntityCursor cursor) {
         super(context, cursor);
         //mCacheReference = new WeakReference<LruCache<Integer, Bitmap>>();
     }
 
-    public GroupCursorAdapter(Context context, EntityCursor cursor, LruCache<String, Bitmap> cache) {
+    public GroupCursorAdapter(Context context, EntityCursor cursor, LruCache<Object, Bitmap> cache) {
         super(context, cursor, cache);
     }
 

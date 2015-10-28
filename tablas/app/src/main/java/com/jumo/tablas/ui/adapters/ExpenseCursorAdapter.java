@@ -27,11 +27,11 @@ public class ExpenseCursorAdapter extends DrawableCursorAdapter {
 	//To get balances on a per-user basis for a particular group
 	private String mUserName;
 	private long groupId;
-	private WeakReference<LruCache<String, Bitmap>> mCacheReference;
+	private WeakReference<LruCache<Object, Bitmap>> mCacheReference;
     private WeakReference<HandlerThread> mHandlerReference;
 
 
-    public ExpenseCursorAdapter(Context context, EntityCursor cursor, LruCache<String, Bitmap> cache, HandlerThread handler) {
+    public ExpenseCursorAdapter(Context context, EntityCursor cursor, LruCache<Object, Bitmap> cache, HandlerThread handler) {
         super(context, cursor, cache);
         mHandlerReference = new WeakReference<HandlerThread>(handler);
 
@@ -80,21 +80,10 @@ public class ExpenseCursorAdapter extends DrawableCursorAdapter {
 
 
         // set up the start date text view
-        //((ImageView)view.findViewById(R.id.list_message_image)).setImageResource(R.drawable.ic_launcher);
         setBitmapInImageView(context, R.drawable.moha, holder.image); //loaded in separate thread if not present in cache
         setBitmapInImageView(context, R.drawable.ic_launcher, holder.category);  //TODO: will load image of category once I have the category images
         loadPayersForExpense(expense, holder.payerImages);
 
-		/*int rand = (int) Math.round(Math.random()*100) % 5 + 1;
-
-        holder.payerImages.removeAllImageViews();
-        for(int i = 0; i < rand; i++){
-			RoundImageView img = new RoundImageView(context);
-            //img.setImageBitmap(null);
-            //roundImages.add(img);
-            holder.payerImages.addImageView(img);
-            setBitmapInImageView(context, R.drawable.moha, img);
-		}*/
 
 		holder.desc.setText(expense.getMessage());
 		holder.balance.setText(String.format("%1$.2f", expense.getUserBalance()));

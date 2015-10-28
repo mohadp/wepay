@@ -35,7 +35,7 @@ public class ExpenseUserThreadHandler extends HandlerThread {
      *
      */
     Map<ImageViewRow, String> requestMap = Collections.synchronizedMap(new HashMap<ImageViewRow, String>());
-    private final WeakReference<LruCache<String, Bitmap>> mCacheReference;
+    private final WeakReference<LruCache<Object, Bitmap>> mCacheReference;
     private final WeakReference<Context> mContextReference;
 
     //Handler that will process all the messages in the looper
@@ -57,9 +57,9 @@ public class ExpenseUserThreadHandler extends HandlerThread {
         mContextReference = null;
     }*/
 
-    public ExpenseUserThreadHandler(Context context, LruCache<String, Bitmap> cache, Handler responseHandler){
+    public ExpenseUserThreadHandler(Context context, LruCache<Object, Bitmap> cache, Handler responseHandler){
         super(TAG);
-        mCacheReference = new WeakReference<LruCache<String, Bitmap>>(cache);
+        mCacheReference = new WeakReference<LruCache<Object, Bitmap>>(cache);
         mContextReference = new WeakReference<Context>(context);
         mResponseHandler = responseHandler;
 
@@ -145,19 +145,19 @@ public class ExpenseUserThreadHandler extends HandlerThread {
 
         private Bitmap getUserBitmap(int resId){
             //first check in the cahce; if not, retrieve from wherever
-            LruCache<String, Bitmap> cache = mCacheReference.get();
-            Bitmap bitmap = cache.get(String.valueOf(resId));
+            LruCache<Object, Bitmap> cache = mCacheReference.get();
+            Bitmap bitmap = cache.get(resId);
             Resources resources = mContextReference.get().getResources();
 
             if(bitmap == null){
                 bitmap = BitmapTask.decodeSampledBitmapFromResource(resources, resId, 100, 100, null);
-                cache.put(String.valueOf(resId), bitmap);
+                cache.put(resId, bitmap);
             }
             return bitmap;
         }
     }
 
     public interface OnImagesLoaded{
-        void onImagesLoaded(ImageViewRow imgRow, ArrayList<String> bitmapIds, ArrayList<Bitmap> images);
+        public void onImagesLoaded(ImageViewRow imgRow, ArrayList<String> bitmapIds, ArrayList<Bitmap> images);
     }
 }

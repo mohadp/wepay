@@ -1,11 +1,16 @@
 package com.jumo.tablas.ui.loaders;
 
+import android.content.ContentResolver;
+import android.content.Context;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.provider.ContactsContract;
 import android.util.LruCache;
 import android.widget.ImageView;
 
@@ -14,38 +19,87 @@ import java.lang.ref.WeakReference;
 /**
  * Created by Moha on 9/13/15; following/reusing the code and guidelines in http://developer.android.com/training/displaying-bitmaps/process-bitmap.html
  */
-public class BitmapTask extends AsyncTask<Integer, Void, Bitmap> {
+public class BitmapTask extends AsyncTask<Object, Void, Bitmap> {
     private final static String TAG = "BitmapTask";
+    private final static int IMG_FROM_RES_ID = 0;
+    private final static int IMG_FROM_URI = 1;
+
+
     private final WeakReference<ImageView> mImageViewReference;
     private final WeakReference<Resources> mResReference;
-    private final WeakReference<LruCache<String, Bitmap>> mCacheReference;
-    private int mData;
+    private final WeakReference<Context> mContextReference;
+    private final WeakReference<LruCache<Object, Bitmap>> mCacheReference;
+    private Object mData;
 
-    public BitmapTask(ImageView imgThatNeedsBitmap, Resources res){
-        //Weak reference so that imageView can be garbage-collected.
-        mImageViewReference = new WeakReference<ImageView>(imgThatNeedsBitmap);
-        mResReference = new WeakReference<Resources>(res);
-        mCacheReference = null;
-    }
 
-    public BitmapTask(ImageView imgThatNeedsBitmap, Resources res, LruCache<String, Bitmap> cache){
+    public BitmapTask(ImageView imgThatNeedsBitmap, Context context, LruCache<Object, Bitmap> cache){
         mImageViewReference = new WeakReference<ImageView>(imgThatNeedsBitmap);
-        mResReference = new WeakReference<Resources>(res);
-        mCacheReference = new WeakReference<LruCache<String, Bitmap>>(cache);
+        mResReference = new WeakReference<Resources>(context.getResources());
+        mCacheReference = new WeakReference<LruCache<Object, Bitmap>>(cache);
+        mContextReference = new WeakReference<Context>(context);
     }
 
     //Decode image in background
     @Override
-    protected Bitmap doInBackground(Integer[] params){
-        mData = params[0]; //This sets the resource ID as an "identifier of the task", to know whether this task is loading this resource ID, useful to not run this again while it is running.
+    protected Bitmap doInBackground(Object[] params){
+        if(params.length == 1){ //to be backwards compatible with existent calls.
+            return executeFromResource((Integer)params[0]);
+        }
+
+        //We verify how an image can be retrieved, and based on that, get necessary parameters.
+        int type = (Integer)params[0];
+        switch(type){
+            case IMG_FROM_RES_ID:
+                return executeFromResource((Integer)params[1]);
+            case IMG_FROM_URI:
+                return executeFromResource((String)params[1], (String)params[2]);
+        }
+        return null;
+    }
+
+    /**
+     * Helper function to decode an image from a resource file.
+     * @param resId
+     * @return
+     */
+    private Bitmap executeFromResource(int resId){
+        mData = resId; //This sets the resource ID as an "identifier of the task", to know whether this task is loading this resource ID, useful to not run this again while it is running.
 
         if(mImageViewReference == null)
             return null;
 
-        Bitmap bitmap = decodeSampledBitmapFromResource(mResReference.get(), mData, 100, 100, null);
-        addToCache(String.valueOf(mData), bitmap);
+        Bitmap bitmap = decodeSampledBitmapFromResource(mResReference.get(), (Integer)mData, 100, 100, null);
+        addToCache(mData, bitmap);
         return bitmap;
     }
+
+    /**
+     * Helper function to load a bitmap from a content provider URI
+     * @param uri
+     * @return
+     */
+    private Bitmap executeFromResource(String uri, String column){
+        mData = uri; //This sets the uri as an "identifier of the task", to know whether this task is loading this resource ID, useful to not run this again while it is running.
+        Context context = mContextReference.get();
+        byte[] imgData = null;
+
+        if(mImageViewReference == null || context == null)
+            return null;
+
+        ContentResolver resolver = context.getContentResolver();
+
+        Cursor cursor = resolver.query(Uri.parse(uri), new String[]{column}, null, null, null);
+        if(cursor != null){
+            cursor.moveToFirst();
+            imgData = cursor.getBlob(cursor.getColumnIndex(column));
+            cursor.close();
+        }
+        Bitmap bitmap = BitmapFactory.decodeByteArray(imgData, 0, imgData.length);
+
+        return bitmap;
+    }
+
+
 
     @Override
     protected void onPostExecute(Bitmap bitmap){
@@ -59,17 +113,21 @@ public class BitmapTask extends AsyncTask<Integer, Void, Bitmap> {
             final BitmapTask bitmapTask = getBitmapTask(imageView);
             if (this == bitmapTask && imageView != null) { //Verify that this ImageView's BitmapDrawable is still linked to this task
                 imageView.setImageBitmap(bitmap);
-                imageView.setTag(String.valueOf(mData));
-                //imageView.invalidate();
+                imageView.setTag(mData.toString());
             }
         }
     }
 
-    private void addToCache(String key, Bitmap pic){
+    /**
+     * Adds an image to the cache so that it can be reused wherever it used.
+     * @param key
+     * @param pic
+     */
+    private void addToCache(Object key, Bitmap pic){
         if(mCacheReference == null)
             return;
 
-        LruCache<String, Bitmap> cache = mCacheReference.get();
+        LruCache<Object, Bitmap> cache = mCacheReference.get();
         if(cache == null)
             return;
 
@@ -145,13 +203,13 @@ public class BitmapTask extends AsyncTask<Integer, Void, Bitmap> {
         return inSampleSize;
     }
 
-    public static boolean cancelPotentialWork(int data, ImageView imageView) {
+    public static boolean cancelPotentialWork(Object data, ImageView imageView) {
         final BitmapTask bitmapWorkerTask = getBitmapTask(imageView);
 
         if (bitmapWorkerTask != null) {
-            final int bitmapData = bitmapWorkerTask.mData;
+            final Object bitmapData = bitmapWorkerTask.mData;
             // If bitmapData is not yet set or it differs from the new mData
-            if (bitmapData == 0 || bitmapData != data) {
+            if (bitmapData == null || bitmapData != data) {
                 // Cancel previous task
                 bitmapWorkerTask.cancel(true);
             } else {

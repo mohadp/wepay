@@ -82,7 +82,7 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
     //Fragment's attributes
     private String mUserName;
     private long mGroupId;
-    private LruCache<String, Bitmap> mCache;
+    private LruCache<Object, Bitmap> mCache;
     //private LruCache<Long, ImageViewRow> mCacheImageRow;
     private ExpenseUserThreadHandler mPayerLoader;
 
@@ -120,9 +120,9 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
 
         final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
         final int cacheSize = maxMemory / 8;  // Use 1/8th of the available memory for this memory cache.
-        mCache = new LruCache<String, Bitmap>(cacheSize){
+        mCache = new LruCache<Object, Bitmap>(cacheSize){
             @Override
-            protected int sizeOf(String key, Bitmap bitmap) {
+            protected int sizeOf(Object key, Bitmap bitmap) {
                 return bitmap.getByteCount() / 1024; // The cache size will be measured in kilobytes
             }
         };
@@ -226,38 +226,6 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
         mCustomKeyboardSpacer.setVisibility(View.GONE);
     }
 
-    /*private void keepUpdatingCustomKeyboardHeight(){
-        ViewTreeObserver.OnGlobalLayoutListener softKeyboardAndOrientation = new ViewTreeObserver.OnGlobalLayoutListener(){
-            @Override
-            public void onGlobalLayout() {
-                Rect visibleFrame = getVisibleDisplayFrame(); //Get the current conversation layout's height.
-                int globalHeight = mConversationLayout.getRootView().getHeight(); //Get the current total Height
-
-                if (mPreviousHeight == UNSET_PREVIOUS_HEIGHT) { //only set mPreviousHeight to current height; we have not shown anything.
-                    mPreviousHeight = visibleFrame.height();
-                } else {
-                    int tentativeKeyboardHeight = (int) mPreviousHeight - visibleFrame.height();
-                    //if previousHeight is greater than current one,
-                    // that means keyboard is showing, and the difference is the keyboard height
-                    if (tentativeKeyboardHeight > KEYBOARD_THRESHOLD) {
-                        mCustomKeyboardHeight = (tentativeKeyboardHeight > mCustomKeyboardHeight)? tentativeKeyboardHeight : mCustomKeyboardHeight;
-                        Log.d(TAG, "New keyboard size: " + mCustomKeyboardHeight);
-                    }
-
-                    mPreviousHeight = visibleFrame.height();
-                }
-            }
-        };
-
-        mConversationLayout.getViewTreeObserver().addOnGlobalLayoutListener(softKeyboardAndOrientation);
-    }*/
-
-    /*private Rect getVisibleDisplayFrame(){
-        Rect rect = new Rect();
-        mConversationLayout.getWindowVisibleDisplayFrame(rect);
-        return rect;
-    }*/
-
     @Override
     public boolean onKeyPress(int keyEvent, KeyEvent event){
         if(keyEvent == KeyEvent.KEYCODE_BACK){
@@ -293,24 +261,6 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
         if(mListView == null) return;
         ((ExpenseCursorAdapter)mListView.getAdapter()).changeCursor(null);
     }
-
-    /*
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            mListener = (OnFragmentInteractionListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }*/
 
     @Override
     public void onDestroyView(){

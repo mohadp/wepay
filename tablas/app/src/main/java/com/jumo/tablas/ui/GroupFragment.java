@@ -17,14 +17,16 @@ import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
 import com.jumo.tablas.R;
 import com.jumo.tablas.account.AccountService;
+import com.jumo.tablas.common.TablasManager;
 import com.jumo.tablas.ui.adapters.GroupCursorAdapter;
-import com.jumo.tablas.common.SampleDataUtil;
+
 import android.widget.*;
 
 import com.jumo.tablas.model.Group;
@@ -62,7 +64,7 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
      * Views.
      */
 	private String mUserName;
-    private LruCache<String, Bitmap> mCache;
+    private LruCache<Object, Bitmap> mCache;
     //private Cursor mCursor;
 
     public static GroupFragment newInstance(String userId) {
@@ -85,48 +87,30 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
         Loader loader = getLoaderManager().getLoader(GROUPS_LOADER);
 
         getLoaderManager().restartLoader(GROUPS_LOADER, null, this); //TODO: Try to make the loader to reuse Cursor (could not make it reuse it)
-
-        /*Log.d(TAG, "onActivityCreated()");
-        if(mCursor != null){
-            Log.d(TAG, "Cursor is closed? " + mCursor.isClosed());
-        }*/
-
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //expenseManager = SampleDataUtil.newInstance(this.getActivity());
+        //expenseManager = TablasManager.newInstance(this.getActivity());
         setHasOptionsMenu(true);
         setRetainInstance(true);
-
-        /*Log.d(TAG, "onCreate()");
-        if(mCursor != null){
-            Log.d(TAG, "Cursor is closed? " + mCursor.isClosed());
-        }*/
-
 
         mUserName = getArguments().getString(EXTRA_USER);
 
         final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
         final int cacheSize = maxMemory / 8;  // Use 1/8th of the available memory for this memory cache.
-        mCache = new LruCache<String, Bitmap>(cacheSize){
+        mCache = new LruCache<Object, Bitmap>(cacheSize){
             @Override
-            protected int sizeOf(String key, Bitmap bitmap) {
+            protected int sizeOf(Object key, Bitmap bitmap) {
                 return bitmap.getByteCount() / 1024; // The cache size will be measured in kilobytes
             }
         };
-
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        /*Log.d(TAG, "onCreateView()");
-        if(mCursor != null){
-            Log.d(TAG, "Cursor is closed? " + mCursor.isClosed());
-        }*/
         View view = inflater.inflate(R.layout.fragment_group, container, false);
 
         // Set the adapter
@@ -135,7 +119,7 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
         mListView.setOnItemClickListener(new GroupListListener());
         mListView.setEmptyView(inflater.inflate(R.layout.list_empty, mListView, false));
 
-        testContactProviderQuery(AccountService.ACCOUNT_TYPE);
+        //testContactProviderQuery(AccountService.ACCOUNT_TYPE);
 
         return view;
     }
@@ -180,34 +164,10 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
             //Log.d(TAG, contactDetailUri.toString());
 
             projection = new String[]{
-                    //ContactsContract.Contacts.Entity.CONTACT_ID,
-                    //ContactsContract.Contacts.Entity.RAW_CONTACT_ID,
-                    //ContactsContract.Contacts.Entity.DISPLAY_NAME,
-                    //ContactsContract.RawContacts.DISPLAY_NAME_PRIMARY
-                    //ContactsContract.Contacts.Entity.MIMETYPE,
-                    //ContactsContract.CommonDataKinds.Phone.RAW_CONTACT_ID,
                     ContactsContract.CommonDataKinds.Phone.MIMETYPE,
-                    //ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-                    //ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME,
-                    //ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME,
                     ContactsContract.CommonDataKinds.Phone.NUMBER,
                     ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER,
                     ContactsContract.Data.ACCOUNT_TYPE_AND_DATA_SET
-                    //ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET
-                    //ContactsContract.Contacts.Entity.DATA1,
-                    //ContactsContract.Contacts.Entity.DATA2,
-                    //ContactsContract.Contacts.Entity.DATA3,
-                    //ContactsContract.Contacts.Entity.DATA4,
-                    //ContactsContract.Contacts.Entity.DATA5,
-                    //ContactsContract.Contacts.Entity.DATA6,
-                    //ContactsContract.Contacts.Entity.DATA7,
-                    //ContactsContract.Contacts.Entity.DATA8,
-                    //ContactsContract.Contacts.Entity.DATA9,
-                    //ContactsContract.Contacts.Entity.DATA10,
-                    //ContactsContract.Contacts.Entity.DATA11,
-                    //ContactsContract.Contacts.Entity.DATA12,
-                    //ContactsContract.Contacts.Entity.DATA13,
-                    //ContactsContract.Contacts.Entity.DATA14
             };
 
             //filter = ContactsContract.Contacts.Entity.RAW_CONTACT_ID + " = ?";
@@ -244,43 +204,17 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
     @Override
     public void onResume() {
         super.onResume();
-        /*Log.d(TAG, "onResume()");
-        if(mCursor != null){
-            Log.d(TAG, "Cursor is closed? " + mCursor.isClosed());
-        }*/
-        //Log.d(TAG, "mUserName: " + mUserName);
-
-        /*Loader loader = getLoaderManager().getLoader(GROUPS_LOADER);
-        if(loader != null && loader.isStarted()){
-            loader.forceLoad();
-            Log.d(TAG, "onResume(): Forcing Loader Load");
-        }*/
     }
 
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        /*Log.d(TAG, "onAttach()");
-        if(mCursor != null){
-            Log.d(TAG, "Cursor is closed? " + mCursor.isClosed());
-        }*/
-        /*try {
-            mListener = (OnFragmentInteractionListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }*/
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        /*Log.d(TAG, "onDetach()");
-        if(mCursor != null){
-            Log.d(TAG, "Cursor is closed? " + mCursor.isClosed());
-        }*/
-        //mListener = null;
     }
 
     @Override
@@ -291,7 +225,7 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
                 .appendPath(mUserName).appendPath("groups")
                 .build();
 
-        SampleDataUtil.newInstance(getActivity()).createSampleData();
+        TablasManager.newInstance(getActivity()).createSampleData();
         Log.d(TAG, "Loader callback: onCreateLoad()");
 
         return new CursorLoader(getActivity(), uri, null, null, null, null);
@@ -301,10 +235,6 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         Log.d(TAG, "onLoadFinished");
         if(this.getActivity() == null || mListView == null) return;
-
-        /*if(mCursor != null){
-            Log.d(TAG, "Cursor is closed? " + mCursor.isClosed());
-        }*/
 
         //mCursor = data;
         ((GroupCursorAdapter)mListView.getAdapter()).changeCursor(new EntityCursor(data));
@@ -340,7 +270,20 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.default_menu, menu);
+        inflater.inflate(R.menu.group_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menu){
+        switch(menu.getItemId()){
+            case R.id.menu_item_new_group:
+                Intent i = new Intent(getActivity(), CreateGroupActivity.class);
+                startActivity(i);
+                return true;
+            default:
+                return super.onOptionsItemSelected(menu);
+
+        }
     }
 
     /**
