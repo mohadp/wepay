@@ -6,8 +6,8 @@
 		
     <com.jumo.tablas.ui.views.RoundImageView
         android:id="@+id/list_group_image"
-        android:layout_width="34dp"
-        android:layout_height="34dp"
+        android:layout_width="@dimen/list_group_img_size"
+        android:layout_height="@dimen/list_group_img_size"
         android:layout_margin="5dp"
         android:src="@drawable/ic_launcher"/>
 

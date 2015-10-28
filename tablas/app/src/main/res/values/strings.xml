@@ -1,10 +1,16 @@
 <resources>
     <string name="app_name">Tablas</string>
     <string name="button_transfers">Transfers to/from </string>
-    <string name="text_hint_amount">Amount</string>
-    <string name="text_hint_message">Add description...</string>
-
+    <string name="hint_amount">Amount</string>
+    <string name="hint_message">Add description...</string>
+    <string name="hint_group_name">Enter a group name...</string>
+    <string name="text_members">Members</string>
     <string name="menu_item">Settings...</string>
+    <string name="menu_item_create_group">Create Group</string>
+    <string name="hint_add_people">Type a person\'s name to add...</string>
+    <string name="text_contact_name">Jumo Taps</string>
+    <string name="text_contact_tel">+1 703 656 6202</string>
+    <string name="text_contact_type">Mobile</string>
 
 
     <!-- To be deleted; sample labels to delete stuff -->
