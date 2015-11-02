@@ -10,7 +10,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.provider.ContactsContract;
 import android.util.LruCache;
 import android.widget.ImageView;
 
@@ -21,8 +20,8 @@ import java.lang.ref.WeakReference;
  */
 public class BitmapTask extends AsyncTask<Object, Void, Bitmap> {
     private final static String TAG = "BitmapTask";
-    private final static int IMG_FROM_RES_ID = 0;
-    private final static int IMG_FROM_URI = 1;
+    public final static int LOAD_FROM_RES_ID = 0;
+    public final static int LOAD_FROM_CONTENT_URI = 1;
 
 
     private final WeakReference<ImageView> mImageViewReference;
@@ -49,9 +48,9 @@ public class BitmapTask extends AsyncTask<Object, Void, Bitmap> {
         //We verify how an image can be retrieved, and based on that, get necessary parameters.
         int type = (Integer)params[0];
         switch(type){
-            case IMG_FROM_RES_ID:
+            case LOAD_FROM_RES_ID:
                 return executeFromResource((Integer)params[1]);
-            case IMG_FROM_URI:
+            case LOAD_FROM_CONTENT_URI:
                 return executeFromResource((String)params[1], (String)params[2]);
         }
         return null;

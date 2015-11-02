@@ -1,6 +1,7 @@
 package com.jumo.tablas.ui;
 
 import android.app.Fragment;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,10 +9,12 @@ import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.SearchView;
 
 import com.jumo.tablas.R;
+import com.jumo.tablas.ui.adapters.ContactSearchAdapter;
 import com.jumo.tablas.ui.loaders.SearchContactThreadHandler;
 
 /**
@@ -23,7 +26,7 @@ public class CreateGroupFragment extends Fragment implements SearchContactThread
     public static final String EXTRA_USER_ID = "user_id";
 
     private String mUserId;
-    private LruCache<String, Bitmap> mCache; //cache for user profile images
+    private LruCache<Object, Bitmap> mCache; //cache for user profile images
     private SearchContactThreadHandler mContactSearcher;
 
     //This are view references in the view
@@ -44,8 +47,9 @@ public class CreateGroupFragment extends Fragment implements SearchContactThread
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
+        initializeImageCache();
         mUserId = getArguments().getString(EXTRA_USER_ID);
-        mContactSearcher = new SearchContactThreadHandler(getActivity(), new Handler(), this);
+        mContactSearcher = new SearchContactThreadHandler(getActivity(), mCache, new Handler(), this);
         mContactSearcher.start();
         mContactSearcher.getLooper();
 
@@ -56,18 +60,43 @@ public class CreateGroupFragment extends Fragment implements SearchContactThread
         View view = inflater.inflate(R.layout.fragment_create_group, container, false);
 
         mSearchView = (SearchView)view.findViewById(R.id.search_contact);
+        mSearchView.setOnSuggestionListener(this);
+        mSearchView.setOnQueryTextListener(this);
+
         mAddedContacts = (ListView)view.findViewById(R.id.list_added_members);
 
         return view;
     }
 
+    /**
+     * Initialize the image cache for the contacts being searched
+     */
+    private void initializeImageCache(){
+        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        final int cacheSize = maxMemory / 8;  // Use 1/8th of the available memory for this memory cache.
+        mCache = new LruCache<Object, Bitmap>(cacheSize){
+            @Override
+            protected int sizeOf(Object key, Bitmap bitmap) {
+                return bitmap.getByteCount() / 1024; // The cache size will be measured in kilobytes
+            }
+        };
+    }
 
     /**
      * This will set the adapter for the SearchView and the added members ListView
      */
     @Override
-    public void handleSearchResults() {
-
+    public void handleSearchResults(Cursor cursor) {
+        CursorAdapter prevAdapter = mSearchView.getSuggestionsAdapter();
+        if(prevAdapter != null){
+            //Cursor oldCursor = prevAdapter.swapCursor(cursor);
+            prevAdapter.changeCursor(cursor);
+            prevAdapter.notifyDataSetChanged();
+            //oldCursor.close();
+        }else{
+            ContactSearchAdapter adapter = new ContactSearchAdapter(getActivity(), cursor, mCache);
+            mSearchView.setSuggestionsAdapter(adapter);
+        }
     }
 
     @Override
@@ -78,7 +107,7 @@ public class CreateGroupFragment extends Fragment implements SearchContactThread
     @Override
     public boolean onQueryTextChange(String newText) {
         //send query to the HandlerThread
-
+        mContactSearcher.searchContacts(newText);
         return false;
     }
 

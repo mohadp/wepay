@@ -34,7 +34,7 @@
 
     </LinearLayout>
 
-    <TextView android:id="@+id/list_group_balance"
+    <TextView android:id="@+id/list_tel_type"
         android:layout_height="match_parent"
         android:layout_width="wrap_content"
         android:layout_margin="5dp"

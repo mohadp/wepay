@@ -34,12 +34,11 @@ public class ExpenseCursorAdapter extends DrawableCursorAdapter {
     public ExpenseCursorAdapter(Context context, EntityCursor cursor, LruCache<Object, Bitmap> cache, HandlerThread handler) {
         super(context, cursor, cache);
         mHandlerReference = new WeakReference<HandlerThread>(handler);
-
     }
 
     //Create view for each item
     @Override
-    public View newView(Context context, android.database.Cursor cursor, ViewGroup parent) {
+    public View newView(Context context, Cursor cursor, ViewGroup parent) {
         // use a layout inflater to get a row view
         LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
@@ -80,8 +79,8 @@ public class ExpenseCursorAdapter extends DrawableCursorAdapter {
 
 
         // set up the start date text view
-        setBitmapInImageView(context, R.drawable.moha, holder.image); //loaded in separate thread if not present in cache
-        setBitmapInImageView(context, R.drawable.ic_launcher, holder.category);  //TODO: will load image of category once I have the category images
+        asyncSetBitmapInImageView(new ImageRetrieval(ImageRetrieval.RES_ID, R.drawable.moha), holder.image); //loaded in separate thread if not present in cache
+        asyncSetBitmapInImageView(new ImageRetrieval(ImageRetrieval.RES_ID, R.drawable.ic_launcher), holder.category);  //TODO: will load image of category once I have the category images
         loadPayersForExpense(expense, holder.payerImages);
 
 
@@ -102,16 +101,17 @@ public class ExpenseCursorAdapter extends DrawableCursorAdapter {
 
         //Load all the bitmaps representing all the payers per expense. We then update the imageRows once the bitmaps are loaded.
         ExpenseUserThreadHandler payerWorker = (ExpenseUserThreadHandler) mHandlerReference.get();
-        payerWorker.queueExpensePayers(payerImages, expense.getId());
         payerWorker.setOnImagesLoaded(new ExpenseUserThreadHandler.OnImagesLoaded() {
             @Override
             public void onImagesLoaded(ImageViewRow imgRow, ArrayList<String> bitmapIds, ArrayList<Bitmap> images) {
                 setRoundImageViewBitmaps(imgRow, bitmapIds, images);
             }
         });
+        payerWorker.queueExpensePayers(payerImages, expense.getId());
+
     }
 
-    public void setRoundImageViewBitmaps( ImageViewRow imgRow, ArrayList<String> bitmapIds, ArrayList<Bitmap> bitmaps){
+    public void setRoundImageViewBitmaps(ImageViewRow imgRow, ArrayList<String> bitmapIds, ArrayList<Bitmap> bitmaps){
 
         int currentBitmap;
         for (currentBitmap = 0; currentBitmap < bitmaps.size(); currentBitmap++) {

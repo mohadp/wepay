@@ -3,6 +3,7 @@ package com.jumo.tablas.ui;
 import android.app.Activity;
 import android.app.LoaderManager;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
@@ -120,10 +121,35 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
         mListView.setEmptyView(inflater.inflate(R.layout.list_empty, mListView, false));
 
         //testContactProviderQuery(AccountService.ACCOUNT_TYPE);
+        //testRawContactSearch("Ju");
 
         return view;
     }
 
+
+    private void testRawContactSearch(String test){
+        Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, ContactsContract.Contacts.Entity.CONTENT_DIRECTORY);  //ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+        Context context = getActivity();
+
+        String[] projection = new String[]{ContactsContract.RawContacts._ID //ContactsContract.CommonDataKinds.Phone.RAW_CONTACT_ID
+                , ContactsContract.RawContacts.DISPLAY_NAME_PRIMARY //ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
+                , ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER
+                , ContactsContract.CommonDataKinds.Phone.LABEL};
+                //, ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI};
+
+        //TODO:  first, look for raw contacts with that name (which does not work now); then, get the same data as now.
+        StringBuilder filter = (new StringBuilder())
+                .append(ContactsContract.RawContacts.Entity.MIMETYPE).append(" = ? AND ")
+                .append(ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET).append(" = ?");
+
+        String[] filterVals = new String[]{ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE, AccountService.ACCOUNT_TYPE};
+        String sortBy = ContactsContract.RawContacts.DISPLAY_NAME_PRIMARY + " ASC";
+
+        Cursor c = context.getContentResolver().query(uri, projection, filter.toString(), filterVals, sortBy);
+
+        logCursorContent(c);
+        c.close();
+    }
 
     /**
      * To test querying contacts
@@ -182,22 +208,27 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
             Cursor cursorDetail = resolverDetail.query(contactDetailUri, projection, filter, filterVals, null);
             cursorDetail.moveToFirst();
 
-            while(cursorDetail != null && !cursorDetail.isAfterLast()){
-                StringBuilder sbDetail = new StringBuilder("{");
-
-                for(int i = 0; i < cursorDetail.getColumnCount(); i++){
-                    sbDetail.append(cursorDetail.getColumnName(i)).append(": ").append(cursorDetail.getString(i));
-                    if(i < cursorDetail.getColumnCount() - 1) {
-                        sbDetail.append("; ");
-                    }
-                }
-                sbDetail.append("}\n");
-                Log.d(TAG, "\t" + sbDetail.toString());
-                cursorDetail.moveToNext();
-            }
-
+            logCursorContent(cursorDetail);
             cursor.moveToNext();
         }
+    }
+
+    private void logCursorContent(Cursor cursor){
+        while(cursor != null && !cursor.isAfterLast()){
+            StringBuilder sbDetail = new StringBuilder("\t{");
+
+            for(int i = 0; i < cursor.getColumnCount(); i++){
+                sbDetail.append(cursor.getColumnName(i)).append(": ").append(cursor.getString(i));
+                if(i < cursor.getColumnCount() - 1) {
+                    sbDetail.append("; ");
+                }
+            }
+            sbDetail.append("}\n");
+            Log.d(TAG, sbDetail.toString());
+            cursor.moveToNext();
+        }
+
+        cursor.moveToNext();
     }
 
 
