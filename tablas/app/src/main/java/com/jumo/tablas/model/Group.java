@@ -1,9 +1,10 @@
 package com.jumo.tablas.model;
 
-import com.jumo.tablas.provider.Table;
-import com.jumo.tablas.provider.WepayContract;
+import com.jumo.tablas.provider.TablasContract;
+import com.jumo.tablas.provider.dao.Table;
 
 import java.util.Date;
+import java.util.Iterator;
 
 /**
  * Created by Moha on 6/20/15.
@@ -16,47 +17,47 @@ public class Group implements Entity {
     }
 
     public Group(){
-        entity = new ActualEntity(WepayContract.Group.getInstance());
+        entity = new ActualEntity(TablasContract.Group.getInstance());
     }
 
     public long getId() {
-        return getLong(WepayContract.Group._ID);
+        return getLong(TablasContract.Group._ID);
     }
 
     public void setId(long id) {
-        setField(WepayContract.Group._ID, id);
+        setField(TablasContract.Group._ID, id);
     }
 
     public String getName() {
-        return getText(WepayContract.Group.NAME);
+        return getText(TablasContract.Group.NAME);
     }
 
     public void setName(String name) {
-        setField(WepayContract.Group.NAME, name);
+        setField(TablasContract.Group.NAME, name);
     }
 
     public Date getCreatedOn() {
-        return getDate(WepayContract.Group.CREATED_ON);
+        return getDate(TablasContract.Group.CREATED_ON);
     }
 
     public void setCreatedOn(Date createdOn) {
-        setField(WepayContract.Group.CREATED_ON, createdOn);
+        setField(TablasContract.Group.CREATED_ON, createdOn);
     }
 
     public byte[] getGroupPicture() {
-        return getBytes(WepayContract.Group.GROUP_PICTURE);
+        return getBytes(TablasContract.Group.GROUP_PICTURE);
     }
 
     public void setGroupPicture(byte[] groupPicture) {
-        setField(WepayContract.Group.GROUP_PICTURE, groupPicture);
+        setField(TablasContract.Group.GROUP_PICTURE, groupPicture);
     }
 
     public double getUserBalance() {
-        return getDouble(WepayContract.Group.USER_BALANCE);
+        return getDouble(TablasContract.Group.USER_BALANCE);
     }
 
     public void setUserBalance(double userBalance) {
-        setField(WepayContract.Group.USER_BALANCE, userBalance);
+        setField(TablasContract.Group.USER_BALANCE, userBalance);
     }
 
     @Override
@@ -107,6 +108,11 @@ public class Group implements Entity {
     @Override
     public void setField(String column, Object val) {
         entity.setField(column, val);
+    }
+
+    @Override
+    public Iterator<String> getFieldNameIterator(){
+        return entity.getFieldNameIterator();
     }
 
     @Override

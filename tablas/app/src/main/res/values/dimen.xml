@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="keyboard_height">230dip</dimen>
+    <dimen name="list_group_img_size">34dp</dimen>
+    <dimen name="list_expense_img_size">34dp</dimen>
+    <dimen name="edit_group_img_size">60dp</dimen>
+</resources>
