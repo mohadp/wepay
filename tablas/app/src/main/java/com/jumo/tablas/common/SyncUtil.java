@@ -26,19 +26,22 @@ public class SyncUtil {
             ContentResolver.setIsSyncable(account, ContactsContract.AUTHORITY, 1);  // Inform the system that this account supports sync
             ContentResolver.setSyncAutomatically(account, ContactsContract.AUTHORITY, true);  // Inform the system that this account is eligible for auto sync when the network is up
             ContentResolver.addPeriodicSync(account, ContactsContract.AUTHORITY, new Bundle(), TablasPrefs.SYNC_FREQ_SEC_DEFAULT); // Recommend a schedule for automatic synchronization. The system may modify this based on other scheduled syncs and network utilization.
-            PreferenceManager.getDefaultSharedPreferences(context).edit().putString(TablasPrefs.ACCOUNT_NAME, accountName).commit();
             newAccount = true;
+        }
+        String savedAccountNamePref = PreferenceManager.getDefaultSharedPreferences(context).getString(TablasPrefs.ACCOUNT_NAME, null);
+        if(savedAccountNamePref == null){
+            PreferenceManager.getDefaultSharedPreferences(context).edit().putString(TablasPrefs.ACCOUNT_NAME, accountName).commit();
         }
 
         // Schedule an initial sync if we detect problems with either our account or our local
         // data has been deleted. (Note that it's possible to clear app data WITHOUT affecting
         // the account list, so wee need to check both.)
         if (newAccount) {
-            TriggerRefresh(accountName);
+            triggerRefresh(accountName);
         }
     }
 
-    public static void TriggerRefresh(String accountName) {
+    public static void triggerRefresh(String accountName) {
         Bundle b = new Bundle();
         // Disable sync backoff and ignore sync preferences. In other words...perform sync NOW!
         b.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);

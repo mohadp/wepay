@@ -2,9 +2,7 @@ package com.jumo.tablas.ui.adapters;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.provider.ContactsContract;
-import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,23 +10,18 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.jumo.tablas.R;
-import com.jumo.tablas.provider.dao.EntityCursor;
+import com.jumo.tablas.ui.util.BitmapLoader;
+import com.jumo.tablas.ui.util.CacheManager;
 
-import java.lang.ref.WeakReference;
+import java.util.HashMap;
 
 /**
  * Created by Moha on 10/28/15.
  */
 public class ContactSearchAdapter extends DrawableCursorAdapter {
 
-    protected WeakReference<LruCache<Object, Bitmap>> mCacheReference;
-    protected WeakReference<Context> mContextReference;
-
-
-    public ContactSearchAdapter(Context context, Cursor cursor, LruCache<Object, Bitmap> cache) {
-        super(context, cursor, cache);
-        mCacheReference = new WeakReference<LruCache<Object, Bitmap>>(cache);
-        mContextReference = new WeakReference<Context>(context);
+    public ContactSearchAdapter(Context context, Cursor cursor, CacheManager cacheManager) {
+        super(context, cursor, cacheManager);
     }
 
     @Override
@@ -42,6 +35,10 @@ public class ContactSearchAdapter extends DrawableCursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
+        if(cursor == null) {
+            return;
+        }
+
         ViewHolder holder = (ViewHolder)view.getTag();
         if(holder == null){
             holder = new ViewHolder();
@@ -58,10 +55,33 @@ public class ContactSearchAdapter extends DrawableCursorAdapter {
 
         String photoUriStr = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI));
         if(photoUriStr != null){
-            ImageRetrieval imgRetrieval = new ImageRetrieval(ImageRetrieval.CONTENT_URI, photoUriStr, ContactsContract.CommonDataKinds.Phone.PHOTO_ID);
-            asyncSetBitmapInImageView(imgRetrieval, holder.contactImage);
+            BitmapLoader.ImageRetrieval imgRetrieval = new BitmapLoader.ImageRetrieval(BitmapLoader.ImageRetrieval.CONTENT_URI, photoUriStr, ContactsContract.CommonDataKinds.Photo.PHOTO);
+            loadBitmap(imgRetrieval, holder.contactImage);
         }
     }
+
+    public HashMap<String, String> get(int position){
+        Cursor cursor = getCursor();
+
+        if(cursor == null || cursor.isClosed())
+            return null;
+
+        int oldPosition = cursor.getPosition();
+
+        cursor.moveToPosition(position);
+        HashMap<String, String> contactInfo = new HashMap<String, String>();
+
+
+        contactInfo.put(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME, cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)));
+        contactInfo.put(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER, cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER)));
+        contactInfo.put(ContactsContract.CommonDataKinds.Phone.LABEL, cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.LABEL)));
+        contactInfo.put(ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI, cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI)));
+
+        cursor.moveToPosition(oldPosition);
+
+        return contactInfo;
+    }
+
 
     private class ViewHolder {
         protected ImageView contactImage;

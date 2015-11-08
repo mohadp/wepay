@@ -3,7 +3,6 @@ package com.jumo.tablas.ui.adapters;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.os.HandlerThread;
-import android.util.LruCache;
 
 import com.jumo.tablas.provider.TablasContract;
 
@@ -14,6 +13,8 @@ import android.widget.*;
 
 import com.jumo.tablas.R;
 import com.jumo.tablas.provider.dao.*;
+import com.jumo.tablas.ui.util.BitmapLoader;
+import com.jumo.tablas.ui.util.CacheManager;
 import com.jumo.tablas.ui.views.ImageViewRow;
 import com.jumo.tablas.ui.views.RoundImageView;
 import com.jumo.tablas.ui.loaders.ExpenseUserThreadHandler;
@@ -27,12 +28,12 @@ public class ExpenseCursorAdapter extends DrawableCursorAdapter {
 	//To get balances on a per-user basis for a particular group
 	private String mUserName;
 	private long groupId;
-	private WeakReference<LruCache<Object, Bitmap>> mCacheReference;
+	private WeakReference<CacheManager> mCacheContainerReference;
     private WeakReference<HandlerThread> mHandlerReference;
 
 
-    public ExpenseCursorAdapter(Context context, EntityCursor cursor, LruCache<Object, Bitmap> cache, HandlerThread handler) {
-        super(context, cursor, cache);
+    public ExpenseCursorAdapter(Context context, EntityCursor cursor, CacheManager cacheManager, HandlerThread handler) {
+        super(context, cursor, cacheManager);
         mHandlerReference = new WeakReference<HandlerThread>(handler);
     }
 
@@ -79,8 +80,8 @@ public class ExpenseCursorAdapter extends DrawableCursorAdapter {
 
 
         // set up the start date text view
-        asyncSetBitmapInImageView(new ImageRetrieval(ImageRetrieval.RES_ID, R.drawable.moha), holder.image); //loaded in separate thread if not present in cache
-        asyncSetBitmapInImageView(new ImageRetrieval(ImageRetrieval.RES_ID, R.drawable.ic_launcher), holder.category);  //TODO: will load image of category once I have the category images
+        loadBitmap(new BitmapLoader.ImageRetrieval(BitmapLoader.ImageRetrieval.RES_ID, R.drawable.moha), holder.image); //loaded in separate thread if not present in cache
+        loadBitmap(new BitmapLoader.ImageRetrieval(BitmapLoader.ImageRetrieval.RES_ID, R.drawable.ic_launcher), holder.category);  //TODO: will load image of category once I have the category images
         loadPayersForExpense(expense, holder.payerImages);
 
 

@@ -33,6 +33,7 @@ import android.widget.*;
 import com.jumo.tablas.model.Group;
 import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.*;
+import com.jumo.tablas.ui.util.CacheManager;
 
 /**
  * A fragment representing a list of Items.
@@ -43,7 +44,7 @@ import com.jumo.tablas.provider.dao.*;
  * Activities containing this fragment MUST implement the {@links OnFragmentInteractionListener}
  * interface.
  */
-public class GroupFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class GroupFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, CacheManager<Object, Bitmap> {
 
     private static final String TAG = "GroupFragment";
 
@@ -116,7 +117,7 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
 
         // Set the adapter
         mListView = (ListView) view.findViewById(android.R.id.list);
-        mListView.setAdapter(new GroupCursorAdapter(getActivity(), null, mCache));
+        mListView.setAdapter(new GroupCursorAdapter(getActivity(), null, this));
         mListView.setOnItemClickListener(new GroupListListener());
         mListView.setEmptyView(inflater.inflate(R.layout.list_empty, mListView, false));
 
@@ -252,8 +253,8 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
         //no need to check for GROUPS_LOADER
-        Uri uri = TablasContract.BASE_URI.buildUpon().appendPath(TablasContract.User.getInstance().getTableName())
-                .appendPath(mUserName).appendPath("groups")
+        Uri uri = TablasContract.BASE_URI.buildUpon().appendPath(TablasContract.Group.getInstance().getTableName())
+                .appendPath("user").appendPath(mUserName)
                 .build();
 
         TablasManager.newInstance(getActivity()).createSampleData();
@@ -315,6 +316,28 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
                 return super.onOptionsItemSelected(menu);
 
         }
+    }
+
+    @Override
+    public void addToCache(Object key, Bitmap bitmap) {
+        if(mCache == null)
+            return;
+
+        synchronized (mCache) {
+            if (mCache.get(key) == bitmap) {
+                return;
+            } else {
+                mCache.put(key, bitmap);
+            }
+        }
+    }
+
+    @Override
+    public Bitmap retrieveFromCache(Object key) {
+        if(mCache == null)
+            return null;
+
+        return mCache.get(key);
     }
 
     /**

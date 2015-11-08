@@ -24,10 +24,8 @@ public class TablasDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db){
-        db.execSQL(createTableSQL(TablasContract.User.getInstance().getTableName(), TablasContract.User.getInstance().getColumns()));
+
         db.execSQL(createTableSQL(TablasContract.Group.getInstance().getTableName(), TablasContract.Group.getInstance().getColumns()));
-        db.execSQL(createTableSQL(TablasContract.Recurrence.getInstance().getTableName(), TablasContract.Recurrence.getInstance().getColumns()));
-        db.execSQL(createTableSQL(TablasContract.Location.getInstance().getTableName(), TablasContract.Location.getInstance().getColumns()));
         db.execSQL(createTableSQL(TablasContract.Expense.getInstance().getTableName(), TablasContract.Expense.getInstance().getColumns()));
         db.execSQL(createTableSQL(TablasContract.Member.getInstance().getTableName(), TablasContract.Member.getInstance().getColumns()));
         db.execSQL(createTableSQL(TablasContract.Payer.getInstance().getTableName(), TablasContract.Payer.getInstance().getColumns()));

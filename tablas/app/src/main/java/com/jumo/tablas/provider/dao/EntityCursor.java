@@ -2,6 +2,7 @@ package com.jumo.tablas.provider.dao;
 
 import android.database.Cursor;
 import android.database.CursorWrapper;
+import android.util.Log;
 
 import com.jumo.tablas.model.ActualEntity;
 import com.jumo.tablas.model.Entity;
@@ -59,17 +60,19 @@ public class EntityCursor extends CursorWrapper {
     }
 
     public String toString(Table table){
-        int pos = this.getPosition();
-        StringBuilder sb =  new StringBuilder("EntityCursor:");
+        Cursor cursor = getWrappedCursor();
 
-        moveToFirst();
+        int pos = cursor.getPosition();
+        StringBuilder sb =  new StringBuilder("****** EntityCursor:\n");
+
+        cursor.moveToFirst();
         sb.append(getEntity(table).toString()).append("\n");
 
-        while(this.moveToNext()){
+        while(cursor.moveToNext()){
             sb.append(getEntity(table).toString()).append("\n");
         }
+        cursor.moveToPosition(pos);
 
-        this.moveToPosition(pos);
         return sb.toString();
     }
 }

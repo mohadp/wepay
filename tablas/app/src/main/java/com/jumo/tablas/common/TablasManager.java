@@ -1,6 +1,7 @@
 package com.jumo.tablas.common;
 
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
 
@@ -8,7 +9,6 @@ import com.jumo.tablas.model.Categories;
 import com.jumo.tablas.model.Expense;
 import com.jumo.tablas.model.Group;
 import com.jumo.tablas.model.Member;
-import com.jumo.tablas.model.User;
 import com.jumo.tablas.model.Payer;
 import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.EntityCursor;
@@ -50,73 +50,43 @@ public class TablasManager {
         return sampleDataUtil;
     }
 
-    /*
-    // I will not use this
-    public GroupCursor getUserGroups(String userId){
-        ContentResolver content = mContext.getContentResolver();
-        Uri uri = baseUri.buildUpon().appendPath(TablasContract.User.getInstance().getTableName())
-                .appendPath(userId).appendPath("groups")
-                .build();
-
-        return new GroupCursor(content.query(uri, null, null, null, null));
-    }*/
-
-    /*
-	public ExpenseCursor getUserGroupExpenses(String userId, long groupId){
-		ContentResolver content = mContext.getContentResolver();
-		Uri uri = baseUri.buildUpon().appendPath(TablasContract.Expense.getInstance().getTableName())
-				.appendPath("user").appendPath(userId).appendPath("group").appendPath(Long.toString(groupId))
-				.build();
-		
-		StringBuilder sortBy = new StringBuilder(TablasContract.Expense.CREATED_ON).append(" ASC");
-		
-		return new ExpenseCursor(content.query(uri, null, null, null, sortBy.toString()));
-	}*/
-
     public void createSampleData(){
         ContentResolver content = mContext.getContentResolver();
 
         Uri seeGroups = baseUri.buildUpon().appendPath(TablasContract.Group.getInstance().getTableName()).build();
         Cursor groupsCursor = content.query(seeGroups, null, null, null, null);
-		
 
-        //boolean afterLast = groupsCursor.isAfterLast();
-        //boolean beforeFirst = groupsCursor.isBeforeFirst();
-
-        EntityCursor entCursor = new EntityCursor(groupsCursor);
-
-        Log.d(TAG, "Group Cursor size: " + entCursor.getCount());
-        if(entCursor.getCount() > 0)
-            Log.d(TAG, "All Groups: "+ entCursor.toString(TablasContract.Group.getInstance()));
-
+        Log.d(TAG, "Group Cursor size: " + groupsCursor.getCount());
 
         if(groupsCursor == null || groupsCursor.getCount() == 0){
         	deleteAllData();
-		
-		//Toast.makeText(mContext, "Data Deleted", Toast.LENGTH_SHORT);
-		
-        	ArrayList<User> newUsers = createSampleUsers();
+		    //Toast.makeText(mContext, "Data Deleted", Toast.LENGTH_SHORT);
+        	String[] newUsers = createSampleUsers();
         	ArrayList<Group> newGroups = createSampleGroups();
         	HashMap<Long, ArrayList<Member>> newGroupMembers = createSampleMembers(newUsers, newGroups);
         	HashMap<Long, ArrayList<Expense>> newGroupExpenses = createSampleExpenses(newGroupMembers);
         	createSamplePayers(newGroupMembers, newGroupExpenses);
         }
+        groupsCursor.close();
 
-        /*EntityWriter.UserCursor userCursor = new EntityWriter.UserCursor(content.query(baseUri.buildUpon().appendPath(TablasContract.User.getInstance().getTableName()).build() ,null, null, null, null));
-        Log.d(TAG, userCursor.toString());
+        /*EntityCursor groupCursor = new EntityCursor(content.query(seeGroups, null, null, null, null));
+        String groupStr = groupCursor.toString(TablasContract.Group.getInstance());
 
-        EntityWriter.GroupCursor groupCursor = new EntityWriter.GroupCursor(content.query(baseUri.buildUpon().appendPath(TablasContract.Group.getInstance().getTableName()).build() ,null, null, null, null));
-        Log.d(TAG, groupCursor.toString());
+        EntityCursor memberCursor = new EntityCursor(content.query(baseUri.buildUpon().appendPath(TablasContract.Member.getInstance().getTableName()).build() ,null, null, null, null));
+        String memberStr = memberCursor.toString(TablasContract.Member.getInstance());
 
-        EntityWriter.MemberCursor memberCursor = new EntityWriter.MemberCursor(content.query(baseUri.buildUpon().appendPath(TablasContract.Member.getInstance().getTableName()).build() ,null, null, null, null));
-        Log.d(TAG, memberCursor.toString());
+        EntityCursor expenseCursor = new EntityCursor(content.query(baseUri.buildUpon().appendPath(TablasContract.Expense.getInstance().getTableName()).build() ,null, null, null, null));
+        String expenseStr = expenseCursor.toString(TablasContract.Expense.getInstance());
 
-        EntityWriter.ExpenseCursor expenseCursor = new EntityWriter.ExpenseCursor(content.query(baseUri.buildUpon().appendPath(TablasContract.Expense.getInstance().getTableName()).build() ,null, null, null, null));
-        Log.d(TAG, expenseCursor.toString());
+        EntityCursor payerCursor = new EntityCursor(content.query(baseUri.buildUpon().appendPath(TablasContract.Payer.getInstance().getTableName()).build() ,null, null, null, null));
+        String payerStr = payerCursor.toString(TablasContract.Payer.getInstance());
 
-        PayerCursor payerCursor = new PayerCursor(content.query(baseUri.buildUpon().appendPath(TablasContract.Payer.getInstance().getTableName()).build() ,null, null, null, null));
-        Log.d(TAG, payerCursor.toString());
-        */
+
+        groupCursor.close();
+        memberCursor.close();
+        expenseCursor.close();
+        payerCursor.close();*/
+
 
     }
 
@@ -131,43 +101,17 @@ public class TablasManager {
         content.delete(baseUri.buildUpon().appendPath(TablasContract.Expense.getInstance().getTableName()).build(), null, null);
         content.delete(baseUri.buildUpon().appendPath(TablasContract.Member.getInstance().getTableName()).build(), null, null);
         content.delete(baseUri.buildUpon().appendPath(TablasContract.Group.getInstance().getTableName()).build(), null, null);
-        content.delete(baseUri.buildUpon().appendPath(TablasContract.User.getInstance().getTableName()).build(), null, null);
     }
 
-    public ArrayList<User> createSampleUsers(){
+    public String[] createSampleUsers(){
         //Insert users, 10 users
-        ArrayList<User> newUsers = new ArrayList<User>();
-
         //String[] names = {"Luis", "Moha", "Julieta", "María", "Benjamín", "Pedro"};
         //String[] lastNames = { "Carrillo", "Vishar", "Pineda", "Wilson", "Potter", "Schwartz" };
-        String[] fullNames = {"Moha", "Luis Carrillo", "Julieta Vishar", "Vijay Anand", "Ismael Diakite", "Cindy Diakite", "Octavio Soto", "Valentina Xavier", "Sean Darling-Hammond"};
-        String[] emails = {"mohadp@gmail.com", "edgardo.carrillo@gmail.com", "julieta.villar.athie@gmail.com", "vijayanand180@gmail.com", "ismaeld@gmail.com", "cindydiakite@gmail.com", "g.octavio.soto@gmail.com", "valentina.xavier@gmail.com", "sean.darling.hammond@gmail.com"};
+        //String[] fullNames = {"Moha", "Luis Carrillo", "Julieta Vishar", "Vijay Anand", "Ismael Diakite", "Cindy Diakite", "Octavio Soto", "Valentina Xavier", "Sean Darling-Hammond"};
+        //String[] emails = {"mohadp@gmail.com", "edgardo.carrillo@gmail.com", "julieta.villar.athie@gmail.com", "vijayanand180@gmail.com", "ismaeld@gmail.com", "cindydiakite@gmail.com", "g.octavio.soto@gmail.com", "valentina.xavier@gmail.com", "sean.darling.hammond@gmail.com"};
         String[] tels = {"+17036566202", "+17037173160", "+17036566203", "+19192188457", "+5215534007789", "+5215540840084", "+5215513725485", "+12026790071", "+16504557014"};
-        Uri usersTable = baseUri.buildUpon().appendPath(TablasContract.User.getInstance().getTableName()).build();
 
-        //int offset = 0;
-
-        //for(int i = 0; i < 8; i++) {
-        for(int i = 0; i < emails.length; i++){
-
-            User user = new User();
-            //int nameIndex = i % (names.length);
-            //int lNameIndex = (i + offset) % (lastNames.length);
-
-            //user.setId((names[nameIndex].charAt(0) + lastNames[lNameIndex]).toLowerCase() + "@gmail.com");
-            user.setId(tels[i]);
-            //user.setName(names[nameIndex] + " " + lastNames[lNameIndex]);
-            user.setName(fullNames[i]);
-            user.setEmail(emails[i]);
-
-            //insert user
-            mContext.getContentResolver().insert(usersTable, EntityWriter.toContentValues(user));
-            newUsers.add(user);
-
-            //we want to create name-lastName with an offset of phased alignment between the arrays to create new names with diferent combinations of names and last names.
-            //if((i+1)%lastNames.length == 0) offset++;
-        }
-        return newUsers;
+        return tels;
     }
 
     public ArrayList<Group> createSampleGroups(){
@@ -183,21 +127,24 @@ public class TablasManager {
             group.setCreatedOn(new Date());
             group.setName("Group " + i);
 
-            mContext.getContentResolver().insert(groupTable, EntityWriter.toContentValues(group));
+            Uri result = mContext.getContentResolver().insert(groupTable, EntityWriter.toContentValues(group));
+            if(result != null){
+                Log.d(TAG, "\tSAVED: " + result.toString());
+            }
             newGroups.add(group);
         }
 
         return newGroups;
     }
 
-    public HashMap<Long, ArrayList<Member>> createSampleMembers(ArrayList<User> users, ArrayList<Group> groups){
+    public HashMap<Long, ArrayList<Member>> createSampleMembers(String[] users, ArrayList<Group> groups){
         HashMap<Long, ArrayList<Member>> groupMembers = new HashMap();
         Uri memberTable = baseUri.buildUpon().appendPath(TablasContract.Member.getInstance().getTableName()).build();
 
         for(Group group : groups){
 
             int noMembers = 5; //(int)(Math.round(Math.random()*100)) % 5 + 1; //Groups have 5 or less members... creating 5 members
-            int startAddingFromPos = (int)(Math.round(Math.random()*100)) % users.size(); //A random position within the user list. Start adding users from a starting index
+            int startAddingFromPos = (int)(Math.round(Math.random()*100)) % users.length; //A random position within the user list. Start adding users from a starting index
 
             ArrayList<Member> members = new ArrayList<Member>();
 
@@ -208,11 +155,16 @@ public class TablasManager {
                 member.setAdmin(i==0); // Only the first added user is the admin now
                 member.setLeftGroup(false);
                 //Add user id
-                int addUserAt = (startAddingFromPos + i) % users.size(); //make sure the index falls within the user's list
-                member.setUserId(users.get(addUserAt).getId());
+                int addUserAt = (startAddingFromPos + i) % users.length; //make sure the index falls within the user's list
+                member.setUserId(users[addUserAt]);
 
                 //Insert member into the database.
-                mContext.getContentResolver().insert(memberTable, EntityWriter.toContentValues(member));
+                //Log.d(TAG, "**** Member to Insert: " + member.toString());
+                //ContentValues contentValues = EntityWriter.toContentValues(member);
+                Uri result = mContext.getContentResolver().insert(memberTable, EntityWriter.toContentValues(member));
+                if(result != null){
+                    Log.d(TAG, "\tSAVED: " + result.toString());
+                }
                 members.add(member);
             }
 
@@ -253,7 +205,10 @@ public class TablasManager {
                 expense.setCategoryId(categoryId);
 
                 //Insert member into the database.
-                mContext.getContentResolver().insert(expenseTable, EntityWriter.toContentValues(expense));
+                Uri result = mContext.getContentResolver().insert(expenseTable, EntityWriter.toContentValues(expense));
+                if(result != null){
+                    Log.d(TAG, "\tSAVED: " + result.toString());
+                }
                 expenses.add(expense);
             }
 
@@ -323,11 +278,17 @@ public class TablasManager {
                         }
 
                         //Insert Payers.
-                        mContext.getContentResolver().insert(payerTable, EntityWriter.toContentValues(payerShouldPay));
+                        Uri result = mContext.getContentResolver().insert(payerTable, EntityWriter.toContentValues(payerShouldPay));
+                        if(result != null){
+                            Log.d(TAG, "\tSAVED: " + result.toString());
+                        }
                         payers.add(payerShouldPay);
 
                         if(payerPaid != null) {
-                            mContext.getContentResolver().insert(payerTable, EntityWriter.toContentValues(payerPaid));
+                            result = mContext.getContentResolver().insert(payerTable, EntityWriter.toContentValues(payerPaid));
+                            if(result != null){
+                                Log.d(TAG, "\tSAVED: " + result.toString());
+                            }
                             payers.add(payerPaid);
                         }
                         currentMember++;

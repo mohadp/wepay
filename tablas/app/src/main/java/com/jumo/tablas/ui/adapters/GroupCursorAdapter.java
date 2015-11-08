@@ -2,8 +2,6 @@ package com.jumo.tablas.ui.adapters;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +11,8 @@ import com.jumo.tablas.R;
 import com.jumo.tablas.model.Group;
 import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.EntityCursor;
+import com.jumo.tablas.ui.util.BitmapLoader;
+import com.jumo.tablas.ui.util.CacheManager;
 import com.jumo.tablas.ui.views.RoundImageView;
 
 /**
@@ -26,8 +26,8 @@ public class GroupCursorAdapter extends DrawableCursorAdapter {
         //mCacheReference = new WeakReference<LruCache<Integer, Bitmap>>();
     }
 
-    public GroupCursorAdapter(Context context, EntityCursor cursor, LruCache<Object, Bitmap> cache) {
-        super(context, cursor, cache);
+    public GroupCursorAdapter(Context context, EntityCursor cursor, CacheManager cacheManager) {
+        super(context, cursor, cacheManager);
     }
 
     //Create view for each item
@@ -55,7 +55,7 @@ public class GroupCursorAdapter extends DrawableCursorAdapter {
 
         // set up the start date text view
         RoundImageView roundImage = ((RoundImageView) view.findViewById(R.id.list_group_image));
-        asyncSetBitmapInImageView(new ImageRetrieval(ImageRetrieval.RES_ID, R.drawable.moha), roundImage); //loaded in separate thread if not present in cache
+        loadBitmap(new BitmapLoader.ImageRetrieval(BitmapLoader.ImageRetrieval.RES_ID, R.drawable.moha), roundImage); //loaded in separate thread if not present in cache
         //roundImage.setImageBitmap(getBitmapFromCacheFirst(context, R.drawable.moha));
 
         ((TextView)view.findViewById(R.id.list_group_name)).setText(group.getName());

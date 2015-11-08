@@ -11,7 +11,7 @@ import android.os.Message;
 import android.util.LruCache;
 
 import com.jumo.tablas.R;
-import com.jumo.tablas.model.User;
+import com.jumo.tablas.model.Member;
 import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.EntityCursor;
 import com.jumo.tablas.ui.views.ImageViewRow;
@@ -134,7 +134,7 @@ public class ExpenseUserThreadHandler extends HandlerThread {
 
             int counter = 0;
             while(entityCursor.moveToNext()){
-                User user = new User(entityCursor.getEntity(TablasContract.User.getInstance()));
+                Member user = new Member(entityCursor.getEntity(TablasContract.Member.getInstance()));
                 //TODO: Need to update the image to load dynamically based on user
                 Bitmap bitmap = getUserBitmap(R.drawable.moha);
                 images.add(bitmap);

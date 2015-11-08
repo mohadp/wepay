@@ -7,6 +7,7 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.util.Log;
 
 import com.jumo.tablas.provider.dao.Column;
 import com.jumo.tablas.provider.dao.ColumnJoin;
@@ -37,14 +38,17 @@ public class TablasProvider extends ContentProvider{
     private static final boolean ADD_BALANCE = true;
     private static final boolean NO_BALANCE = false;
 
+    //TODO: may need to delete this
+    private static final String USER = "user";
+
 
     protected static final String PROVIDER_AUTHORITY = TablasContract.AUTHORITY;
-    private static final int USER_ID = 1;
+    //private static final int USER_ID = 1;
     private static final int USERS = 18;
     private static final int USER_GROUPS = 2;
     private static final int GROUPS = 3;
     private static final int GROUP_ID = 4;
-    private static final int GROUP_MEMBER_USERS = 6;
+    //private static final int GROUP_MEMBER_USERS = 6;
     private static final int USER_GROUP_EXPENSES = 7;
     private static final int GROUP_EXPENSE_PAYERS = 8;
     private static final int GROUP_PAYERS = 17;
@@ -55,23 +59,23 @@ public class TablasProvider extends ContentProvider{
     private static final int EXPENSES = 5;
     private static final int EXPENSE_USERS = 21;     //Max
     private static final int EXPENSE_PAYER_USERS = 12;
-    private static final int EXPENSE_LOCATION = 13;
-    private static final int EXPENSE_RECURRENCE = 14;
+    //private static final int EXPENSE_LOCATION = 13;
+    //private static final int EXPENSE_RECURRENCE = 14;
     private static final int PAYERS = 20;
-    private static final int RECURRENCE_ID = 15;
-    private static final int LOCATION_ID = 16;
+    //private static final int RECURRENCE_ID = 15;
+    //private static final int LOCATION_ID = 16;
 
 
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     static
-    {   //TODO: possibly add a GROUP_USERS
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.User.getInstance().getTableName() + "/*", USER_ID);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.User.getInstance().getTableName(), USERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.User.getInstance().getTableName() + "/*/groups", USER_GROUPS);
+    {
+        //sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.User.getInstance().getTableName() + "/*", USER_ID);
+        //sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.User.getInstance().getTableName(), USERS);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Group.getInstance().getTableName() + "/user/*", USER_GROUPS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Group.getInstance().getTableName(), GROUPS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Group.getInstance().getTableName() + "/#", GROUP_ID);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Group.getInstance().getTableName() + "/#/users", GROUP_MEMBER_USERS);
+        //sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Group.getInstance().getTableName() + "/#/users", GROUP_MEMBER_USERS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Group.getInstance().getTableName() + "/#/expense/#/payers", GROUP_EXPENSE_PAYERS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Group.getInstance().getTableName() + "/#/payers", GROUP_PAYERS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Member.getInstance().getTableName() + "/#", MEMBER_ID);
@@ -83,10 +87,10 @@ public class TablasProvider extends ContentProvider{
         sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Expense.getInstance().getTableName(), EXPENSES);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Payer.getInstance().getTableName() + "/expense/#", EXPENSE_PAYER_USERS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Payer.getInstance().getTableName(), PAYERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Location.getInstance().getTableName() + "/#", LOCATION_ID);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Location.getInstance().getTableName() + "/expense/#", EXPENSE_LOCATION);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Recurrence.getInstance().getTableName() + "/#", RECURRENCE_ID);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Recurrence.getInstance().getTableName() + "/recurrence/#", EXPENSE_RECURRENCE);
+        //sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Location.getInstance().getTableName() + "/#", LOCATION_ID);
+        //sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Location.getInstance().getTableName() + "/expense/#", EXPENSE_LOCATION);
+        //sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Recurrence.getInstance().getTableName() + "/#", RECURRENCE_ID);
+        //sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Recurrence.getInstance().getTableName() + "/recurrence/#", EXPENSE_RECURRENCE);
 
     }
 
@@ -115,14 +119,14 @@ public class TablasProvider extends ContentProvider{
         SQLiteDatabase dbConnection = mDBHelper.getReadableDatabase();
 
         switch(sURIMatcher.match(uri)){
-            case USERS:
-                cursorResult = dbConnection.query(TablasContract.User.getInstance().getTableName(),projection, selection /*filter*/,
-                        selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
-                break;
+            //case USERS:
+            //    cursorResult = dbConnection.query(TablasContract.User.getInstance().getTableName(),projection, selection /*filter*/,
+            //            selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
+            //    break;
 
             case USER_GROUPS: //This also adds a balance from the perspective of a user.
                 appendToProjection(TablasContract.Compound.GroupBalance.GROUP_TABLE.getColumns(), newProjection);
-                appendToFilter(newSelection, newSelectArgs, TablasContract.Compound.GroupBalance.MEMBER_TABLE.getColumn(TablasContract.Member.USER_ID), uri.getPathSegments().get(1)); // get the user ID from the path.
+                appendToFilter(newSelection, newSelectArgs, TablasContract.Compound.GroupBalance.MEMBER_TABLE.getColumn(TablasContract.Member.USER_ID), uri.getPathSegments().get(2)); // get the user ID from the path.
 
                 //cursorResult = mDBHelper.getReadableDatabase().rawQuery(selectEntity(TablasContract.Group.getInstance().getTableName(), TablasContract.Group.getInstance().getColumnNames(), projection, true, JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER, selection, sortOrder, userId, null), selectionArgs);
                 metric = TablasContract.getBalanceMetric();
@@ -132,6 +136,9 @@ public class TablasProvider extends ContentProvider{
                 sqlQuery = select(TablasContract.Compound.GroupBalance.getInstance(), metrics,
                         newProjection.toArray(new String[]{}), newSelection.toString(), sortOrder, false);
                 //Log.d(TAG, sqlQuery);
+                /*for(String filterVal : newSelectArgs){
+                    Log.d(TAG, "Filter val: " + filterVal);
+                }*/
                 cursorResult = dbConnection.rawQuery(sqlQuery, newSelectArgs.toArray(new String[]{}));
                 break;
 
@@ -196,10 +203,10 @@ public class TablasProvider extends ContentProvider{
     public String getType(Uri uri){
         StringBuilder str = new StringBuilder("vnd.android.cursor");
         switch(sURIMatcher.match(uri)){
-            case USER_ID:
+            /*case USER_ID:
                 return str.append(".item/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.User.getInstance().getTableName()).toString();
             case USERS:
-                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.User.getInstance().getTableName()).toString();
+                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.User.getInstance().getTableName()).toString();*/
             case USER_GROUPS:
                 return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.Group.getInstance().getTableName()).toString();
             case GROUPS:
@@ -210,10 +217,12 @@ public class TablasProvider extends ContentProvider{
                 return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.Expense.getInstance().getTableName()).toString();
             case PAYERS:
                 return str.append("dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.Payer.getInstance().getTableName()).toString();
-            case GROUP_MEMBER_USERS:
-                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.User.getInstance().getTableName()).toString();
+            /*case GROUP_MEMBER_USERS:
+                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.User.getInstance().getTableName()).toString();*/
             case USER_GROUP_EXPENSES:
                 return str.append("dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.Expense.getInstance().getTableName()).toString();
+            case EXPENSE_USERS:
+                return str.append("dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.Member.getInstance().getTableName()).toString();
         }
 
         return null;
@@ -255,10 +264,10 @@ public class TablasProvider extends ContentProvider{
         String table = null;
 
         switch(sURIMatcher.match(uri)){
-            case USERS:
+            /*case USERS:
                 table = TablasContract.User.getInstance().getTableName();
                 break;
-            case GROUPS:
+            */case GROUPS:
                 table = TablasContract.Group.getInstance().getTableName();
                 break;
             case MEMBERS:

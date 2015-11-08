@@ -31,6 +31,7 @@ import com.jumo.tablas.R;
 import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.EntityCursor;
 import com.jumo.tablas.ui.adapters.ExpenseCursorAdapter;
+import com.jumo.tablas.ui.util.CacheManager;
 import com.jumo.tablas.ui.util.OnKeyEventListener;
 import com.jumo.tablas.ui.loaders.ExpenseUserThreadHandler;
 
@@ -43,7 +44,7 @@ import com.jumo.tablas.ui.loaders.ExpenseUserThreadHandler;
  * Activities containing this fragment MUST implement the {@linkx OnFragmentInteractionListener}
  * interface.
  */
-public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, OnKeyEventListener{
+public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, OnKeyEventListener, CacheManager<Object, Bitmap> {
 
     private static final String TAG = "ExpenseFragment";
 
@@ -141,7 +142,7 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
 
         // Set the adapter
         mListView = (ListView) view.findViewById(android.R.id.list);
-		mListView.setAdapter(new ExpenseCursorAdapter(getActivity(), null, mCache, mPayerLoader));
+		mListView.setAdapter(new ExpenseCursorAdapter(getActivity(), null, this, mPayerLoader));
 
         //Set the references to the components in the fragment layout
         mConversationLayout = (LinearLayout) view.findViewById(R.id.view_conversations);
@@ -278,6 +279,28 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.default_menu, menu);
+    }
+
+    @Override
+    public void addToCache(Object key, Bitmap bitmap) {
+        if(mCache == null)
+            return;
+
+        synchronized (mCache) {
+            if (mCache.get(key) == bitmap) {
+                return;
+            } else {
+                mCache.put(key, bitmap);
+            }
+        }
+    }
+
+    @Override
+    public Bitmap retrieveFromCache(Object key) {
+        if(mCache == null)
+            return null;
+
+        return mCache.get(key);
     }
 
 

@@ -123,7 +123,7 @@ public abstract class CompositeTable extends Table {
                         JoinTreeNode rightParent = rightJoinNode.getParent();
                         JoinTreeNode leftRoot = leftJoinNode.getRoot();
                         JoinTreeNode rightRoot = rightJoinNode.getRoot();
-                        boolean inSameTreeAlready = leftRoot == rightRoot;
+                        boolean inSameTreeAlready = (leftRoot == rightRoot);
 
                         //Construct a tree of joins such that the left nodes in joins can be tables or other joins, and the right only tables.
                         if(leftParent == null && rightParent == null){

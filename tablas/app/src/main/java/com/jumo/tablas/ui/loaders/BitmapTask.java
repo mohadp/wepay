@@ -10,8 +10,9 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.util.LruCache;
 import android.widget.ImageView;
+
+import com.jumo.tablas.ui.util.CacheManager;
 
 import java.lang.ref.WeakReference;
 
@@ -27,14 +28,14 @@ public class BitmapTask extends AsyncTask<Object, Void, Bitmap> {
     private final WeakReference<ImageView> mImageViewReference;
     private final WeakReference<Resources> mResReference;
     private final WeakReference<Context> mContextReference;
-    private final WeakReference<LruCache<Object, Bitmap>> mCacheReference;
+    private final WeakReference<CacheManager> mCacheContainerReference;
     private Object mData;
 
 
-    public BitmapTask(ImageView imgThatNeedsBitmap, Context context, LruCache<Object, Bitmap> cache){
+    public BitmapTask(ImageView imgThatNeedsBitmap, Context context, CacheManager cacheManager){
         mImageViewReference = new WeakReference<ImageView>(imgThatNeedsBitmap);
         mResReference = new WeakReference<Resources>(context.getResources());
-        mCacheReference = new WeakReference<LruCache<Object, Bitmap>>(cache);
+        mCacheContainerReference = new WeakReference<CacheManager>(cacheManager);
         mContextReference = new WeakReference<Context>(context);
     }
 
@@ -67,8 +68,11 @@ public class BitmapTask extends AsyncTask<Object, Void, Bitmap> {
         if(mImageViewReference == null)
             return null;
 
-        Bitmap bitmap = decodeSampledBitmapFromResource(mResReference.get(), (Integer)mData, 100, 100, null);
-        addToCache(mData, bitmap);
+        Bitmap bitmap = decodeSampledBitmapFromResource(mResReference.get(), (Integer) mData, 100, 100, null);
+
+        if(mCacheContainerReference != null && mCacheContainerReference.get() != null){
+            mCacheContainerReference.get().addToCache(mData, bitmap);
+        };
         return bitmap;
     }
 
@@ -122,7 +126,7 @@ public class BitmapTask extends AsyncTask<Object, Void, Bitmap> {
      * @param key
      * @param pic
      */
-    private void addToCache(Object key, Bitmap pic){
+    /*private void addToCache(Object key, Bitmap pic){
         if(mCacheReference == null)
             return;
 
@@ -137,7 +141,7 @@ public class BitmapTask extends AsyncTask<Object, Void, Bitmap> {
                 cache.put(key, pic);
             }
         }
-    }
+    }*/
 
     /**
      * Method slightly modified from Android documentation: http://developer.android.com/training/displaying-bitmaps/load-bitmap.html

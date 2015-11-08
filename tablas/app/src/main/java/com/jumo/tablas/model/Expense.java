@@ -70,13 +70,13 @@ public class Expense implements Entity {
         setField(TablasContract.Expense.CURRENCY, currencyId);
     }
 
-    public long getLocationId() {
+    /*public long getLocationId() {
         return getLong(TablasContract.Expense.LOCATION_ID);
     }
 
     public void setLocationId(long locationId) {
         setField(TablasContract.Expense.LOCATION_ID, locationId);
-    }
+    }*/
 
     public long getCategoryId() {
         return getLong(TablasContract.Expense.CATEGORY_ID);
@@ -84,6 +84,40 @@ public class Expense implements Entity {
 
     public void setCategoryId(long categoryId) {
         setField(TablasContract.Expense.CATEGORY_ID, categoryId);
+    }
+
+    public boolean isPayment() {
+        return getBoolean(TablasContract.Expense.IS_PAYMENT);
+    }
+
+    public void setPayment(boolean isPayment) {
+        setField(TablasContract.Expense.IS_PAYMENT, isPayment);
+    }
+
+    public double getLatitude() {
+        return getDouble(TablasContract.Expense.LATITUDE);
+    }
+
+    public void setLatitude(double latitude) {
+        setField(TablasContract.Expense.LATITUDE, latitude);
+    }
+
+    public double getLongitude() {
+        return getDouble(TablasContract.Expense.LONGITUDE);
+    }
+
+    public void setLongitude(double longitude) {
+        setField(TablasContract.Expense.LONGITUDE, longitude);
+    }
+
+
+
+    public long getGroupExpenseId() {
+        return getLong(TablasContract.Expense.GROUP_EXPENSE_ID);
+    }
+
+    public void setGroupExpenseId(long groupExpenseId) {
+        setField(TablasContract.Expense.GROUP_EXPENSE_ID, groupExpenseId);
     }
 
     /**
@@ -94,29 +128,36 @@ public class Expense implements Entity {
      * group-level expense.
      * @return
      */
-    public long getRecurrenceId() {
+    /*public long getRecurrenceId() {
         return getLong(TablasContract.Expense.RECURRENCE_ID);
     }
 
     public void setRecurrenceId(long recurrenceId) {
         setField(TablasContract.Expense.RECURRENCE_ID, recurrenceId);
+    }*/
+
+    public long getPeriodicity() {
+        return getLong(TablasContract.Expense.PERIODICITY);
     }
 
-    public long getGroupExpenseId() {
-        return getLong(TablasContract.Expense.GROUP_EXPENSE_ID);
+    public void setPeriodicity(long periodicity) {
+        setField(TablasContract.Expense.PERIODICITY, periodicity);
     }
 
-    public void setGroupExpenseId(long groupExpenseId) {
-        setField(TablasContract.Expense.GROUP_EXPENSE_ID, groupExpenseId);
+    /**
+     * When periodicity is
+     *  PERIODICITY_DAILY, this variable has no significance;
+     *  PERIODICITY_WEEKLY, offset = 1 means Monday, 2 is Tuesday, ... , 7 is Sunday.
+     *  PERIODICITY_MONTHLY, offset = 1 means the first of the month, offset = OFFSET_LAST_OF_MONTH means last day of every month.
+     **/
+    public long getOffset() {
+        return getLong(TablasContract.Expense.OFFSET);
     }
 
-    public boolean isPayment() {
-        return getBoolean(TablasContract.Expense.IS_PAYMENT);
+    public void setOffset(long offset) {
+        setField(TablasContract.Expense.OFFSET, offset);
     }
 
-    public void setPayment(boolean isPayment) {
-        setField(TablasContract.Expense.IS_PAYMENT, isPayment);
-    }
 
     public long getGroupId() {
         return getLong(TablasContract.Expense.GROUP_ID);
