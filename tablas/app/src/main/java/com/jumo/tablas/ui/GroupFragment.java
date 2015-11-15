@@ -51,6 +51,9 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String EXTRA_USER = "com.jumo.wepay.user_id";
 
+    //results
+    private static final int REQUEST_NEW_GROUP = 0;
+
     //Loaders
     private static final int GROUPS_LOADER = 0;
 
@@ -88,7 +91,7 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
         super.onActivityCreated(savedInstanceState);
         Loader loader = getLoaderManager().getLoader(GROUPS_LOADER);
 
-        getLoaderManager().restartLoader(GROUPS_LOADER, null, this); //TODO: Try to make the loader to reuse Cursor (could not make it reuse it)
+        getLoaderManager().restartLoader(GROUPS_LOADER, null, this);
     }
 
     @Override
@@ -138,7 +141,6 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
                 , ContactsContract.CommonDataKinds.Phone.LABEL};
                 //, ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI};
 
-        //TODO:  first, look for raw contacts with that name (which does not work now); then, get the same data as now.
         StringBuilder filter = (new StringBuilder())
                 .append(ContactsContract.RawContacts.Entity.MIMETYPE).append(" = ? AND ")
                 .append(ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET).append(" = ?");
@@ -232,6 +234,17 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
         cursor.moveToNext();
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        switch(requestCode){
+            case REQUEST_NEW_GROUP:
+                getLoaderManager().restartLoader(GROUPS_LOADER, null, this);
+                break;
+            default:
+                return;
+        }
+    }
+
 
     @Override
     public void onResume() {
@@ -310,7 +323,7 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
         switch(menu.getItemId()){
             case R.id.menu_item_new_group:
                 Intent i = new Intent(getActivity(), CreateGroupActivity.class);
-                startActivity(i);
+                startActivityForResult(i, REQUEST_NEW_GROUP);
                 return true;
             default:
                 return super.onOptionsItemSelected(menu);
@@ -340,18 +353,5 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
         return mCache.get(key);
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    /*public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        public void onFragmentInteraction(String id);
-    }*/
+
 }

@@ -1,33 +1,44 @@
 package com.jumo.tablas.provider.dao;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 /**
  * Created by Moha on 9/7/15.
  */
-public class JoinTreeNode {
-    private ArrayList<ColumnJoin> mColumnJoins;
-    private String mTableName;
-    private JoinTreeNode mLeft;
-    private JoinTreeNode mRight;
-    private JoinTreeNode mParent;
+public class TreeNode {
+    public final static int INNER_JOIN = 0;
+    public final static int LEFT_OUTER_JOIN = 1;
+    public final static int RIGHT_OUTER_JOIN = 2;
+    public final static int FULL_OUTER_JOIN = 3;
+    public final static int CROSS_JOIN = 4;
 
-    protected JoinTreeNode(String tableName) {
+    private LinkedHashSet<ColumnJoin> mColumnJoins;
+    private String mTableName;
+    private int mJoinType;
+    private TreeNode mLeft;
+    private TreeNode mRight;
+    private TreeNode mParent;
+
+
+    protected TreeNode(String tableName) {
         this.mTableName = tableName;
         mParent = null;
         mLeft = null;
         mRight = null;
     }
 
-    protected JoinTreeNode() {
+    protected TreeNode() {
     }
 
-    protected JoinTreeNode(JoinTreeNode l, JoinTreeNode r) {
+    protected TreeNode(TreeNode l, TreeNode r) {
         setLeft(l);
         setRight(r);
+        mJoinType = INNER_JOIN;
     }
 
-    protected JoinTreeNode getRoot() {
+    protected TreeNode getRoot() {
         if (mParent == null) {
             return this;
         } else {
@@ -37,14 +48,6 @@ public class JoinTreeNode {
 
     protected boolean isCrossJoin() {
         return mColumnJoins == null;
-    }
-
-    protected void addJoinColumns(ColumnJoin joinCols) {
-        mColumnJoins.add(joinCols);
-    }
-
-    protected void addJoinColumns(ArrayList<ColumnJoin> joinCols) {
-        mColumnJoins.addAll(joinCols);
     }
 
 
@@ -65,7 +68,24 @@ public class JoinTreeNode {
         return isInJoinTree;
     }
 
-    protected boolean isDescendant(JoinTreeNode node){
+
+    public TreeNode findTableNode(String tableName) {
+        TreeNode foundNode = null;
+        if (mTableName != null && mTableName.equals(tableName)) {
+                foundNode = this;
+        } else {
+            if (foundNode == null && mLeft != null) {
+                foundNode = mLeft.findTableNode(tableName);
+            }
+            if (foundNode == null && mRight != null) { // if we found table on the left, then we've found the node.
+                foundNode = mRight.findTableNode(tableName);
+            }
+        }
+        return foundNode;
+    }
+
+
+    protected boolean isDescendant(TreeNode node){
         if (this == node) {
             return true;
         }
@@ -100,56 +120,63 @@ public class JoinTreeNode {
     }
 
     /**
-     * If a Node exists in the current JoinTreeNode, position it on the left position. If the node was on the right, then the left position and the right positions are switched.
+     * If a Node exists in the current TreeNode, position it on the left position. If the node was on the right, then the left position and the right positions are switched.
      * @param node
      */
-    public void moveLeft(JoinTreeNode node){
+    public void switchLeft(TreeNode node){
         if(mLeft == node) return;
         if(mRight == node){
-            JoinTreeNode prevLeft = mLeft;
+            TreeNode prevLeft = mLeft;
             mLeft = mRight;
             mRight = prevLeft;
         }
     }
 
-    public JoinTreeNode getLeft() {
+    public TreeNode getLeft() {
         return mLeft;
     }
 
-    public void setLeft(JoinTreeNode left) {
+    public void setLeft(TreeNode left) {
         this.mLeft = left;
         if(mLeft != null) mLeft.setParent(this);
     }
 
-    public JoinTreeNode getRight() {
+    public TreeNode getRight() {
         return mRight;
     }
 
-    public void setRight(JoinTreeNode right) {
+    public void setRight(TreeNode right) {
         this.mRight = right;
         if(mRight != null) mRight.setParent(this);
     }
 
-    public ArrayList<ColumnJoin> getColumnJoins() {
+    public LinkedHashSet<ColumnJoin> getColumnJoins() {
         return mColumnJoins;
     }
 
-    public void setColumnJoins(ArrayList<ColumnJoin> columnJoins) {
+    public void setColumnJoins(LinkedHashSet<ColumnJoin> columnJoins) {
         this.mColumnJoins = columnJoins;
     }
 
-    public void addColumnJoins(ArrayList<ColumnJoin> columnJoins){
+    public void addColumnJoins(LinkedHashSet<ColumnJoin> columnJoins){
         if(mColumnJoins == null){
-            mColumnJoins = new ArrayList<ColumnJoin>();
+            mColumnJoins = new LinkedHashSet<ColumnJoin>();
         }
         mColumnJoins.addAll(columnJoins);
     }
 
-    public JoinTreeNode getParent() {
+    protected void addColumnJoin(ColumnJoin joinCols) {
+        if(mColumnJoins == null){
+            mColumnJoins = new LinkedHashSet<ColumnJoin>();
+        }
+        mColumnJoins.add(joinCols);
+    }
+
+    public TreeNode getParent() {
         return mParent;
     }
 
-    private void setParent(JoinTreeNode parent) {
+    private void setParent(TreeNode parent) {
         this.mParent = parent;
     }
 
@@ -161,7 +188,7 @@ public class JoinTreeNode {
         this.mTableName = tableName;
     }
 
-    public static JoinTreeNode findFirstCommonParent(JoinTreeNode node1, JoinTreeNode node2){
+    public static TreeNode findFirstCommonParent(TreeNode node1, TreeNode node2){
         if(node1 == node2) {
             return node1;
         }
@@ -177,5 +204,26 @@ public class JoinTreeNode {
             }
         }
         return node1;
+    }
+
+    public HashSet<String> getJoinToTables() {
+        if(mColumnJoins == null){
+            return null;
+        }
+
+        HashSet<String> joinToTables = new HashSet<String>();
+        for(ColumnJoin j : mColumnJoins) {
+            joinToTables.add(j.left.table);
+            joinToTables.add(j.right.table);
+        }
+        return joinToTables;
+    }
+
+    public int getJoinType() {
+        return mJoinType;
+    }
+
+    public void setJoinType(int mJoinType) {
+        this.mJoinType = mJoinType;
     }
 }

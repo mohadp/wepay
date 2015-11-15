@@ -5,11 +5,15 @@ import android.net.Uri;
 import com.jumo.tablas.provider.dao.Column;
 import com.jumo.tablas.provider.dao.ColumnJoin;
 import com.jumo.tablas.provider.dao.CompositeTable;
+import com.jumo.tablas.provider.dao.TreeNode;
 import com.jumo.tablas.provider.dao.Metric;
 import com.jumo.tablas.provider.dao.Table;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Created by Moha on 6/28/15.
@@ -20,7 +24,6 @@ public final class TablasContract {
     public static String AUTHORITY = "com.jumo.tablas.provider";
     public static String SCHEME = "content";
     public static final Uri BASE_URI = new Uri.Builder().scheme(TablasContract.SCHEME).authority(TablasContract.AUTHORITY).build();
-
 
     //Column definitions
     protected static final String USER_BALANCE = "user_balance";
@@ -152,7 +155,7 @@ public final class TablasContract {
             
             //Foreign keys only to other mTables (no recursive relationships included here).
             ColumnJoin join = new ColumnJoin(getColumn(GROUP_ID), Group.getInstance().getColumn(Group._ID));
-            ArrayList<ColumnJoin> joinExp = new ArrayList<ColumnJoin>();
+            LinkedHashSet<ColumnJoin> joinExp = new LinkedHashSet<ColumnJoin>();
             joinExp.add(join);
             mForeignKeys.put(Group.getInstance().getTableName(), joinExp);
         }
@@ -192,9 +195,9 @@ public final class TablasContract {
             mColumns.put(LEFT_GROUP, new Column(mTableName, LEFT_GROUP, DT_INTEGER, null,  Column.TYPE_BOOL)); //boolean 0=false, 1=true
 
             //Foreign keys only to other mTables (no recursive relationships included here).
-            ArrayList<ColumnJoin> joinExp = new ArrayList<ColumnJoin>();
+
             ColumnJoin join = new ColumnJoin(getColumn(GROUP_ID), Group.getInstance().getColumn(Group._ID));
-            joinExp = new ArrayList<ColumnJoin>();
+            LinkedHashSet<ColumnJoin> joinExp = new LinkedHashSet<ColumnJoin>();
             joinExp.add(join);
             mForeignKeys.put(Group.getInstance().getTableName(), joinExp);
 
@@ -242,12 +245,12 @@ public final class TablasContract {
 
             //Foreign keys
             ColumnJoin join = new ColumnJoin(getColumn(MEMBER_ID), Member.getInstance().getColumn(Member._ID));
-            ArrayList<ColumnJoin> joinExp = new ArrayList<ColumnJoin>();
+            LinkedHashSet<ColumnJoin> joinExp = new LinkedHashSet<ColumnJoin>();
             joinExp.add(join);
             mForeignKeys.put(Member.getInstance().getTableName(), joinExp);
 
             join = new ColumnJoin(getColumn(EXPENSE_ID), Expense.getInstance().getColumn(Expense._ID));
-            joinExp = new ArrayList<ColumnJoin>();
+            joinExp = new LinkedHashSet<ColumnJoin>();
             joinExp.add(join);
             mForeignKeys.put(Expense.getInstance().getTableName(), joinExp);
         }
@@ -284,15 +287,24 @@ public final class TablasContract {
                 addTable(PAYER_TABLE);
                 addTable(MEMBER_TABLE);
             }
+
+            @Override
+            public TreeNode getTableJoinTree(Set<Table> additionalTables){
+                //Set Group to left outer join.
+                TreeNode tree = super.getTableJoinTree(additionalTables);
+                TreeNode expenseNode = tree.findTableNode(EXPENSE_TABLE.getTableName());
+                expenseNode.getParent().setJoinType(TreeNode.LEFT_OUTER_JOIN);
+                return tree;
+            }
         }
 
         public static final class GroupBalance extends CompositeTable {
 
             //Tables added to this getInstance.
+            public final static Table GROUP_TABLE = Group.getInstance();
             public final static Table EXPENSE_TABLE = Expense.getInstance();
             public final static Table PAYER_TABLE = Payer.getInstance();
             public final static Table MEMBER_TABLE = Member.getInstance();
-            public final static Table GROUP_TABLE = Group.getInstance();
 
             //Singleton table
             private static CompositeTable mInstance;
@@ -311,11 +323,28 @@ public final class TablasContract {
             }
 
             protected void defineTables() {
-                addTable(EXPENSE_TABLE);
-                addTable(PAYER_TABLE);
-                addTable(MEMBER_TABLE);
                 addTable(GROUP_TABLE);
+                addTable(MEMBER_TABLE);
+                addTable(PAYER_TABLE);
+                addTable(EXPENSE_TABLE);
+            }
 
+            /**
+             * Changes the join type for the Group table, so tha we show all the groups even if there are no expenses.
+             * @param additionalTables this may be null or an arraylist of tables; null will add no additional tables to the ones that conform the composite table.
+             * @return
+             */
+            @Override
+            public TreeNode getTableJoinTree(Set<Table> additionalTables){
+                //Set Group to left outer join.
+                TreeNode tree = super.getTableJoinTree(additionalTables);
+
+                TreeNode.findFirstCommonParent(tree.findTableNode(GROUP_TABLE.getTableName()), tree.findTableNode(EXPENSE_TABLE.getTableName()))
+                        .setJoinType(TreeNode.LEFT_OUTER_JOIN);
+
+                TreeNode.findFirstCommonParent(tree.findTableNode(MEMBER_TABLE.getTableName()), tree.findTableNode(PAYER_TABLE.getTableName()))
+                        .setJoinType(TreeNode.LEFT_OUTER_JOIN);
+                return tree;
             }
         }
     }
