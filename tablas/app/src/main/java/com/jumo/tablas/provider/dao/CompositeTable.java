@@ -138,7 +138,13 @@ public abstract class CompositeTable extends Table {
         return getJoinsBetweenTables(table1, table2);
     }
 
-
+    /**
+     * Creates a join tree with the set of tables that compose the composite table. If
+     * additional base entitites are passed on, then these are also considered in the join tree.
+     *
+     * @param additionalTables this may be null or an arraylist of tables; null will add no additional tables to the ones that conform the composite table.
+     * @return the root of the join tree.
+     */
     public TreeNode getTableJoinTree(Set<Table> additionalTables){
         //Get the set of tables to join
         LinkedHashSet<Table> tables = new LinkedHashSet<Table>();
@@ -214,94 +220,4 @@ public abstract class CompositeTable extends Table {
         return columnJoins;
     }
 
-    /**
-     * Creates a join tree with the set of tables that compose the composite table. If
-     * additional base entitites are passed on, then these are also considered in the join tree.
-     *
-     * @param additionalTables this may be null or an arraylist of tables; null will add no additional tables to the ones that conform the composite table.
-     * @return the root of the join tree.
-     */
-    /*public TreeNode getTableJoinTree(HashSet<Table> additionalTables) {
-        HashMap<String, TreeNode> tableToJoinTreeMap = new HashMap<String, TreeNode>();
-
-        //Get the set of tables to join
-        HashSet<Table> tablesToJoin = new HashSet<Table>();
-        tablesToJoin.addAll(mTables);
-        if (additionalTables != null) {
-            tablesToJoin.addAll(additionalTables);
-        }
-
-        //Add every table, and every table's foreign tables to join tree.
-        for (Table table : tablesToJoin) {
-            // if a table has foreign keys, add the foreign tables to join tree as long as they are
-            // part of this composite table.
-            if (table.getForeignKeys() != null) {
-                Set<String> foreignTables = table.getForeignKeys().keySet();
-                TreeNode leftJoinNode = tableToJoinTreeMap.get(table.getTableName());
-                // if the join trees for these tables are null, then create a new join trees;
-                // and add them to the map to refer back to them.
-                if (leftJoinNode == null) {
-                    leftJoinNode = new TreeNode(table.getTableName());
-                    tableToJoinTreeMap.put(table.getTableName(), leftJoinNode);
-                }
-                for (String foreignTableName : foreignTables) {
-                    if (tablesToJoin.contains(TablasContract.getTable(foreignTableName))) {
-                        TreeNode rightJoinNode = tableToJoinTreeMap.get(foreignTableName);
-                        if (rightJoinNode == null) {
-                            rightJoinNode = new TreeNode(foreignTableName);
-                            tableToJoinTreeMap.put(foreignTableName, rightJoinNode);
-                        }
-                        TreeNode leftParent = leftJoinNode.getParent();
-                        TreeNode rightParent = rightJoinNode.getParent();
-                        TreeNode leftRoot = leftJoinNode.getRoot();
-                        TreeNode rightRoot = rightJoinNode.getRoot();
-                        boolean inSameTreeAlready = (leftRoot == rightRoot);
-
-                        //Construct a tree of joins such that the left nodes in joins can be tables or other joins, and the right only tables.
-                        if(leftParent == null && rightParent == null){
-                            TreeNode newJoin = new TreeNode(leftJoinNode, rightJoinNode); //this already sets the parents for the children
-                            newJoin.setColumnJoins(table.getForeignKeys().get(foreignTableName));
-                        }else if(leftParent != null && rightParent == null){
-                            TreeNode newJoin = new TreeNode(leftRoot, rightJoinNode); //this already sets the parents for the children
-                            newJoin.setColumnJoins(table.getForeignKeys().get(foreignTableName));
-                        }else if(leftParent == null && rightParent != null){
-                            TreeNode newJoin = new TreeNode(rightRoot, leftJoinNode); //this already sets the parents for the children
-                            newJoin.setColumnJoins(table.getForeignKeys().get(foreignTableName));
-                        }else if(leftParent != null && rightParent != null && !inSameTreeAlready){ //move right to left's tree with a new join, and make that join the left child of rightParent.
-                            rightParent.switchLeft(rightJoinNode); //make sure the table to move to left's tree is on the left (we'l clear left in parent).
-                            rightParent.setLeft(null);
-                            TreeNode newJoin = new TreeNode(leftRoot, rightJoinNode); //this already sets the parents for the children
-                            newJoin.setColumnJoins(table.getForeignKeys().get(foreignTableName));
-                            rightParent.setLeft(newJoin);
-                        } else if(inSameTreeAlready){
-                            //Log.d(TAG, "##### In same JoinTree #####");
-                            TreeNode commonParent = TreeNode.findFirstCommonParent(leftJoinNode, rightJoinNode);
-                            if(commonParent != null){
-                                commonParent.addColumnJoins(table.getForeignKeys().get(foreignTableName));
-                            }
-                        }
-                    }
-                }
-            } else {
-                //If a table has no foreign key, it will be added eventually with the tables that have references to it. At the end; if these tables end up not joined through referencing tables, they are cross joined at the end
-                tableToJoinTreeMap.put(table.getTableName(), new TreeNode(table.getTableName()));
-            }
-        }
-
-        //Here, we need to identify the distinct disjoint jointrees, or all the distinct roots.
-        // Then, we join them through crossjoin, and return the root.
-        HashSet<TreeNode> distinctJoinTrees = new HashSet<>();
-        for (TreeNode jt : tableToJoinTreeMap.values()) {
-            distinctJoinTrees.add(jt.getRoot());
-        }
-
-        Iterator<TreeNode> it = distinctJoinTrees.iterator();
-        TreeNode root = (it.hasNext()) ? it.next() : null;
-        while (it.hasNext()) {
-            TreeNode xTreeNode = it.next();
-            root = new TreeNode(root, xTreeNode);
-        }
-
-        return root;
-    }*/
 }
