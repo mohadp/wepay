@@ -7,6 +7,25 @@ CHANGING: Remove user table (refer to contact IDs, normalized telephone)
 
 
 
+Next Things for MVP:
+- Delete groups
+- Finalize expenses design:
+	- New custom views showing people paying/with pie chart?
+- Ener new expenses
+	- Entry as is? 
+	- Delete expense
+	- Modification of Expenses? Different (anyone can change expense)?
+		- maybe a different activity for editing expenses with a Tab Viewer
+	- 
+- Enter Expenses :
+	- Choose category: (see if we can choose category automatically... any type of library to help with it)
+	- Choose payers and percentages
+	- Choose
+
+	
+- Wire notifications and synchronization of data/messages.
+- Investigate service binding for "chatting"
+
 
 
 ****************************************************************************************************************
@@ -49,20 +68,18 @@ Tentative additional columns for synching:
 - Fully design the Add Expense screen
 
 ****************************************************************************************************************
-CHANGING THE SAMPLE DATA CREATION
+CHANGING THE SAMPLE DATA CREATION (Done - before 11/15/2015)
 ****************************************************************************************************************
-Already have: 
-- Users
+
+IDs are autoassigned by SQLite: just by not including ID in the insert, it is assigned.
 
 1. Create a group //Index for Group 0
 2. Create <random> # of members //Record number of members
 3. Create <random> # of expenses // refer to group position
 4. Create one payment per member // refer to the member positions (1 to [number of members] -> range is (indexOfGroup, indexOfGroup+numberOfMembers]
 
-
-
-
-Refactoring:
+****************************************************************************************************************
+REFACTORING
+****************************************************************************************************************
 - Move all the ContentProvider calls to a centralized class
-- Modify the Provider: 
-  - Instead of being fully based on URI matchers, make it more generic: if querying particular tables, simply pass on the query, without hardcoding every URI pattern.
+- Modify the Provider: Instead of being fully based on URI matchers, make it more generic: if querying particular tables, simply pass on the query, without hardcoding every URI pattern.
