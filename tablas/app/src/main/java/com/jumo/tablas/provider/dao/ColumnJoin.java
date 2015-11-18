@@ -13,4 +13,13 @@ public class ColumnJoin {
         right = second;
         operator = "=";
     }
+
+    public boolean containsTable(String table){
+        if(left.table.equals(table))
+            return true;
+        if(right.table.equals(table))
+            return true;
+
+        return false;
+    }
 }

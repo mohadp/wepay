@@ -2,26 +2,29 @@ package com.jumo.tablas.provider.dao;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Abstract class to represent eventually singleton database entities/mTables in a database (singleton part implemented by child classes). Contains set of mColumns, their spec and their foreign keys.
  */
 public abstract class Table {
     protected LinkedHashMap<String, Column> mColumns;
-    protected LinkedHashMap<String, ArrayList<ColumnJoin>> mForeignKeys;
+    protected LinkedHashMap<String, LinkedHashSet<ColumnJoin>> mForeignKeys;
     protected String mTableName;
 
 
     protected Table(){
         mColumns = new LinkedHashMap<String, Column>();
-        mForeignKeys = new LinkedHashMap<String, ArrayList<ColumnJoin>>();
+        mForeignKeys = new LinkedHashMap<String, LinkedHashSet<ColumnJoin>>();
         defineColumnsAndForeignKeys();
     }
 
     protected Table(String table){
         mColumns = new LinkedHashMap<String, Column>();
-        mForeignKeys = new LinkedHashMap<String, ArrayList<ColumnJoin>>();
+        mForeignKeys = new LinkedHashMap<String, LinkedHashSet<ColumnJoin>>();
         mTableName = table;
         defineColumnsAndForeignKeys();
     }
@@ -68,7 +71,15 @@ public abstract class Table {
     /**
      * For every local column in the current getInstance, relate the column in the foreign getInstance.
      */
-    public LinkedHashMap<String, ArrayList<ColumnJoin>> getForeignKeys() {
+    public LinkedHashMap<String, LinkedHashSet<ColumnJoin>> getForeignKeys() {
         return mForeignKeys;
+    }
+
+    public LinkedHashSet<ColumnJoin> getColumnJoinsToTable(String tableName){
+        return (mForeignKeys == null)? null : mForeignKeys.get(tableName);
+    }
+
+    public Set<String> getForeignTables(){
+        return (mForeignKeys == null)? null : mForeignKeys.keySet();
     }
 }

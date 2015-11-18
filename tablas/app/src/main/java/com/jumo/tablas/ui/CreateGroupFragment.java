@@ -1,17 +1,29 @@
 package com.jumo.tablas.ui;
 
+import android.app.Activity;
 import android.app.Fragment;
+import android.content.ContentProvider;
+import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.Context;
+import android.content.Intent;
+import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.provider.ContactsContract;
+import android.util.Log;
 import android.util.LruCache;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
+import android.widget.EditText;
 import android.widget.Filter;
 import android.widget.FilterQueryProvider;
 import android.widget.ImageButton;
@@ -22,11 +34,15 @@ import android.widget.SimpleAdapter;
 
 import com.jumo.tablas.R;
 import com.jumo.tablas.account.AccountService;
+import com.jumo.tablas.model.Group;
+import com.jumo.tablas.model.Member;
+import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.ui.adapters.ContactSearchAdapter;
 import com.jumo.tablas.ui.util.BitmapLoader;
 import com.jumo.tablas.ui.util.CacheManager;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +60,7 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
 
     //This are view references in the view
     private SearchView mSearchView;
+    private EditText mEditGroupName;
     private ListView mAddedContacts;
     private SelectedContactAdapter mAddedAdapter;
     private ArrayList<HashMap<String, String>> mAddedList;
@@ -73,8 +90,6 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
 
         }
     };
-
-
 
     public static CreateGroupFragment newInstance(String userId){
         CreateGroupFragment fragment = new CreateGroupFragment();
@@ -119,6 +134,8 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
         mAddedAdapter = new SelectedContactAdapter(getActivity(), mAddedList, R.layout.list_item_contact, fromCols, toViewIds);
         mAddedContacts.setAdapter(mAddedAdapter);
 
+        mEditGroupName = (EditText)view.findViewById(R.id.edit_group_name);
+
         return view;
     }
 
@@ -155,6 +172,82 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
         String sortBy = ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME + " ASC";
 
         return context.getContentResolver().query(uri, projection, filter.toString(), filterVals, sortBy);
+    }
+
+    private void createGroupAndMembers(){
+        //TODO: add a toaster indicating that if there are no people, then there must be one person in the group.
+        //TODO: Create a centrals static method to generate ContentProviderOperations.Builder for entities.
+        ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
+
+        Group group = new Group();
+        group.setCreatedOn(new Date());
+        group.setName(mEditGroupName.getText().toString());
+        ops.add(getGroupContentProviderOp(group));
+
+        Member member = new Member();
+        member.setAdmin(true);
+        member.setLeftGroup(false);
+        member.setUserId(mUserId);
+        ops.add(getMemberContentProviderOp(member));
+
+        for(String userId : mAddedListById.keySet()){
+            member = new Member();
+            member.setAdmin(false);
+            member.setLeftGroup(false);
+            member.setUserId(userId);
+            ops.add(getMemberContentProviderOp(member));
+        }
+
+        try{
+            ContentProviderResult[] result = getActivity().getContentResolver().applyBatch(TablasContract.AUTHORITY, ops);
+            for(ContentProviderResult cpr : result){
+                Log.d(TAG, cpr.toString());
+            }
+        }catch(OperationApplicationException e){
+            Log.d(TAG, "Creating Group & Members: ApplyBatch of operations failed: ", e);
+        }catch(RemoteException e){
+            Log.d(TAG, "Creating Group & Members: ApplyBatch of operations failed", e);
+        }
+    }
+
+    private ContentProviderOperation getGroupContentProviderOp(Group group){
+        Uri groupTable = TablasContract.BASE_URI.buildUpon().appendPath(TablasContract.Group.getInstance().getTableName()).build();
+        ContentProviderOperation op = ContentProviderOperation.newInsert(groupTable)
+                .withValue(TablasContract.Group.NAME, group.getName())
+                .withValue(TablasContract.Group.CREATED_ON, group.getCreatedOn().getTime())
+                .build();
+        return op;
+    }
+
+    private ContentProviderOperation getMemberContentProviderOp(Member member){
+        Uri memberTable = TablasContract.BASE_URI.buildUpon().appendPath(TablasContract.Member.getInstance().getTableName()).build();
+        ContentProviderOperation op = ContentProviderOperation.newInsert(memberTable)
+                .withValueBackReference(TablasContract.Member.GROUP_ID, 0)
+                .withValue(TablasContract.Member.USER_ID, member.getUserId())
+                .withValue(TablasContract.Member.IS_ADMIN, member.isAdmin() ? 1 : 0)
+                .withValue(TablasContract.Member.LEFT_GROUP, member.hasLeftGroup()? 1 : 0)
+                .build();
+        return op;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.create_group_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menu){
+        switch(menu.getItemId()){
+            case R.id.menu_item_save_group:
+                createGroupAndMembers();
+                getActivity().setResult(Activity.RESULT_OK, new Intent());
+                getActivity().finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(menu);
+
+        }
     }
 
 

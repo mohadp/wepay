@@ -16,12 +16,10 @@ public class RoundImageView extends ImageView{
 	} 
 
 	public RoundImageView(Context context, AttributeSet attrs) {
-        //TODO: need to update size since the beginning; default constructors draw original image first in original size.
         super(context, attrs);
 	}
 
-	public RoundImageView(Context context, AttributeSet attrs, int defStyle) { 
-		//TODO: need to update size since the beginning; default constructors draw original image first in original size.
+	public RoundImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 

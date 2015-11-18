@@ -7,12 +7,11 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.util.Log;
 
 import com.jumo.tablas.provider.dao.Column;
 import com.jumo.tablas.provider.dao.ColumnJoin;
 import com.jumo.tablas.provider.dao.CompositeTable;
-import com.jumo.tablas.provider.dao.JoinTreeNode;
+import com.jumo.tablas.provider.dao.TreeNode;
 import com.jumo.tablas.provider.dao.Metric;
 import com.jumo.tablas.provider.dao.Table;
 import com.jumo.tablas.provider.db.TablasDatabaseHelper;
@@ -37,10 +36,6 @@ public class TablasProvider extends ContentProvider{
     private static final int JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER = 4;
     private static final boolean ADD_BALANCE = true;
     private static final boolean NO_BALANCE = false;
-
-    //TODO: may need to delete this
-    private static final String USER = "user";
-
 
     protected static final String PROVIDER_AUTHORITY = TablasContract.AUTHORITY;
     //private static final int USER_ID = 1;
@@ -125,6 +120,7 @@ public class TablasProvider extends ContentProvider{
             //    break;
 
             case USER_GROUPS: //This also adds a balance from the perspective of a user.
+                //CompositeTable testTable = TablasContract.Compound.GroupBalance.getInstance();
                 appendToProjection(TablasContract.Compound.GroupBalance.GROUP_TABLE.getColumns(), newProjection);
                 appendToFilter(newSelection, newSelectArgs, TablasContract.Compound.GroupBalance.MEMBER_TABLE.getColumn(TablasContract.Member.USER_ID), uri.getPathSegments().get(2)); // get the user ID from the path.
 
@@ -399,29 +395,44 @@ public class TablasProvider extends ContentProvider{
      * @return
      */
     private StringBuffer getJoinTableSQL(CompositeTable compositeEntity, HashSet<Table> additionalTables){
-        JoinTreeNode joinTree = compositeEntity.getTableJoinTree(additionalTables);
+        TreeNode joinTree = compositeEntity.getTableJoinTree(additionalTables);
         return traverseTree(joinTree);
     }
 
-    private StringBuffer traverseTree(JoinTreeNode treeNode){
+    private StringBuffer traverseTree(TreeNode treeNode){
         StringBuffer sb = new StringBuffer();
         if(treeNode.getLeft() == null && treeNode.getRight() == null && treeNode.getTableName() != null){
             return sb.append(treeNode.getTableName());
         }else if(treeNode.getLeft() != null && treeNode.getRight() != null && treeNode.getTableName() == null){
-            sb.append(traverseTree(treeNode.getLeft())).append(" join ").append(traverseTree(treeNode.getRight()));
-            sb.append(" on (");
-
-            Iterator<ColumnJoin> it = treeNode.getColumnJoins().iterator();
-            while(it.hasNext()){
-                ColumnJoin jc = it.next();
-                sb.append(jc.left.getFullName()).append(" ").append(jc.operator).append(" ").append(jc.right.getFullName());
-                if(it.hasNext()){
-                    sb.append(" AND ");
+            sb.append(traverseTree(treeNode.getLeft())).append(getJoinString(treeNode.getJoinType())).append(traverseTree(treeNode.getRight())).append(" ");
+            if(treeNode.getColumnJoins() != null) {
+                sb.append("on (");
+                Iterator<ColumnJoin> it = treeNode.getColumnJoins().iterator();
+                while (it.hasNext()) {
+                    ColumnJoin jc = it.next();
+                    sb.append(jc.left.getFullName()).append(" ").append(jc.operator).append(" ").append(jc.right.getFullName());
+                    if (it.hasNext()) {
+                        sb.append(" AND ");
+                    }
                 }
+                sb.append(")");
             }
-            sb.append(")");
         }
         return sb;
+    }
+
+    private String getJoinString(int joinType){
+        switch(joinType){
+            case TreeNode.INNER_JOIN:
+                return " join ";
+            case TreeNode.LEFT_OUTER_JOIN:
+                return " left outer join ";
+            case TreeNode.RIGHT_OUTER_JOIN: //Not supported by SQLite
+                return " join ";
+            case TreeNode.FULL_OUTER_JOIN:  //Not supported by SQLite
+                return " join ";
+        }
+        return " join ";
     }
 
 }
