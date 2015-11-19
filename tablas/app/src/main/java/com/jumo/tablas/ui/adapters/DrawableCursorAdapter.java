@@ -15,7 +15,6 @@ import java.lang.ref.WeakReference;
  */
 public abstract class DrawableCursorAdapter extends CursorAdapter{
 
-    //TODO: Refactor - move all these image-loading methods to a central Static class; modify all other adapters
     protected WeakReference<CacheManager> mCacheContainerReference;
     protected WeakReference<Context> mContextReference;
 
