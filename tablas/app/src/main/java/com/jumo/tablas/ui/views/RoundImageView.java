@@ -51,7 +51,7 @@ public class RoundImageView extends ImageView{
 
 
         //Get the original bitmap, and create a circular bitmap
-        Bitmap originalBmp = ((BitmapDrawable) this.getDrawable()).getBitmap();
+        Bitmap originalBmp = (getDrawable() == null)? null : ((BitmapDrawable) this.getDrawable()).getBitmap();
         if(originalBmp == null) {
             return;
         }
