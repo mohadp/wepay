@@ -29,19 +29,19 @@ public class Group implements Entity {
     }
 
     public String getName() {
-        return getText(TablasContract.Group.NAME);
+        return getText(TablasContract.Group.GROUP_NAME);
     }
 
     public void setName(String name) {
-        setField(TablasContract.Group.NAME, name);
+        setField(TablasContract.Group.GROUP_NAME, name);
     }
 
     public Date getCreatedOn() {
-        return getDate(TablasContract.Group.CREATED_ON);
+        return getDate(TablasContract.Group.GROUP_CREATED_ON);
     }
 
     public void setCreatedOn(Date createdOn) {
-        setField(TablasContract.Group.CREATED_ON, createdOn);
+        setField(TablasContract.Group.GROUP_CREATED_ON, createdOn);
     }
 
     public byte[] getGroupPicture() {
@@ -50,14 +50,6 @@ public class Group implements Entity {
 
     public void setGroupPicture(byte[] groupPicture) {
         setField(TablasContract.Group.GROUP_PICTURE, groupPicture);
-    }
-
-    public double getUserBalance() {
-        return getDouble(TablasContract.Group.USER_BALANCE);
-    }
-
-    public void setUserBalance(double userBalance) {
-        setField(TablasContract.Group.USER_BALANCE, userBalance);
     }
 
     @Override

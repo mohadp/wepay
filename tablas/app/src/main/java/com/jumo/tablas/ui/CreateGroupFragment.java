@@ -2,7 +2,6 @@ package com.jumo.tablas.ui;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.ContentProvider;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.Context;
@@ -188,6 +187,7 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
         member.setAdmin(true);
         member.setLeftGroup(false);
         member.setUserId(mUserId);
+        member.setCurrentUser(true);
         ops.add(getMemberContentProviderOp(member));
 
         for(String userId : mAddedListById.keySet()){
@@ -195,6 +195,7 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
             member.setAdmin(false);
             member.setLeftGroup(false);
             member.setUserId(userId);
+            member.setCurrentUser(false);
             ops.add(getMemberContentProviderOp(member));
         }
 
@@ -213,8 +214,8 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
     private ContentProviderOperation getGroupContentProviderOp(Group group){
         Uri groupTable = TablasContract.BASE_URI.buildUpon().appendPath(TablasContract.Group.getInstance().getTableName()).build();
         ContentProviderOperation op = ContentProviderOperation.newInsert(groupTable)
-                .withValue(TablasContract.Group.NAME, group.getName())
-                .withValue(TablasContract.Group.CREATED_ON, group.getCreatedOn().getTime())
+                .withValue(TablasContract.Group.GROUP_NAME, group.getName())
+                .withValue(TablasContract.Group.GROUP_CREATED_ON, group.getCreatedOn().getTime())
                 .build();
         return op;
     }
@@ -222,10 +223,10 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
     private ContentProviderOperation getMemberContentProviderOp(Member member){
         Uri memberTable = TablasContract.BASE_URI.buildUpon().appendPath(TablasContract.Member.getInstance().getTableName()).build();
         ContentProviderOperation op = ContentProviderOperation.newInsert(memberTable)
-                .withValueBackReference(TablasContract.Member.GROUP_ID, 0)
-                .withValue(TablasContract.Member.USER_ID, member.getUserId())
-                .withValue(TablasContract.Member.IS_ADMIN, member.isAdmin() ? 1 : 0)
-                .withValue(TablasContract.Member.LEFT_GROUP, member.hasLeftGroup()? 1 : 0)
+                .withValueBackReference(TablasContract.Member.MEMBER_GROUP_ID, 0)
+                .withValue(TablasContract.Member.MEMBER_USER_ID, member.getUserId())
+                .withValue(TablasContract.Member.MEMBER_IS_ADMIN, member.isAdmin() ? 1 : 0)
+                .withValue(TablasContract.Member.MEMBER_LEFT_GROUP, member.hasLeftGroup()? 1 : 0)
                 .build();
         return op;
     }

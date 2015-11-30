@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.jumo.tablas.ui.views.LinearLayoutResize xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/view_conversations"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <FrameLayout
+    <!--FrameLayout
         android:id="@+id/fragmentGroupList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"-->
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@android:id/list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-    </FrameLayout>
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/list_messages"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"/>
 
     <LinearLayout
         android:id="@+id/layout_chat_controls"
@@ -31,16 +30,9 @@
             android:orientation="vertical"
             android:layout_weight="1">
 
-
-            <EditText
-                android:id="@+id/edit_message"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/hint_message" />
-
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="44dp"
+                android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
                 <ImageButton
@@ -50,11 +42,46 @@
                     android:src="@android:drawable/ic_menu_compass" />
 
                 <EditText
-                    android:id="@+id/edit_amount"
+                    android:id="@+id/edit_message"
                     android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/hint_message"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="3dp"
+                    android:layout_marginRight="2dp"
+                    android:text="@string/text_currency_symbol"/>
+
+                <EditText
+                    android:id="@+id/edit_amount"
+                    android:layout_width="90dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:inputType="numberDecimal" />
+                    android:inputType="numberDecimal"
+                    android:hint="@string/hint_amount"/>
+
+            </LinearLayout>
+
+            <!--LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:orientation="horizontal">
+
+
+                <ImageButton
+                    android:id="@+id/button_fullEditor"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:src="@android:drawable/ic_menu_edit" />
+
+                <ImageButton
+                    android:id="@+id/button_fullEditor"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:src="@android:drawable/ic_menu_edit" />
+
 
                 <ImageButton
                     android:id="@+id/button_category"
@@ -68,29 +95,25 @@
                     android:layout_height="35dp"
                     android:src="@android:drawable/ic_menu_sort_alphabetically" />
 
-                <ImageButton
-                    android:id="@+id/button_fullEditor"
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:src="@android:drawable/ic_menu_edit" />
 
-            </LinearLayout>
+
+            </LinearLayout-->
 
         </LinearLayout>
 
-        <FrameLayout
+        <!--FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:background="@color/button_material_light">
+            android:background="@color/button_material_light"-->
 
-            <ImageButton
-                android:id="@+id/button_sendExpense"
-                android:layout_width="40dp"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-                android:src="@android:drawable/ic_menu_send" />
+        <ImageButton
+            android:id="@+id/button_sendExpense"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:src="@android:drawable/ic_menu_send" />
 
-        </FrameLayout>
+        <!--/FrameLayout-->
 
     </LinearLayout>
 
@@ -100,6 +123,12 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/keyboard_height"
         android:background="@android:color/transparent"
-        android:visibility="gone" />
+        android:visibility="gone">
 
-</LinearLayout>
+        <include layout="@layout/popup_input_methods" />
+
+    </FrameLayout>
+
+
+
+</com.jumo.tablas.ui.views.LinearLayoutResize>

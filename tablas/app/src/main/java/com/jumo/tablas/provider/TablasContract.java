@@ -11,7 +11,6 @@ import com.jumo.tablas.provider.dao.Table;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -24,16 +23,6 @@ public final class TablasContract {
     public static String AUTHORITY = "com.jumo.tablas.provider";
     public static String SCHEME = "content";
     public static final Uri BASE_URI = new Uri.Builder().scheme(TablasContract.SCHEME).authority(TablasContract.AUTHORITY).build();
-
-    //Column definitions
-    protected static final String USER_BALANCE = "user_balance";
-
-    //Reusable strings to avoid using multiple instances of these strings;
-    protected static final String DT_INTEGER = "integer";
-    protected static final String DT_TEXT = "nvarchar(255)";
-    protected static final String DT_DOUBLE = "double";
-    protected static final String DT_BLOB = "blob";
-    protected static final String DEF_PRIMARY_KEY = "primary key";
 
 
     private static final HashMap<String, Table> tableEntityMap = new HashMap<String, Table>();
@@ -50,16 +39,10 @@ public final class TablasContract {
 
     
     //All individual tables representing multiple entities.
-    public final static class Group extends Table {
+    public final static class Group extends Table implements GroupColumns{
         //GroupCursor Table
-        private static final String TABLE_NAME = "groups";
-        
+        public static final String TABLE_NAME = "groups";
         public static final String _ID = "_id";
-        public static final String NAME = "name";
-        public static final String CREATED_ON = "created_on";
-        public static final String GROUP_PICTURE = "group_picture";
-
-        public static final String USER_BALANCE = TablasContract.USER_BALANCE; //Not saved in the databased, this represents a user' balance at the group level (or expense level) = the sum of payments.
 
         //Singleton table
         private static Table mInstance;
@@ -77,19 +60,19 @@ public final class TablasContract {
         }
 
         @Override
-        protected void defineColumnsAndForeignKeys(){
-            mColumns.put(_ID, new Column(mTableName, _ID, DT_INTEGER, DEF_PRIMARY_KEY, Column.TYPE_LONG));
-            mColumns.put(NAME, new Column(mTableName, NAME, DT_TEXT, null, Column.TYPE_STRING));
-            mColumns.put(CREATED_ON, new Column(mTableName, CREATED_ON, DT_INTEGER, null,  Column.TYPE_DATE));
-            mColumns.put(GROUP_PICTURE, new Column(mTableName, GROUP_PICTURE, DT_BLOB, null, Column.TYPE_BYTES));
-            mColumns.put(USER_BALANCE, new Column(mTableName, USER_BALANCE, DT_DOUBLE, null, Column.TYPE_DOUBLE, false));
+        protected void defineTable(){
+            addColumn(_ID, new Column(getTableName(), _ID, Column.DB_TYPE_INTEGER, Column.DEF_PRIMARY_KEY, Column.INTERNAL_TYPE_LONG));
+            addColumn(GROUP_NAME, new Column(getTableName(), GROUP_NAME, Column.DB_TYPE_TEXT, null, Column.INTERNAL_TYPE_STRING));
+            addColumn(GROUP_CREATED_ON, new Column(getTableName(), GROUP_CREATED_ON, Column.DB_TYPE_INTEGER, null, Column.INTERNAL_TYPE_DATE));
+            addColumn(GROUP_PICTURE, new Column(getTableName(), GROUP_PICTURE, Column.DB_TYPE_BLOB, null, Column.INTERNAL_TYPE_BYTES));
         }
     }
 
-    public final static class Expense extends Table {
+    public final static class Expense extends Table implements ExpenseColumns{
         //ExpenseCursor getInstance
-        private static final String TABLE_NAME = "expense";
-        //protected static final LinkedHashMap<String, String[]> COL_DEFS =  new LinkedHashMap<String, String[]>();
+        public static final String TABLE_NAME = "expense";
+        public static final String _ID = "_id";
+
 
         /**
          * When periodicity is
@@ -103,26 +86,8 @@ public final class TablasContract {
         public static final int OPTION_OFFSET_LAST_DAY_OF_MONTH = -1;
 
 
-        public static final String _ID = "_id";
-        public static final String GROUP_ID = "group_id";
-        public static final String CREATED_ON = "created_on";
-        public static final String MESSAGE = "message";
-        public static final String AMOUNT = "amount";
-		public static final String EXCHANGE_RATE = "exchange_rate";
-        public static final String CURRENCY = "currency";
-        public static final String CATEGORY_ID = "category_id";
-        public static final String LATITUDE = "latitude";
-        public static final String LONGITUDE = "longitude";
-        public static final String IS_PAYMENT = "is_payment";
-        public static final String GROUP_EXPENSE_ID = "group_expense_id";
-        public static final String PERIODICITY = "periodicity";
-        public static final String OFFSET = "offset";
-        //public static final String RECURRENCE_ID = "recurrence_id";
-        public static final String USER_BALANCE = TablasContract.USER_BALANCE; //Not saved in the databased, this represents a user' balance at the group level (or expense level) = the sum of payments.
-
         //Singleton table
         private static Table mInstance;
-
 
         public static Table getInstance(){
             if(mInstance == null){
@@ -135,42 +100,37 @@ public final class TablasContract {
             super(TABLE_NAME);
         }
 
-        protected void defineColumnsAndForeignKeys(){
-            mColumns.put(_ID, new Column(mTableName, _ID, DT_INTEGER, DEF_PRIMARY_KEY, Column.TYPE_LONG));
-            mColumns.put(GROUP_ID, new Column(mTableName, GROUP_ID, DT_INTEGER, "references groups(_id)", Column.TYPE_LONG));
-            mColumns.put(CREATED_ON, new Column(mTableName, CREATED_ON, DT_INTEGER, null,  Column.TYPE_DATE));
-            mColumns.put(MESSAGE, new Column(mTableName, MESSAGE, DT_TEXT, null,  Column.TYPE_STRING));
-            mColumns.put(AMOUNT, new Column(mTableName, AMOUNT, DT_DOUBLE, null,  Column.TYPE_DOUBLE));
-			mColumns.put(EXCHANGE_RATE, new Column(mTableName, EXCHANGE_RATE, DT_DOUBLE, null, Column.TYPE_DOUBLE));  //TODO: Add a clause for having 1 as default exchange rate (this means there is no conversion)
-            mColumns.put(CURRENCY, new Column(mTableName, CURRENCY, DT_TEXT, null, Column.TYPE_STRING));
-            mColumns.put(CATEGORY_ID, new Column(mTableName, CATEGORY_ID, DT_INTEGER, null, Column.TYPE_LONG));
-            mColumns.put(LATITUDE, new Column(mTableName, LATITUDE, DT_DOUBLE, null, Column.TYPE_DOUBLE));
-            mColumns.put(LONGITUDE, new Column(mTableName, LONGITUDE, DT_DOUBLE, null,  Column.TYPE_DOUBLE));
-            mColumns.put(IS_PAYMENT, new Column(mTableName, IS_PAYMENT, DT_INTEGER, null, Column.TYPE_BOOL)); //boolean 0=false, 1=true
-            mColumns.put(GROUP_EXPENSE_ID, new Column(mTableName, GROUP_EXPENSE_ID, DT_INTEGER, "references expense(_id)", Column.TYPE_LONG));
-            mColumns.put(PERIODICITY, new Column(mTableName, PERIODICITY, DT_INTEGER, null,  Column.TYPE_INT));
-            mColumns.put(OFFSET, new Column(mTableName, OFFSET, DT_INTEGER, null,  Column.TYPE_INT));
-            mColumns.put(USER_BALANCE, new Column(mTableName, USER_BALANCE, DT_DOUBLE, null, Column.TYPE_DOUBLE, false));
+        protected void defineTable(){
+            addColumn(_ID, new Column(getTableName(), _ID, Column.DB_TYPE_INTEGER, Column.DEF_PRIMARY_KEY, Column.INTERNAL_TYPE_LONG));
+            addColumn(EXPENSE_GROUP_ID, new Column(getTableName(), EXPENSE_GROUP_ID, Column.DB_TYPE_INTEGER, "references groups(_id)", Column.INTERNAL_TYPE_LONG));
+            addColumn(EXPENSE_CREATED_ON, new Column(getTableName(), EXPENSE_CREATED_ON, Column.DB_TYPE_INTEGER, null, Column.INTERNAL_TYPE_DATE));
+            addColumn(EXPENSE_MESSAGE, new Column(getTableName(), EXPENSE_MESSAGE, Column.DB_TYPE_TEXT, null, Column.INTERNAL_TYPE_STRING));
+            addColumn(EXPENSE_AMOUNT, new Column(getTableName(), EXPENSE_AMOUNT, Column.DB_TYPE_DOUBLE, null, Column.INTERNAL_TYPE_DOUBLE));
+			addColumn(EXPENSE_EXCHANGE_RATE, new Column(getTableName(), EXPENSE_EXCHANGE_RATE, Column.DB_TYPE_DOUBLE, null, Column.INTERNAL_TYPE_DOUBLE));  //TODO: Add a clause for having 1 as default exchange rate (this means there is no conversion)
+            addColumn(EXPENSE_CURRENCY, new Column(getTableName(), EXPENSE_CURRENCY, Column.DB_TYPE_TEXT, null, Column.INTERNAL_TYPE_STRING));
+            addColumn(EXPENSE_CATEGORY_ID, new Column(getTableName(), EXPENSE_CATEGORY_ID, Column.DB_TYPE_INTEGER, null, Column.INTERNAL_TYPE_LONG));
+            addColumn(EXPENSE_LATITUDE, new Column(getTableName(), EXPENSE_LATITUDE, Column.DB_TYPE_DOUBLE, null, Column.INTERNAL_TYPE_DOUBLE));
+            addColumn(EXPENSE_LONGITUDE, new Column(getTableName(), EXPENSE_LONGITUDE, Column.DB_TYPE_DOUBLE, null, Column.INTERNAL_TYPE_DOUBLE));
+            addColumn(EXPENSE_IS_PAYMENT, new Column(getTableName(), EXPENSE_IS_PAYMENT, Column.DB_TYPE_INTEGER, null, Column.INTERNAL_TYPE_BOOL)); //boolean 0=false, 1=true
+            addColumn(EXPENSE_GROUP_EXPENSE_ID, new Column(getTableName(), EXPENSE_GROUP_EXPENSE_ID, Column.DB_TYPE_INTEGER, "references expense(_id)", Column.INTERNAL_TYPE_LONG));
+            addColumn(EXPENSE_PERIODICITY, new Column(getTableName(), EXPENSE_PERIODICITY, Column.DB_TYPE_INTEGER, null, Column.INTERNAL_TYPE_INT));
+            addColumn(EXPENSE_OFFSET, new Column(getTableName(), EXPENSE_OFFSET, Column.DB_TYPE_INTEGER, null, Column.INTERNAL_TYPE_INT));
 
             
             //Foreign keys only to other mTables (no recursive relationships included here).
-            ColumnJoin join = new ColumnJoin(getColumn(GROUP_ID), Group.getInstance().getColumn(Group._ID));
+            ColumnJoin join = new ColumnJoin(getColumn(EXPENSE_GROUP_ID), Group.getInstance().getColumn(Group._ID));
             LinkedHashSet<ColumnJoin> joinExp = new LinkedHashSet<ColumnJoin>();
             joinExp.add(join);
-            mForeignKeys.put(Group.getInstance().getTableName(), joinExp);
+            addForeignTable(Group.getInstance().getTableName(), joinExp);
         }
     }
 
-    public static final class Member extends Table {
+    public static final class Member extends Table implements MemberColumns{
         //MemberCursor Table
-        private static final String TABLE_NAME = "member";
+        public static final String TABLE_NAME = "member";
         //protected static final LinkedHashMap<String, String[]> COL_DEFS = new LinkedHashMap<String, String[]>();
             
         public static final String _ID = "_id";
-        public static final String USER_ID = "user_id";
-        public static final String GROUP_ID = "group_id";
-        public static final String IS_ADMIN = "is_admin";
-        public static final String LEFT_GROUP = "left_group";
 
         //Singleton table
         private static Table mInstance;
@@ -187,39 +147,36 @@ public final class TablasContract {
             super(TABLE_NAME);
         }
 
-        protected void defineColumnsAndForeignKeys(){
-            mColumns.put(_ID, new Column(mTableName, _ID, DT_INTEGER, DEF_PRIMARY_KEY, Column.TYPE_LONG));
-            mColumns.put(USER_ID, new Column(mTableName, USER_ID, DT_TEXT, null, Column.TYPE_STRING));
-            mColumns.put(GROUP_ID, new Column(mTableName, GROUP_ID, DT_INTEGER, "references groups(_id)",  Column.TYPE_LONG));
-            mColumns.put(IS_ADMIN, new Column(mTableName, IS_ADMIN, DT_INTEGER, null,  Column.TYPE_BOOL)); //boolean 0=false, 1=true
-            mColumns.put(LEFT_GROUP, new Column(mTableName, LEFT_GROUP, DT_INTEGER, null,  Column.TYPE_BOOL)); //boolean 0=false, 1=true
+        protected void defineTable(){
+            addColumn(_ID, new Column(getTableName(), _ID, Column.DB_TYPE_INTEGER, Column.DEF_PRIMARY_KEY, Column.INTERNAL_TYPE_LONG));
+            addColumn(MEMBER_USER_ID, new Column(getTableName(), MEMBER_USER_ID, Column.DB_TYPE_TEXT, null, Column.INTERNAL_TYPE_STRING));
+            addColumn(MEMBER_GROUP_ID, new Column(getTableName(), MEMBER_GROUP_ID, Column.DB_TYPE_INTEGER, "references groups(_id)", Column.INTERNAL_TYPE_LONG));
+            addColumn(MEMBER_IS_ADMIN, new Column(getTableName(), MEMBER_IS_ADMIN, Column.DB_TYPE_INTEGER, null, Column.INTERNAL_TYPE_BOOL)); //boolean 0=false, 1=true
+            addColumn(MEMBER_LEFT_GROUP, new Column(getTableName(), MEMBER_LEFT_GROUP, Column.DB_TYPE_INTEGER, null, Column.INTERNAL_TYPE_BOOL)); //boolean 0=false, 1=true
+            addColumn(MEMBER_IS_CURR_USR, new Column(getTableName(), MEMBER_IS_CURR_USR, Column.DB_TYPE_INTEGER, null, Column.INTERNAL_TYPE_BOOL)); //boolean 0=false, 1=true
 
             //Foreign keys only to other mTables (no recursive relationships included here).
 
-            ColumnJoin join = new ColumnJoin(getColumn(GROUP_ID), Group.getInstance().getColumn(Group._ID));
+            ColumnJoin join = new ColumnJoin(getColumn(MEMBER_GROUP_ID), Group.getInstance().getColumn(Group._ID));
             LinkedHashSet<ColumnJoin> joinExp = new LinkedHashSet<ColumnJoin>();
             joinExp.add(join);
-            mForeignKeys.put(Group.getInstance().getTableName(), joinExp);
+            addForeignTable(Group.getInstance().getTableName(), joinExp);
 
 
         }
     }
 
-    public static final class Payer extends Table {
+    public static final class Payer extends Table implements PayerColumns {
 
         //Types of roles for Payer
         public static final int OPTION_ROLE_PAID = 0;
         public static final int OPTION_ROLE_SHOULD_PAY = 1;
 
         //PayerCursor Table
-        private static final String TABLE_NAME = "payer";
+        public static final String TABLE_NAME = "payer";
         //protected static final LinkedHashMap<String, String[]> COL_DEFS = new LinkedHashMap<String, String[]>();
 
         public static final String _ID = "_id";
-        public static final String MEMBER_ID = "member_id";
-        public static final String EXPENSE_ID = "expense_id";
-        public static final String ROLE = "role";
-        public static final String PERCENTAGE = "percentage";
 
         //Singleton table
         private static Table mInstance;
@@ -236,35 +193,47 @@ public final class TablasContract {
             super(TABLE_NAME);
         }
 
-        protected void defineColumnsAndForeignKeys(){
-            mColumns.put(_ID, new Column(mTableName, _ID, DT_INTEGER, DEF_PRIMARY_KEY,  Column.TYPE_LONG));
-            mColumns.put(MEMBER_ID, new Column(mTableName, MEMBER_ID, DT_INTEGER, "references member(_id)",  Column.TYPE_LONG));
-            mColumns.put(EXPENSE_ID, new Column(mTableName, EXPENSE_ID, DT_INTEGER, "references expense(_id)",  Column.TYPE_LONG));
-            mColumns.put(ROLE, new Column(mTableName, ROLE, DT_INTEGER, null,  Column.TYPE_INT));
-            mColumns.put(PERCENTAGE, new Column(mTableName, PERCENTAGE, DT_DOUBLE, null,  Column.TYPE_DOUBLE));
+        protected void defineTable(){
+            addColumn(_ID, new Column(getTableName(), _ID, Column.DB_TYPE_INTEGER, Column.DEF_PRIMARY_KEY, Column.INTERNAL_TYPE_LONG));
+            addColumn(PAYER_MEMBER_ID, new Column(getTableName(), PAYER_MEMBER_ID, Column.DB_TYPE_INTEGER, "references member(_id)", Column.INTERNAL_TYPE_LONG));
+            addColumn(PAYER_EXPENSE_ID, new Column(getTableName(), PAYER_EXPENSE_ID, Column.DB_TYPE_INTEGER, "references expense(_id)", Column.INTERNAL_TYPE_LONG));
+            addColumn(PAYER_ROLE, new Column(getTableName(), PAYER_ROLE, Column.DB_TYPE_INTEGER, null, Column.INTERNAL_TYPE_INT));
+            addColumn(PAYER_PERCENTAGE, new Column(getTableName(), PAYER_PERCENTAGE, Column.DB_TYPE_DOUBLE, null, Column.INTERNAL_TYPE_DOUBLE));
 
             //Foreign keys
-            ColumnJoin join = new ColumnJoin(getColumn(MEMBER_ID), Member.getInstance().getColumn(Member._ID));
+            ColumnJoin join = new ColumnJoin(getColumn(PAYER_MEMBER_ID), Member.getInstance().getColumn(Member._ID));
             LinkedHashSet<ColumnJoin> joinExp = new LinkedHashSet<ColumnJoin>();
             joinExp.add(join);
-            mForeignKeys.put(Member.getInstance().getTableName(), joinExp);
+            addForeignTable(Member.getInstance().getTableName(), joinExp);
 
-            join = new ColumnJoin(getColumn(EXPENSE_ID), Expense.getInstance().getColumn(Expense._ID));
+            join = new ColumnJoin(getColumn(PAYER_EXPENSE_ID), Expense.getInstance().getColumn(Expense._ID));
             joinExp = new LinkedHashSet<ColumnJoin>();
             joinExp.add(join);
-            mForeignKeys.put(Expense.getInstance().getTableName(), joinExp);
+            addForeignTable(Expense.getInstance().getTableName(), joinExp);
         }
    
     }
 
     public static final class Compound{
 
-        public static final class ExpenseBalance extends CompositeTable {
+        public static final class ExpenseBalance extends CompositeTable implements ExpenseColumns, PayerColumns, MemberColumns {
+            public static final String TABLE_NAME = "ExpenseBalance";
 
            //Tables added to this getInstance.
-            public final static Table EXPENSE_TABLE = Expense.getInstance();
-            public final static Table PAYER_TABLE = Payer.getInstance();
-            public final static Table MEMBER_TABLE = Member.getInstance();
+            private final static Table EXPENSE_TABLE = Expense.getInstance();
+            private final static Table PAYER_TABLE = Payer.getInstance();
+            private final static Table MEMBER_TABLE = Member.getInstance();
+
+            //Additional columns
+            /**
+             * These "*_ORIGINAL" columns  represent the original "_id" columns of each table, saved as "table_name._id"; these
+             * columns are here so that people can ask for entities at a higher level different from this composite table's _id (without retrieving this _id)
+             * by still having an "_id" column (necessary for the cursor adapter, which needs an _id column).
+             */
+            public static final String EXPENSE_ID = EXPENSE_TABLE.getColumn(Expense._ID).getFullName();
+            public static final String MEMBER_ID = MEMBER_TABLE.getColumn(Member._ID).getFullName();
+            public static final String _ID = "_id";
+            public static final String USER_BALANCE = "user_balance";
 
             //Singleton table
             private static CompositeTable mInstance;
@@ -282,29 +251,60 @@ public final class TablasContract {
                 super();
             }
 
-            protected void defineTables(){
+            private ExpenseBalance(String tableName){
+                super(tableName);
+            }
+
+
+            @Override
+            protected void addMetrics(){
+                addMetric(TablasContract.getUserBalanceMetric(USER_BALANCE));
+            }
+
+            @Override
+            protected void addTablesToCompositeTable(){
                 addTable(EXPENSE_TABLE);
                 addTable(PAYER_TABLE);
                 addTable(MEMBER_TABLE);
             }
 
             @Override
+            protected Column getIdColumn(){
+                return PAYER_TABLE.getColumn(Payer._ID);
+            }
+
+
+
+            @Override
             public TreeNode getTableJoinTree(Set<Table> additionalTables){
-                //Set Group to left outer join.
+                //Set left outer joins between Expense and Payers table
                 TreeNode tree = super.getTableJoinTree(additionalTables);
-                TreeNode expenseNode = tree.findTableNode(EXPENSE_TABLE.getTableName());
-                expenseNode.getParent().setJoinType(TreeNode.LEFT_OUTER_JOIN);
+                TreeNode.findFirstCommonParent(tree.findTableNode(EXPENSE_TABLE.getTableName()), tree.findTableNode(PAYER_TABLE.getTableName()))
+                        .setJoinType(TreeNode.LEFT_OUTER_JOIN);
                 return tree;
             }
         }
 
-        public static final class GroupBalance extends CompositeTable {
+        public static final class GroupBalance extends CompositeTable implements GroupColumns, ExpenseColumns, PayerColumns, MemberColumns {
+            public static final String TABLE_NAME = "GroupBalance";
 
             //Tables added to this getInstance.
-            public final static Table GROUP_TABLE = Group.getInstance();
-            public final static Table EXPENSE_TABLE = Expense.getInstance();
-            public final static Table PAYER_TABLE = Payer.getInstance();
-            public final static Table MEMBER_TABLE = Member.getInstance();
+            private final static Table GROUP_TABLE = Group.getInstance();
+            private final static Table EXPENSE_TABLE = Expense.getInstance();
+            private final static Table PAYER_TABLE = Payer.getInstance();
+            private final static Table MEMBER_TABLE = Member.getInstance();
+
+            //Additional columns
+            /**
+             * These "*_ORIGINAL" columns  represent the original "_id" columns of each table, saved as "table_name._id"; these
+             * columns are here so that people can ask for entities at a higher level different from this composite table's _id (without retrieving this _id)
+             * by still having an "_id" column (necessary for the cursor adapter, which needs an _id column).
+             */
+            public static final String EXPENSE_ID = EXPENSE_TABLE.getColumn(Expense._ID).getFullName();
+            public static final String MEMBER_ID = MEMBER_TABLE.getColumn(Member._ID).getFullName();
+            public static final String GROUP_ID = GROUP_TABLE.getColumn(Group._ID).getFullName();
+            public static final String _ID = "_id";
+            public static final String USER_BALANCE = "user_balance";
 
             //Singleton table
             private static CompositeTable mInstance;
@@ -322,11 +322,26 @@ public final class TablasContract {
                 super();
             }
 
-            protected void defineTables() {
+            private GroupBalance(String tableName) {
+                super(tableName);
+            }
+
+            @Override
+            protected void addMetrics(){
+                addMetric(TablasContract.getUserBalanceMetric(USER_BALANCE));
+            }
+
+            @Override
+            protected void addTablesToCompositeTable() {
                 addTable(GROUP_TABLE);
                 addTable(MEMBER_TABLE);
                 addTable(PAYER_TABLE);
                 addTable(EXPENSE_TABLE);
+            }
+
+            @Override
+            protected Column getIdColumn(){
+                return PAYER_TABLE.getColumn(Payer._ID);
             }
 
             /**
@@ -349,10 +364,59 @@ public final class TablasContract {
         }
     }
 
-    protected static Metric getBalanceMetric(){
-        Column expAmount = TablasContract.Expense.getInstance().getColumn(TablasContract.Expense.AMOUNT);
-        Column expExchange = TablasContract.Expense.getInstance().getColumn(TablasContract.Expense.EXCHANGE_RATE);
-        Column payPercent = TablasContract.Payer.getInstance().getColumn(TablasContract.Payer.PERCENTAGE);
+    /**
+     * Set of columns for the Group table.
+     */
+    public interface GroupColumns{
+        public static final String GROUP_NAME = "group_name";
+        public static final String GROUP_CREATED_ON = "group_created_on";
+        public static final String GROUP_PICTURE = "group_picture";
+    }
+
+    /**
+     * Set of columns for the Expense table.
+     */
+    public interface ExpenseColumns{
+        public static final String EXPENSE_GROUP_ID = "group_id";
+        public static final String EXPENSE_CREATED_ON = "exp_created_on";
+        public static final String EXPENSE_MESSAGE = "message";
+        public static final String EXPENSE_AMOUNT = "amount";
+        public static final String EXPENSE_EXCHANGE_RATE = "exchange_rate";
+        public static final String EXPENSE_CURRENCY = "currency";
+        public static final String EXPENSE_CATEGORY_ID = "category_id";
+        public static final String EXPENSE_LATITUDE = "latitude";
+        public static final String EXPENSE_LONGITUDE = "longitude";
+        public static final String EXPENSE_IS_PAYMENT = "is_payment";
+        public static final String EXPENSE_GROUP_EXPENSE_ID = "group_exp_id";
+        public static final String EXPENSE_PERIODICITY = "periodicity";
+        public static final String EXPENSE_OFFSET = "offset";
+    }
+
+    /**
+     * Set of columns for the Member table.
+     */
+    public interface MemberColumns{
+        public static final String MEMBER_USER_ID = "user_id";
+        public static final String MEMBER_GROUP_ID = "group_id";
+        public static final String MEMBER_IS_ADMIN = "is_admin";
+        public static final String MEMBER_LEFT_GROUP = "left_group";
+        public static final String MEMBER_IS_CURR_USR = "is_curr_usr";
+    }
+
+    /**
+     * Set of columns for the Payer table.
+     */
+    public interface PayerColumns{
+        public static final String PAYER_MEMBER_ID = "member_id";
+        public static final String PAYER_EXPENSE_ID = "expense_id";
+        public static final String PAYER_ROLE = "pay_role";
+        public static final String PAYER_PERCENTAGE = "percentage";
+    }
+
+    protected static Metric getUserBalanceMetric(String name){
+        Column expAmount = TablasContract.Expense.getInstance().getColumn(TablasContract.Expense.EXPENSE_AMOUNT);
+        Column expExchange = TablasContract.Expense.getInstance().getColumn(TablasContract.Expense.EXPENSE_EXCHANGE_RATE);
+        Column payPercent = TablasContract.Payer.getInstance().getColumn(TablasContract.Payer.PAYER_PERCENTAGE);
 
         ArrayList<Column> columns = new ArrayList();
         columns.add(expAmount);
@@ -366,10 +430,21 @@ public final class TablasContract {
                 append(" * ").
                 append(payPercent.getFullName()).append(")");
 
-        String alias = TablasContract.Expense.USER_BALANCE;
+        Column metricCol = new Column(null, name, Column.DB_TYPE_DOUBLE, null, Column.INTERNAL_TYPE_DOUBLE, Column.IS_METRIC);
 
-        return new Metric(columns, expression.toString());
+        return new Metric(columns, expression.toString(), Metric.IS_AGGREGATION, metricCol);
     }
+
+    protected static Metric getIsCurrentUserMetric(String name){
+
+        return null;
+    }
+
+    protected static Metric getNumberOfPayingPayers(String name){
+
+        return null;
+    }
+
 
 
 }

@@ -29,11 +29,11 @@ public class Payer implements Entity {
     }
 
     public long getMemberId() {
-        return getLong(TablasContract.Payer.MEMBER_ID);
+        return getLong(TablasContract.Payer.PAYER_MEMBER_ID);
     }
 
     public void setMemberId(long memberId) {
-        setField(TablasContract.Payer.MEMBER_ID, memberId);
+        setField(TablasContract.Payer.PAYER_MEMBER_ID, memberId);
     }
 
     /**
@@ -41,7 +41,7 @@ public class Payer implements Entity {
      * or if the this entry/member in this group should pay part of the expense.
      */
     public int getRole() {
-        return getInt(TablasContract.Payer.ROLE);
+        return getInt(TablasContract.Payer.PAYER_ROLE);
     }
 
     public void setRole(int role) {
@@ -51,27 +51,27 @@ public class Payer implements Entity {
             //make percentage positive because payer actually paid, so he/she should receive compensation  (positive number).
             setPercentage(getPercentage() * -1);
         }
-        setField(TablasContract.Payer.ROLE, role);
+        setField(TablasContract.Payer.PAYER_ROLE, role);
     }
 
     public double getPercentage() {
-        return getDouble(TablasContract.Payer.PERCENTAGE);
+        return getDouble(TablasContract.Payer.PAYER_PERCENTAGE);
     }
 
     public void setPercentage(double percentage) {
         if((getRole() == TablasContract.Payer.OPTION_ROLE_SHOULD_PAY && percentage > 0) || (getRole() == TablasContract.Payer.OPTION_ROLE_PAID && percentage < 0)) {
-            setField(TablasContract.Payer.PERCENTAGE, percentage * -1);
+            setField(TablasContract.Payer.PAYER_PERCENTAGE, percentage * -1);
         }else{
-            setField(TablasContract.Payer.PERCENTAGE, percentage);
+            setField(TablasContract.Payer.PAYER_PERCENTAGE, percentage);
         }
     }
 
     public long getExpenseId() {
-        return getLong(TablasContract.Payer.EXPENSE_ID);
+        return getLong(TablasContract.Payer.PAYER_EXPENSE_ID);
     }
 
     public void setExpenseId(long expenseId) {
-        setField(TablasContract.Payer.EXPENSE_ID, expenseId);
+        setField(TablasContract.Payer.PAYER_EXPENSE_ID, expenseId);
     }
 
     @Override

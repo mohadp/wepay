@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.jumo.tablas.R;
+import com.jumo.tablas.model.ActualEntity;
+import com.jumo.tablas.model.Entity;
 import com.jumo.tablas.model.Group;
 import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.EntityCursor;
@@ -50,7 +52,8 @@ public class GroupCursorAdapter extends DrawableCursorAdapter {
         if(groupCursor == null) return;
 
         // get the run for the current row
-        Group group = new Group(groupCursor.getEntity(TablasContract.Group.getInstance()));
+        Entity entity = groupCursor.getEntity(TablasContract.Compound.GroupBalance.getInstance());
+        Group group = new Group(entity);
         //Log.d(TAG, group.toString());
 
         // set up the start date text view
@@ -59,7 +62,7 @@ public class GroupCursorAdapter extends DrawableCursorAdapter {
         //roundImage.setImageBitmap(getBitmapFromCacheFirst(context, R.drawable.moha));
 
         ((TextView)view.findViewById(R.id.list_group_name)).setText(group.getName());
-        ((TextView)view.findViewById(R.id.list_group_balance)).setText(String.format("%1$.2f", group.getUserBalance()));
+        ((TextView)view.findViewById(R.id.list_group_balance)).setText(String.format("%1$.2f", entity.getDouble(TablasContract.Compound.GroupBalance.USER_BALANCE)));
 
     }
 

@@ -2,7 +2,6 @@ package com.jumo.tablas.provider.dao;
 
 import android.database.Cursor;
 import android.database.CursorWrapper;
-import android.util.Log;
 
 import com.jumo.tablas.model.ActualEntity;
 import com.jumo.tablas.model.Entity;
@@ -35,29 +34,34 @@ public class EntityCursor extends CursorWrapper {
                 entity.setField(column.name, getColumnValue(column, colIndex));
             }
         }
+
         return entity;
     }
 
     private Object getColumnValue(Column col, int colIndex){
         switch(col.datatype){
-            case Column.TYPE_LONG:
+            case Column.INTERNAL_TYPE_LONG:
                 return new Long(getLong(colIndex));
-            case Column.TYPE_STRING:
+            case Column.INTERNAL_TYPE_STRING:
                 return getString(colIndex);
-            case Column.TYPE_DATE:
+            case Column.INTERNAL_TYPE_DATE:
                 return new Date(getLong(colIndex));
-            case Column.TYPE_BOOL:
+            case Column.INTERNAL_TYPE_BOOL:
                 return new Boolean(getInt(colIndex) != 0);
-            case Column.TYPE_INT:
+            case Column.INTERNAL_TYPE_INT:
                 return new Integer(getInt(colIndex));
-            case Column.TYPE_DOUBLE:
+            case Column.INTERNAL_TYPE_DOUBLE:
                 return new Double(getDouble(colIndex));
-            case Column.TYPE_BYTES:
+            case Column.INTERNAL_TYPE_BYTES:
                 return getBlob(colIndex);
         }
 
         return null;
     }
+
+    //@Override
+
+
 
     public String toString(Table table){
         Cursor cursor = getWrappedCursor();

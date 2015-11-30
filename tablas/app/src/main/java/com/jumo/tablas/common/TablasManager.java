@@ -1,6 +1,5 @@
 package com.jumo.tablas.common;
 
-import android.content.ContentProvider;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -13,15 +12,11 @@ import com.jumo.tablas.model.Member;
 import com.jumo.tablas.model.Payer;
 import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.EntityCursor;
-import com.jumo.tablas.provider.dao.EntityWriter;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Set;
 
 import android.database.*;
-import android.provider.ContactsContract;
 import android.util.Log;
 
 /**
@@ -31,6 +26,7 @@ public class TablasManager {
 
     private static final String TAG = "TablasManager";
 
+    private static final String CURRENT_USER = "+17036566202";
 
     private Context mContext;
     private Uri baseUri;
@@ -39,6 +35,7 @@ public class TablasManager {
     private String[] mUsers = {"+17036566202", "+17037173160", "+17036566203",
             "+19192188457", "+5215534007789", "+5215540840084", "+5215513725485",
             "+12026790071", "+16504557014"};
+
 
     private TablasManager(Context context){
         mContext = context;
@@ -109,8 +106,8 @@ public class TablasManager {
             group.setName("Group " + i);
 
             ContentProviderOperation op = ContentProviderOperation.newInsert(groupTable)
-                    .withValue(TablasContract.Group.CREATED_ON, group.getCreatedOn().getTime())
-                    .withValue(TablasContract.Group.NAME, group.getName())
+                    .withValue(TablasContract.Group.GROUP_CREATED_ON, group.getCreatedOn().getTime())
+                    .withValue(TablasContract.Group.GROUP_NAME, group.getName())
                     .build();
             ops.add(op);
             createMembersExpensesPayers(ops, ops.size() - 1);
@@ -135,10 +132,11 @@ public class TablasManager {
 
             //Insert member into the database.
             ContentProviderOperation.Builder op = ContentProviderOperation.newInsert(memberTable)
-                    .withValueBackReference(TablasContract.Member.GROUP_ID, groupOpIndex)
-                    .withValue(TablasContract.Member.IS_ADMIN, member.isAdmin() ? 1 : 0)
-                    .withValue(TablasContract.Member.LEFT_GROUP, member.hasLeftGroup() ? 1 : 0)
-                    .withValue(TablasContract.Member.USER_ID, member.getUserId());
+                    .withValueBackReference(TablasContract.Member.MEMBER_GROUP_ID, groupOpIndex)
+                    .withValue(TablasContract.Member.MEMBER_IS_ADMIN, member.isAdmin() ? 1 : 0)
+                    .withValue(TablasContract.Member.MEMBER_LEFT_GROUP, member.hasLeftGroup() ? 1 : 0)
+                    .withValue(TablasContract.Member.MEMBER_USER_ID, member.getUserId())
+                    .withValue(TablasContract.Member.MEMBER_IS_CURR_USR, member.isCurrentUser()? 1 : 0);
             ops.add(op.build());
         }
         int lastMember = ops.size() - 1; //index of the last member for this group.
@@ -169,14 +167,14 @@ public class TablasManager {
             //Insert member into the database.
             //Insert member into the database.
             ContentProviderOperation op = ContentProviderOperation.newInsert(expenseTable)
-                    .withValueBackReference(TablasContract.Expense.GROUP_ID, groupOpIndex)
-                    .withValue(TablasContract.Expense.IS_PAYMENT, expense.isPayment()? 1 : 0)
-                    .withValue(TablasContract.Expense.AMOUNT, expense.getAmount())
-                    .withValue(TablasContract.Expense.EXCHANGE_RATE, expense.getExchangeRate())
-                    .withValue(TablasContract.Expense.MESSAGE, expense.getMessage())
-                    .withValue(TablasContract.Expense.CREATED_ON, expense.getCreatedOn().getTime())
-                    .withValue(TablasContract.Expense.CURRENCY, expense.getCurrencyId())
-                    .withValue(TablasContract.Expense.CATEGORY_ID, expense.getCategoryId())
+                    .withValueBackReference(TablasContract.Expense.EXPENSE_GROUP_ID, groupOpIndex)
+                    .withValue(TablasContract.Expense.EXPENSE_IS_PAYMENT, expense.isPayment()? 1 : 0)
+                    .withValue(TablasContract.Expense.EXPENSE_AMOUNT, expense.getAmount())
+                    .withValue(TablasContract.Expense.EXPENSE_EXCHANGE_RATE, expense.getExchangeRate())
+                    .withValue(TablasContract.Expense.EXPENSE_MESSAGE, expense.getMessage())
+                    .withValue(TablasContract.Expense.EXPENSE_CREATED_ON, expense.getCreatedOn().getTime())
+                    .withValue(TablasContract.Expense.EXPENSE_CURRENCY, expense.getCurrencyId())
+                    .withValue(TablasContract.Expense.EXPENSE_CATEGORY_ID, expense.getCategoryId())
                     .build();
             ops.add(op);
             createPayers(ops, ops.size() - 1, firstMember, lastMember);
@@ -186,7 +184,7 @@ public class TablasManager {
 
     public void createPayers(ArrayList<ContentProviderOperation> ops, int expenseOpIndex, int firstMember, int lastMember){
         Uri payerTable = baseUri.buildUpon().appendPath(TablasContract.Payer.getInstance().getTableName()).build();
-        int noMembers = lastMember - firstMember;
+        int noMembers = lastMember - firstMember + 1;
         double percentagePerPerson = 1d / noMembers;
         int currentMember = 0;
 
@@ -201,10 +199,10 @@ public class TablasManager {
             payerShouldPay.setPercentage(percentagePerPerson);
 
             ContentProviderOperation.Builder op = ContentProviderOperation.newInsert(payerTable)
-                    .withValueBackReference(TablasContract.Payer.MEMBER_ID, i)
-                    .withValueBackReference(TablasContract.Payer.EXPENSE_ID, expenseOpIndex)
-                    .withValue(TablasContract.Payer.ROLE, payerShouldPay.getRole())
-                    .withValue(TablasContract.Payer.PERCENTAGE, payerShouldPay.getPercentage());
+                    .withValueBackReference(TablasContract.Payer.PAYER_MEMBER_ID, i)
+                    .withValueBackReference(TablasContract.Payer.PAYER_EXPENSE_ID, expenseOpIndex)
+                    .withValue(TablasContract.Payer.PAYER_ROLE, payerShouldPay.getRole())
+                    .withValue(TablasContract.Payer.PAYER_PERCENTAGE, payerShouldPay.getPercentage());
 
             if(currentMember != payer && i == lastMember){
                 op.withYieldAllowed(true);
@@ -219,10 +217,10 @@ public class TablasManager {
                 payerPaid.setPercentage(1);
 
                 ContentProviderOperation.Builder op2 = ContentProviderOperation.newInsert(payerTable)
-                        .withValueBackReference(TablasContract.Payer.MEMBER_ID, i)
-                        .withValueBackReference(TablasContract.Payer.EXPENSE_ID, expenseOpIndex)
-                        .withValue(TablasContract.Payer.ROLE, payerPaid.getRole())
-                        .withValue(TablasContract.Payer.PERCENTAGE, payerPaid.getPercentage());
+                        .withValueBackReference(TablasContract.Payer.PAYER_MEMBER_ID, i)
+                        .withValueBackReference(TablasContract.Payer.PAYER_EXPENSE_ID, expenseOpIndex)
+                        .withValue(TablasContract.Payer.PAYER_ROLE, payerPaid.getRole())
+                        .withValue(TablasContract.Payer.PAYER_PERCENTAGE, payerPaid.getPercentage());
 
                 if(i == lastMember){
                     op2.withYieldAllowed(true);

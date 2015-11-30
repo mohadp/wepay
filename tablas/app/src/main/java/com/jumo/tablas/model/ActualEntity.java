@@ -127,7 +127,7 @@ public class ActualEntity implements Entity {
 
     @Override
     public String toString(){
-        StringBuilder sb = new StringBuilder(table.getTableName());
+        StringBuilder sb = new StringBuilder((table.getTableName() == null)? "<NoName>" : table.getTableName());
         sb.append(":[\n");
 
         for(Column c : table.getColumns()){

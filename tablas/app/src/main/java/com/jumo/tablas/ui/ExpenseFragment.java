@@ -7,24 +7,26 @@ import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.LruCache;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.PopupWindow;
 
 import com.jumo.tablas.R;
@@ -34,6 +36,7 @@ import com.jumo.tablas.ui.adapters.ExpenseCursorAdapter;
 import com.jumo.tablas.ui.util.CacheManager;
 import com.jumo.tablas.ui.util.OnKeyEventListener;
 import com.jumo.tablas.ui.loaders.ExpenseUserThreadHandler;
+import com.jumo.tablas.ui.views.LinearLayoutResize;
 
 /**
  * A fragment representing a list of Items.
@@ -51,42 +54,35 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     public static final String EXTRA_GROUP_ID = "com.jumo.wepay.group_id";
     public static final String EXTRA_USER_ID = "com.jumo.wepay.user_id";
-    private static final int KEYBOARD_THRESHOLD = 300;
-    private static final int UNSET_PREVIOUS_HEIGHT = -1283013084;
 
     //Loaders
     public static final int LOADER_EXPENSES = 0;
+    public static final int LOADER_MEMBERS = 1;
 
     //private OnFragmentInteractionListener mListener;
 
     /**
      * The fragment's ListView/GridView.
      */
-    private ListView mListView;
-    private LinearLayout mConversationLayout;
-    private LinearLayout mChatControlsLayout;
-    private PopupWindow mCustomKeyboard;
+    private RecyclerView mRecyclerView;
+    private LinearLayoutResize mConversationLayout;
     private ImageButton mCurrencyButton;
     private EditText mConversationEditText;
     private EditText mAmountEditText;
 
-
     private FrameLayout mCustomKeyboardSpacer;
     private View mPopupView;
+    private int mMaxConversationHeight; // height for whenever there is no system keyboard
 
     //Other control variables
     private float mCustomKeyboardHeight;
-    //private float mPreviousHeight;
-
-
+    private boolean mShowCustomKeyboard = false;
 
     //Fragment's attributes
     private String mUserName;
     private long mGroupId;
     private LruCache<Object, Bitmap> mCache;
-    //private LruCache<Long, ImageViewRow> mCacheImageRow;
     private ExpenseUserThreadHandler mPayerLoader;
-
 
 
     public static ExpenseFragment newInstance(String userId, long groupId) {
@@ -133,135 +129,135 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
         mPayerLoader.getLooper();
     }
 
-
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_conversation, container, false);
 
-
         // Set the adapter
-        mListView = (ListView) view.findViewById(android.R.id.list);
-		mListView.setAdapter(new ExpenseCursorAdapter(getActivity(), null, this, mPayerLoader));
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.list_messages);
+		mRecyclerView.setAdapter(new ExpenseCursorAdapter(getActivity(), null, this, mPayerLoader));
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         //Set the references to the components in the fragment layout
-        mConversationLayout = (LinearLayout) view.findViewById(R.id.view_conversations);
-        mChatControlsLayout = (LinearLayout) view.findViewById(R.id.layout_chat_controls);
+        mConversationLayout = (LinearLayoutResize) view.findViewById(R.id.view_conversations);
         mCustomKeyboardSpacer = (FrameLayout) view.findViewById(R.id.inputMethod);
         mCurrencyButton = (ImageButton) view.findViewById(R.id.button_currency);
         mConversationEditText = (EditText) view.findViewById(R.id.edit_message);
         mAmountEditText = (EditText) view.findViewById(R.id.edit_amount);
 
-        //Setting up the custom input
-        mPopupView = inflater.inflate(R.layout.popup_input_methods, container, false);
-
-        //popupView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-        mCustomKeyboard = new PopupWindow(mPopupView);
-
-        // Set OnItemClickListener so we can be notified on item clicks
-        //mListView.setOnItemClickListener(this);
         prepareCustomKeyboard();
-
         return view;
     }
 
     public void prepareCustomKeyboard(){
         //first we update the height to be the dimension in the resource
         mCustomKeyboardHeight = getResources().getDimension(R.dimen.keyboard_height);
-        //mPreviousHeight = UNSET_PREVIOUS_HEIGHT;
 
-        mCurrencyButton.setOnClickListener(new View.OnClickListener() {
+        View.OnClickListener mCustKeyboardToggleListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mCustomKeyboard.isShowing()){
+                if (isCustomKeyboardShowing()) {
                     dismissCustomKeyboard();
-                }else {
-                    showCustomKeyboard();
-                    mCustomKeyboard.update();
+                } else {
+                    callCustomKeyboard();
                 }
             }
-        });
+        };
 
-        View.OnClickListener clickDismissKeyboard = new View.OnClickListener() {
+        View.OnClickListener clickDismissCustomKeyboard = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            if(mCustomKeyboard.isShowing()) {
                 dismissCustomKeyboard();
-            }
             }
         };
         View.OnFocusChangeListener focusDismissKeyboard = new View.OnFocusChangeListener(){
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-            if(mCustomKeyboard.isShowing()) {
                 dismissCustomKeyboard();
-            }
             }
         };
 
-        mConversationEditText.setOnClickListener(clickDismissKeyboard);
-        mConversationEditText.setOnFocusChangeListener(focusDismissKeyboard);
+        LinearLayoutResize.OnSizeChange onSizeChange = new LinearLayoutResize.OnSizeChange() {
+            @Override
+            public void onSizeChanged(int w, int h, int oldw, int oldh) {
+                if(oldh == 0){
+                    mMaxConversationHeight = h;
+                }
+                if(hasCustomKeyboardBeenCalled()){
+                    showCustomKeyboard();
+                }
+            }
+        };
 
-        mAmountEditText.setOnClickListener(clickDismissKeyboard);
+        mCurrencyButton.setOnClickListener(mCustKeyboardToggleListener);
+        mConversationEditText.setOnClickListener(clickDismissCustomKeyboard);
+        mConversationEditText.setOnFocusChangeListener(focusDismissKeyboard);
+        mAmountEditText.setOnClickListener(clickDismissCustomKeyboard);
         mAmountEditText.setOnFocusChangeListener(focusDismissKeyboard);
-        //keepUpdatingCustomKeyboardHeight();
+        mConversationLayout.setOnSizeChange(onSizeChange);
+        //mCustomKeyboard.setOnDismissListener(dismissListener);
+    }
+
+    private void hideSystemKeyboard(){
+        InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(mConversationLayout.getWindowToken(), 0);
+    }
+
+    private void callCustomKeyboard(){
+        if (!isSystemKeyboardShowing()) {
+            showCustomKeyboard();
+        } else {
+            mShowCustomKeyboard = true;
+            hideSystemKeyboard(); //There is a listener on this layout resize; we will show the
+        }
+    }
+
+    private boolean hasCustomKeyboardBeenCalled(){
+        return mShowCustomKeyboard;
     }
 
     private void showCustomKeyboard(){
-        InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(mConversationLayout.getWindowToken(), 0);
-
         mCustomKeyboardSpacer.setVisibility(View.VISIBLE);
-        mCustomKeyboardSpacer.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (int) mCustomKeyboardHeight));
-        int spacerHeight = mCustomKeyboardSpacer.getHeight();
-        int spacerKeyboardHeight = (spacerHeight == 0)? mCustomKeyboardSpacer.getLayoutParams().height : spacerHeight;
+        mCustomKeyboardSpacer.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) mCustomKeyboardHeight));
 
-        mCustomKeyboard.setWidth(WindowManager.LayoutParams.MATCH_PARENT);
-        mCustomKeyboard.setHeight(spacerKeyboardHeight);
-        mCustomKeyboard.setAnimationStyle(0);
-        mCustomKeyboard.showAsDropDown(mChatControlsLayout, 0, 0);
-    }
-
-    private void dismissCustomKeyboard(){
-        mCustomKeyboard.dismiss();
-        mCustomKeyboardSpacer.setVisibility(View.GONE);
-    }
-
-    @Override
-    public boolean onKeyPress(int keyEvent, KeyEvent event){
-        if(keyEvent == KeyEvent.KEYCODE_BACK){
-            if(mCustomKeyboard.isShowing()){
-                dismissCustomKeyboard();
-                return true;
+        //Submit message on the UI thread to redraw the view tree because of these changes.
+        Handler handler = new Handler();
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                mCustomKeyboardSpacer.requestLayout();
             }
+        });
+    }
+
+    /**
+     * This method determines if the system soft keyboard is showing or not depending on the top layout's size;
+     * this method is accurate only if the activity is resized when the soft keyboard appears (when the app pans
+     * or does nothing, this method does not return the correc
+     * @return a boolean; true if system soft keyboard is showing; false if not.
+     */
+    private boolean isSystemKeyboardShowing(){
+        Rect rect = new Rect();
+        mConversationLayout.getDrawingRect(rect);
+        if(rect.height() < mMaxConversationHeight){
+            return true;
         }
         return false;
     }
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Log.d(TAG, "onCreateLoader");
 
-        Uri uri = TablasContract.BASE_URI.buildUpon().appendPath(TablasContract.Expense.getInstance().getTableName())
-                .appendPath("user").appendPath(mUserName).appendPath("group").appendPath(Long.toString(mGroupId))
-                .build();
-
-        StringBuilder sortBy = new StringBuilder(TablasContract.Expense.CREATED_ON).append(" ASC");
-        return new CursorLoader(getActivity(), uri, null, null, null, sortBy.toString());
+    private boolean isCustomKeyboardShowing(){
+        return (mCustomKeyboardSpacer.getVisibility() == View.VISIBLE);
     }
 
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        Log.d(TAG, "onLoadFinished");
-        if(this.getActivity() == null || mListView == null) return;
-        ((ExpenseCursorAdapter)mListView.getAdapter()).changeCursor(new EntityCursor(data));
+    private void dismissCustomKeyboard(){
+        mShowCustomKeyboard = false;
+        /*if(isCustomKeyboardShowing()) {
+            mCustomKeyboard.dismiss();
+        }*/
+        mCustomKeyboardSpacer.setVisibility(View.GONE);
     }
 
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        if(mListView == null) return;
-        ((ExpenseCursorAdapter)mListView.getAdapter()).changeCursor(null);
-    }
 
     @Override
     public void onDestroyView(){
@@ -280,6 +276,65 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.default_menu, menu);
     }
+
+
+    ///////////// Methods for OnKeyEventListener interface to handle this fragment's key listener /////////////
+
+    @Override
+    public boolean onKeyPress(int keyEvent, KeyEvent event){
+        if(keyEvent == KeyEvent.KEYCODE_BACK){
+            if(isCustomKeyboardShowing()){
+                dismissCustomKeyboard();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    ///////////// Methods for LoaderCallbacks interface to handle this fragment's loaders /////////////
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Log.d(TAG, "onCreateLoader");
+
+        if(id == LOADER_EXPENSES){
+            Uri uri = TablasContract.BASE_URI.buildUpon().appendPath(TablasContract.Expense.getInstance().getTableName())
+                    .appendPath("user").appendPath(mUserName).appendPath("group").appendPath(Long.toString(mGroupId))
+                    .build();
+
+            StringBuilder sortBy = new StringBuilder(TablasContract.Expense.EXPENSE_CREATED_ON).append(" ASC");
+            return new CursorLoader(getActivity(), uri, null, null, null, sortBy.toString());
+        }else if(id == LOADER_MEMBERS){
+            return null;
+        }
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        Log.d(TAG, "onLoadFinished");
+        int id = loader.getId();
+
+        if(id == LOADER_EXPENSES) {
+            if (this.getActivity() == null || mRecyclerView == null)
+                return;
+            ((ExpenseCursorAdapter) mRecyclerView.getAdapter()).changeCursor(new EntityCursor(data));
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        int id = loader.getId();
+
+        if(id == LOADER_EXPENSES) {
+            if (mRecyclerView == null)
+                return;
+            ((ExpenseCursorAdapter) mRecyclerView.getAdapter()).changeCursor(null);
+        }
+    }
+
+
+    ///////////// Methods for CacheManager interface to handle this fragment's cache /////////////
 
     @Override
     public void addToCache(Object key, Bitmap bitmap) {

@@ -124,7 +124,7 @@ public class ExpenseUserThreadHandler extends HandlerThread {
         private void getExpenseUserImages(String expenseId, ArrayList<String> imageIds, ArrayList<Bitmap> images){
             Uri uri = TablasContract.BASE_URI.buildUpon().appendPath(TablasContract.Expense.getInstance().getTableName())
                     .appendPath(expenseId).appendPath("users").build();
-            String sortOrder = TablasContract.Member.getInstance().getFullColumnName(TablasContract.Member.USER_ID) + " ASC";
+            String sortOrder = TablasContract.Member.getInstance().getFullColumnName(TablasContract.Member.MEMBER_USER_ID) + " ASC";
 
             Cursor cursor = mContextReference.get().getContentResolver().query(uri, null, null, null, sortOrder);
             EntityCursor entityCursor = new EntityCursor(cursor);

@@ -7,19 +7,18 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.util.Log;
 
 import com.jumo.tablas.provider.dao.Column;
 import com.jumo.tablas.provider.dao.ColumnJoin;
 import com.jumo.tablas.provider.dao.CompositeTable;
 import com.jumo.tablas.provider.dao.TreeNode;
 import com.jumo.tablas.provider.dao.Metric;
-import com.jumo.tablas.provider.dao.Table;
 import com.jumo.tablas.provider.db.TablasDatabaseHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 
 /**
@@ -29,13 +28,6 @@ public class TablasProvider extends ContentProvider{
     private static final String TAG = "TablasProvider";
 
     //TODO: need to close database
-
-    private static final int JOIN_GROUP_MEMBER = 1;
-    private static final int JOIN_GROUP_MEMBER_USER = 2;
-    private static final int JOIN_GROUP_MEMBER_USER_EXPENSE = 3;
-    private static final int JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER = 4;
-    private static final boolean ADD_BALANCE = true;
-    private static final boolean NO_BALANCE = false;
 
     protected static final String PROVIDER_AUTHORITY = TablasContract.AUTHORITY;
     //private static final int USER_ID = 1;
@@ -96,11 +88,7 @@ public class TablasProvider extends ContentProvider{
         return true;
     }
 
-    public Cursor query(Uri uri,
-        String[] projection,
-        String selection,
-        String[] selectionArgs,
-        String sortOrder){
+    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder){
 
         Cursor cursorResult = null;
 
@@ -108,9 +96,9 @@ public class TablasProvider extends ContentProvider{
         StringBuffer newSelection = (selection == null)? new StringBuffer() : new StringBuffer(selection);
         ArrayList<String> newSelectArgs = (selectionArgs == null)? new ArrayList<String>() : new ArrayList<String>(Arrays.asList(selectionArgs));
         ArrayList<String> newProjection = (projection == null)? new ArrayList<String>() : new ArrayList<String>(Arrays.asList(projection));
-        ArrayList<Metric> metrics = new ArrayList<Metric>();
-        Metric metric = null;
         String sqlQuery = null;
+        String[] defaultProjection = null;
+        CompositeTable compositeTable;
         SQLiteDatabase dbConnection = mDBHelper.getReadableDatabase();
 
         switch(sURIMatcher.match(uri)){
@@ -120,21 +108,16 @@ public class TablasProvider extends ContentProvider{
             //    break;
 
             case USER_GROUPS: //This also adds a balance from the perspective of a user.
-                //CompositeTable testTable = TablasContract.Compound.GroupBalance.getInstance();
-                appendToProjection(TablasContract.Compound.GroupBalance.GROUP_TABLE.getColumns(), newProjection);
-                appendToFilter(newSelection, newSelectArgs, TablasContract.Compound.GroupBalance.MEMBER_TABLE.getColumn(TablasContract.Member.USER_ID), uri.getPathSegments().get(2)); // get the user ID from the path.
+                compositeTable = TablasContract.Compound.GroupBalance.getInstance();
 
-                //cursorResult = mDBHelper.getReadableDatabase().rawQuery(selectEntity(TablasContract.Group.getInstance().getTableName(), TablasContract.Group.getInstance().getColumnNames(), projection, true, JOIN_GROUP_MEMBER_USER_EXPENSE_PAYER, selection, sortOrder, userId, null), selectionArgs);
-                metric = TablasContract.getBalanceMetric();
-                metric.setColumn(TablasContract.Group.getInstance().getColumn(TablasContract.Group.USER_BALANCE));
-                metrics.add(metric);
+                defaultProjection = new String[] { TablasContract.Compound.GroupBalance.GROUP_ID, TablasContract.Compound.GroupBalance.GROUP_CREATED_ON,
+                        TablasContract.Compound.GroupBalance.GROUP_NAME, TablasContract.Compound.GroupBalance.GROUP_PICTURE,
+                        TablasContract.Compound.GroupBalance.USER_BALANCE };
+                newProjection.addAll(Arrays.asList(defaultProjection));
 
-                sqlQuery = select(TablasContract.Compound.GroupBalance.getInstance(), metrics,
-                        newProjection.toArray(new String[]{}), newSelection.toString(), sortOrder, false);
-                //Log.d(TAG, sqlQuery);
-                /*for(String filterVal : newSelectArgs){
-                    Log.d(TAG, "Filter val: " + filterVal);
-                }*/
+                appendToFilter(newSelection, newSelectArgs, compositeTable.getColumn(TablasContract.Compound.GroupBalance.MEMBER_USER_ID), uri.getPathSegments().get(2)); // get the user ID from the path.
+                sqlQuery = select(compositeTable, newProjection.toArray(new String[]{}), newSelection.toString(), sortOrder, false);
+
                 cursorResult = dbConnection.rawQuery(sqlQuery, newSelectArgs.toArray(new String[]{}));
                 break;
 
@@ -159,31 +142,36 @@ public class TablasProvider extends ContentProvider{
                 break;
 
             case USER_GROUP_EXPENSES:
-                appendToProjection(TablasContract.Compound.ExpenseBalance.EXPENSE_TABLE.getColumns(), newProjection);
-                appendToFilter(newSelection, newSelectArgs,
-                        TablasContract.Compound.ExpenseBalance.MEMBER_TABLE.getColumn(TablasContract.Member.USER_ID),
-                        uri.getPathSegments().get(2)); // get the user ID from the path.
-                appendToFilter(newSelection, newSelectArgs,
-                        TablasContract.Compound.ExpenseBalance.EXPENSE_TABLE.getColumn(TablasContract.Expense.GROUP_ID),
-                        uri.getPathSegments().get(4)); // // get the group ID from the path.
-                metric = TablasContract.getBalanceMetric();
-                metric.setColumn(TablasContract.Compound.ExpenseBalance.EXPENSE_TABLE.getColumn(TablasContract.Expense.USER_BALANCE));
-                metrics.add(metric);
-                sqlQuery = select(TablasContract.Compound.ExpenseBalance.getInstance(), metrics,
-                        newProjection.toArray(new String[]{}), newSelection.toString(), sortOrder, false);
+                compositeTable = TablasContract.Compound.ExpenseBalance.getInstance();
+
+                defaultProjection = new String[]{ TablasContract.Compound.ExpenseBalance.EXPENSE_ID, TablasContract.Compound.ExpenseBalance.EXPENSE_AMOUNT,
+                        TablasContract.Compound.ExpenseBalance.EXPENSE_CATEGORY_ID, TablasContract.Compound.ExpenseBalance.EXPENSE_CREATED_ON,
+                        TablasContract.Compound.ExpenseBalance.EXPENSE_CURRENCY, TablasContract.Compound.ExpenseBalance.EXPENSE_EXCHANGE_RATE,
+                        TablasContract.Compound.ExpenseBalance.EXPENSE_GROUP_EXPENSE_ID, TablasContract.Compound.ExpenseBalance.EXPENSE_IS_PAYMENT,
+                        TablasContract.Compound.ExpenseBalance.EXPENSE_LATITUDE, TablasContract.Compound.ExpenseBalance.EXPENSE_LONGITUDE,
+                        TablasContract.Compound.ExpenseBalance.EXPENSE_MESSAGE, TablasContract.Compound.ExpenseBalance.EXPENSE_OFFSET,
+                        TablasContract.Compound.ExpenseBalance.EXPENSE_PERIODICITY, TablasContract.Compound.ExpenseBalance.EXPENSE_GROUP_ID,
+                        TablasContract.Compound.ExpenseBalance.USER_BALANCE };
+                newProjection.addAll(Arrays.asList(defaultProjection));
+
+                appendToFilter(newSelection, newSelectArgs, compositeTable.getColumn(TablasContract.Compound.ExpenseBalance.MEMBER_USER_ID), uri.getPathSegments().get(2)); // get the user ID from the path.
+                appendToFilter(newSelection, newSelectArgs, compositeTable.getColumn(TablasContract.Compound.ExpenseBalance.EXPENSE_GROUP_ID), uri.getPathSegments().get(4)); // // get the group ID from the path.
+                sqlQuery = select(TablasContract.Compound.ExpenseBalance.getInstance(), newProjection.toArray(new String[]{}), newSelection.toString(), sortOrder, false);
                 //Log.d(TAG, sqlQuery);
                 cursorResult = dbConnection.rawQuery(sqlQuery, newSelectArgs.toArray(new String[]{}));
                 break;
 
             case EXPENSE_USERS: //returns entities for both Payer and Member (so both can be read throught their respective entities
-                appendToProjection(TablasContract.Compound.ExpenseBalance.MEMBER_TABLE.getColumns(), newProjection);
-                //appendToProjection(TablasContract.ExpenseBalance.PAYER_TABLE.getColumns(), newProjection);
-                appendToFilter(newSelection, newSelectArgs,
-                        TablasContract.Compound.ExpenseBalance.PAYER_TABLE.getColumn(TablasContract.Payer.EXPENSE_ID),
-                        uri.getPathSegments().get(1)); //get the expense ID
-                sqlQuery = select(TablasContract.Compound.ExpenseBalance.getInstance(), null,
-                        newProjection.toArray(new String[]{}), newSelection.toString(), null, true);
+                compositeTable = TablasContract.Compound.ExpenseBalance.getInstance();
 
+                defaultProjection = new String[] { TablasContract.Compound.ExpenseBalance.MEMBER_ID, TablasContract.Compound.ExpenseBalance.MEMBER_GROUP_ID,
+                        TablasContract.Compound.ExpenseBalance.MEMBER_USER_ID, TablasContract.Compound.ExpenseBalance.MEMBER_IS_ADMIN,
+                        TablasContract.Compound.ExpenseBalance.MEMBER_LEFT_GROUP};
+                newProjection.addAll(Arrays.asList(defaultProjection));
+
+                appendToFilter(newSelection, newSelectArgs, compositeTable.getColumn(TablasContract.Compound.ExpenseBalance.PAYER_EXPENSE_ID), uri.getPathSegments().get(1)); //get the expense ID
+                sqlQuery = select(TablasContract.Compound.ExpenseBalance.getInstance(), newProjection.toArray(new String[]{}), newSelection.toString(), null, true);
+                //Log.d(TAG, sqlQuery);
                 cursorResult = dbConnection.rawQuery(sqlQuery, newSelectArgs.toArray(new String[]{}));
                 break;
 
@@ -193,6 +181,7 @@ public class TablasProvider extends ContentProvider{
 
         return cursorResult;
     }
+
 
 
 
@@ -280,29 +269,13 @@ public class TablasProvider extends ContentProvider{
     }
 
 
-    private String select(CompositeTable entity, ArrayList<Metric> metrics,
-                          String[] projection, String selection, String sortOrder, boolean distict){
+    private String select(CompositeTable entity, String[] projection, String selection, String sortOrder, boolean distict){
 
-        StringBuffer columns = getProjectionSQL(entity, projection);
-        StringBuffer metricCols = null;
-        HashSet<Table> metricTables = null;
+        StringBuffer projectionStrBuffer = new StringBuffer();
+        StringBuffer groupByStrBuffer = new StringBuffer();
+        getProjectionGroupBySQL(entity, projection, projectionStrBuffer, groupByStrBuffer);
 
-        //Get set of tables needed for metric calculation, and form the metric expressions
-        if(metrics != null) {
-            metricCols = new StringBuffer();
-            metricTables = new HashSet<Table>();
-            Iterator<Metric> it = metrics.iterator();
-            while (it.hasNext()) {
-                Metric m = it.next();
-                metricTables.addAll(m.getDependentEntities());
-                metricCols.append(m.getColumnDefinition());
-                if (it.hasNext()) {
-                    metricCols.append(", ");
-                }
-            }
-        }
-
-        StringBuffer from = getJoinTableSQL(entity, metricTables);
+        StringBuffer from = getJoinTableSQL(entity);
 
         //Build the final query
         StringBuffer query = new StringBuffer();
@@ -310,18 +283,14 @@ public class TablasProvider extends ContentProvider{
         if(distict) {
             query.append("distinct ");
         }
-
-        query.append(columns);
-        if(metricCols != null) {
-            query.append(", ").append(metricCols);
-        }
+        query.append(projectionStrBuffer);
         query.append(" from ").append(from);
 
         if(selection != null){
             query.append(" where ").append(selection);
         }
-        if(metrics != null && metrics.size() > 0){
-            query.append(" group by ").append(columns);
+        if(groupByStrBuffer.length() > 0){
+            query.append(" group by ").append(groupByStrBuffer);
         }
         if(sortOrder != null){
             query.append(" order by ").append(sortOrder);
@@ -348,7 +317,7 @@ public class TablasProvider extends ContentProvider{
 
     private void appendToProjection(Collection<Column> columns, ArrayList<String> originalProjection){
         for(Column c : columns){
-            if(c.persisted){
+            if(!c.metric){
                 originalProjection.add(c.getFullName());
             }
         }
@@ -356,49 +325,83 @@ public class TablasProvider extends ContentProvider{
 
 
     /**
-     * Return a StringBuffer with columns to include in a select statement. If the projection[] array is empty,
-     * then return the full set of columns present in the entity. Else, just return the columns in the
-     * projection[]. The columns are identified with their full name, in the form of "table.column".
-     * @param entity
+     * Return the columns in the projection[]. The columns are identified with their full name, in the form of "table.column".
+     * @param table
      * @param projection
-     * @return
+     * @param select
+     * @param groupBy
      */
-    private StringBuffer getProjectionSQL(CompositeTable entity, String[] projection){
-        StringBuffer select = new StringBuffer();
-        if(projection == null){
-            Iterator<Column> it = entity.getColumns().iterator();
-            while(it.hasNext()){
-                Column col = it.next();
-                if(col.persisted) {
-                    select.append(col.getFullName());
-                    if(it.hasNext()){
-                        select.append(", ");
-                    }
-                }
+    private void getProjectionGroupBySQL(CompositeTable table, String[] projection, StringBuffer select, StringBuffer groupBy){
 
-            }
-        }else{
-            int maxIndex = projection.length - 1;
-            for(int i = 0; i < projection.length; i++){
-                select.append(projection[i]);
-                if(i < maxIndex) {
-                    select.append(", ");
-                }
-            }
+        boolean selectOneAdded = false;
+        boolean groupByOneAdded = false;
+
+        Iterator<Column> it = (projection == null)? table.getColumns().iterator() : null;
+        int index = 0;
+
+        while((it != null && it.hasNext()) || (projection != null && index < projection.length)){
+            Column col = (projection == null)? it.next() : table.getColumn(projection[index]);
+
+            int selectLengthPrev = select.length();
+            int groupByLengthPrev = groupBy.length();
+
+            addToSelectGroupBy(table, col, selectOneAdded, select, groupByOneAdded, groupBy);
+
+            //Add all subsequent columns with comas before; if new length is different (greater), then next time, we need to add comma.
+            selectOneAdded = (selectOneAdded) ? true : (select.length() > selectLengthPrev);
+            groupByOneAdded = (groupByOneAdded) ? true : (groupBy.length() > groupByLengthPrev);
+
+            index++;
         }
-        return select;
     }
+
+
+    /**
+     * Auxiliary method that adds column names to the select and groupBy StringBuffers
+     * @param table composite table
+     * @param col column object
+     * @param selectAddComma indicates whether to add a comma before attaching new column to projection
+     * @param select stringbuffer containing projection columns
+     * @param groupByAddComma indiciates whether to add a comma before attaching new column to groupBy
+     * @param groupBy stringbuffer containing groupBy columns
+     */
+    private void addToSelectGroupBy(CompositeTable table, Column col,  boolean selectAddComma, StringBuffer select, boolean groupByAddComma, StringBuffer groupBy){
+        String selectCol = null;
+        String groupByCol = null;
+
+        if(!col.metric) {
+            selectCol = col.getFullName();
+            groupByCol = col.getFullName();
+        }else{  //metric column
+            Metric metric = table.getMetric(col.name);
+            selectCol = metric.getColumnDefinition();
+            groupByCol = (metric.isAggregation())? null : metric.getColumnName(); //metric may not be an aggregation metric; it may be just a scalar operation based on one or more columns
+        }
+
+        select.append((selectAddComma)? ", " : "");
+        select.append(selectCol);
+        if(groupByCol != null) {
+            groupBy.append((groupByAddComma) ? ", " : "");
+            groupBy.append(groupByCol);
+        }
+    }
+
 
     /**
      * They joining of multiple tables based on their foregin keys, according to the TablasContract tables's definitions.
      * @param compositeEntity
      * @return
      */
-    private StringBuffer getJoinTableSQL(CompositeTable compositeEntity, HashSet<Table> additionalTables){
-        TreeNode joinTree = compositeEntity.getTableJoinTree(additionalTables);
+    private StringBuffer getJoinTableSQL(CompositeTable compositeEntity){
+        TreeNode joinTree = compositeEntity.getTableJoinTree(null);
         return traverseTree(joinTree);
     }
 
+    /**
+     * Traverses the join tree node to build the "from" clause of the select.
+     * @param treeNode the top/root node of the code
+     * @return
+     */
     private StringBuffer traverseTree(TreeNode treeNode){
         StringBuffer sb = new StringBuffer();
         if(treeNode.getLeft() == null && treeNode.getRight() == null && treeNode.getTableName() != null){

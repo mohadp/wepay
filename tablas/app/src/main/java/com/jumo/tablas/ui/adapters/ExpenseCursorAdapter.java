@@ -7,6 +7,8 @@ import android.os.HandlerThread;
 import com.jumo.tablas.provider.TablasContract;
 
 import android.content.Context;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.*;
 import com.jumo.tablas.model.*;
 import android.widget.*;
@@ -22,78 +24,76 @@ import com.jumo.tablas.ui.loaders.ExpenseUserThreadHandler;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-public class ExpenseCursorAdapter extends DrawableCursorAdapter {
+public class ExpenseCursorAdapter extends RecyclerView.Adapter<ExpenseCursorAdapter.ExpenseViewHolder> {
 	private static final String TAG = "ExpenseCursorAdapter";
 	
 	//To get balances on a per-user basis for a particular group
-	private String mUserName;
-	private long groupId;
-	private WeakReference<CacheManager> mCacheContainerReference;
-    private WeakReference<HandlerThread> mHandlerReference;
-
+    protected WeakReference<Context> mContextReference;
+    private WeakReference<CacheManager> mCacheContainerReference;
+    private WeakReference<HandlerThread> mHandlerReference; //Initially, this is to load payers; we will change this and handle all here, by asynchcronously loading images for contacts.
+    private EntityCursor mCursor;
 
     public ExpenseCursorAdapter(Context context, EntityCursor cursor, CacheManager cacheManager, HandlerThread handler) {
-        super(context, cursor, cacheManager);
+        super();
+        mContextReference = new WeakReference<Context>(context);
         mHandlerReference = new WeakReference<HandlerThread>(handler);
-    }
-
-    //Create view for each item
-    @Override
-    public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        // use a layout inflater to get a row view
-        LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-		View view = inflater.inflate(R.layout.list_item_message, parent, false);
-
- 		return view;
-    }
-
-    @Override
-    public View getView (int position, View convertView, ViewGroup parent){
-        return super.getView(position, convertView, parent);
+        mCacheContainerReference = new WeakReference<CacheManager>(cacheManager);
+        mCursor = cursor;
     }
 
 
-    //fill the view with data from the cursor.
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
-        ViewHolder holder = (ViewHolder)view.getTag();
-        if(holder == null) {
-            holder =  new ViewHolder();
-            holder.desc = (TextView) view.findViewById(R.id.list_message_desc);
-            holder.balance = (TextView) view.findViewById(R.id.list_message_balance);
-            holder.total = (TextView) view.findViewById(R.id.list_message_total);
-            holder.date = (TextView) view.findViewById(R.id.list_message_date);
-            holder.location = (TextView) view.findViewById(R.id.list_message_location);
-            holder.image = (ImageView) view.findViewById(R.id.list_message_image);
-            holder.category = (ImageView) view.findViewById(R.id.list_message_category);
-            holder.payerImages = (ImageViewRow) view.findViewById(R.id.list_message_payers_images);
-        }
+    public ExpenseViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        Context context = parent.getContext();
+        LayoutInflater inflater = LayoutInflater.from(context);
 
-        EntityCursor expenseCursor = (EntityCursor)getCursor();
-        if(expenseCursor == null)
+        View view = inflater.inflate(R.layout.list_item_message, parent, false);
+        ExpenseViewHolder viewHolder = new ExpenseViewHolder(view);
+
+        return viewHolder;
+    }
+
+    @Override
+    public void onBindViewHolder(ExpenseViewHolder holder, int position) {
+
+        if(mCursor == null || mCursor.isClosed())
             return;
 
+        mCursor.moveToPosition(position);
+
         // get the run for the current row
-        final Expense expense = new Expense(expenseCursor.getEntity(TablasContract.Expense.getInstance()));
+        final Entity entity = mCursor.getEntity(TablasContract.Compound.ExpenseBalance.getInstance());
+        final Expense expense = new Expense(entity);
         //Log.d(TAG, "Position " + getCursor().getPosition() + ": " + expense.toString());
 
-
         // set up the start date text view
-        loadBitmap(new BitmapLoader.ImageRetrieval(BitmapLoader.ImageRetrieval.RES_ID, R.drawable.moha), holder.image); //loaded in separate thread if not present in cache
-        loadBitmap(new BitmapLoader.ImageRetrieval(BitmapLoader.ImageRetrieval.RES_ID, R.drawable.ic_launcher), holder.category);  //TODO: will load image of category once I have the category images
-        loadPayersForExpense(expense, holder.payerImages);
+        BitmapLoader.asyncSetBitmapInImageView(
+                new BitmapLoader.ImageRetrieval(BitmapLoader.ImageRetrieval.RES_ID, R.drawable.moha),
+                holder.image, mContextReference.get(), mCacheContainerReference.get()); //loaded in separate thread if not present in cache
+
+        BitmapLoader.asyncSetBitmapInImageView( //TODO: will load image of category once I have the category images
+                new BitmapLoader.ImageRetrieval(BitmapLoader.ImageRetrieval.RES_ID, R.drawable.ic_launcher),
+                holder.category, mContextReference.get(), mCacheContainerReference.get());
+
+        loadPayersForExpense(expense, holder.payerImages); //TODO: replace this with BitmapLoader loading of class expenses (since we can use submit URI
 
 
-		holder.desc.setText(expense.getMessage());
-		holder.balance.setText(String.format("%1$.2f", expense.getUserBalance()));
-		holder.total.setText(String.format("%1$.2f", expense.getAmount()));
-		holder.date.setText(expense.getCreatedOn().toLocaleString());
-		holder.location.setText("Washington, DC, USA");
+        holder.desc.setText(expense.getMessage());
+        holder.balance.setText(String.format("%1$.2f", entity.getDouble(TablasContract.Compound.ExpenseBalance.USER_BALANCE)));
+        holder.total.setText(String.format("%1$.2f", expense.getAmount()));
+        holder.date.setText(expense.getCreatedOn().toLocaleString());
+        holder.location.setText("Washington, DC, USA");
 
-        //sets the view holder object
-        view.setTag(holder);
     }
+
+    @Override
+    public int getItemCount() {
+        if(mCursor == null || mCursor.isClosed()){
+            return 0;
+        }
+        return mCursor.getCount();
+    }
+
 
     private void loadPayersForExpense(Expense expense, ImageViewRow payerImages){
         //Let the loading of the images for the payers be done on a separate thread only if they have not yet been loaded.
@@ -144,15 +144,56 @@ public class ExpenseCursorAdapter extends DrawableCursorAdapter {
         }
     }
 
-    private class ViewHolder{
-        ImageView image;
-        ImageView category;
-        ImageViewRow payerImages;
-        TextView desc;
-        TextView balance;
-        TextView total;
-        TextView date;
-        TextView location;
+    public Cursor getCursor() {
+        return mCursor;
+    }
+
+    /**
+     * Modifies the cursor for this adapter. It also notifies the dataset that the whole dataset has changed (this calls
+     * notifyDataSetChanged().
+     * @param cursor
+     * @return returns the old cursor.
+     */
+    public Cursor swapCursor(EntityCursor cursor){
+        Cursor oldCursor = mCursor;
+        mCursor = cursor;
+        this.notifyDataSetChanged();
+        return oldCursor;
+    }
+
+    /**
+     * Does the same as swapCursor, except for the fact that the previous cursor is closed after swaping cursors.
+     * @param cursor
+     */
+    public void changeCursor(EntityCursor cursor){
+        Cursor oldCursor = swapCursor(cursor);
+        if(oldCursor != null && !oldCursor.isClosed()) {
+            oldCursor.close();
+        }
+    }
+
+    public static class ExpenseViewHolder extends RecyclerView.ViewHolder{
+        protected ImageView image;
+        protected ImageView category;
+        protected ImageViewRow payerImages;
+        protected TextView desc;
+        protected TextView balance;
+        protected TextView total;
+        protected TextView date;
+        protected TextView location;
+        //Todo: here we should add a "listener" member that will contain the callback defined in the listener.
+
+        public ExpenseViewHolder(View itemView){
+            super(itemView);
+            this.desc = (TextView) itemView.findViewById(R.id.list_message_desc);
+            this.balance = (TextView) itemView.findViewById(R.id.list_message_balance);
+            this.total = (TextView) itemView.findViewById(R.id.list_message_total);
+            this.date = (TextView) itemView.findViewById(R.id.list_message_date);
+            this.location = (TextView) itemView.findViewById(R.id.list_message_location);
+            this.image = (ImageView) itemView.findViewById(R.id.list_message_image);
+            this.category = (ImageView) itemView.findViewById(R.id.list_message_category);
+            this.payerImages = (ImageViewRow) itemView.findViewById(R.id.list_message_payers_images);
+        }
 
 
         public String toString(){

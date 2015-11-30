@@ -119,7 +119,7 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
         View view = inflater.inflate(R.layout.fragment_group, container, false);
 
         // Set the adapter
-        mListView = (ListView) view.findViewById(android.R.id.list);
+        mListView = (ListView) view.findViewById(R.id.list_groups);
         mListView.setAdapter(new GroupCursorAdapter(getActivity(), null, this));
         mListView.setOnItemClickListener(new GroupListListener());
         mListView.setEmptyView(inflater.inflate(R.layout.list_empty, mListView, false));

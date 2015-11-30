@@ -5,36 +5,42 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * Abstract class to represent eventually singleton database entities/mTables in a database (singleton part implemented by child classes). Contains set of mColumns, their spec and their foreign keys.
  */
 public abstract class Table {
-    protected LinkedHashMap<String, Column> mColumns;
-    protected LinkedHashMap<String, LinkedHashSet<ColumnJoin>> mForeignKeys;
-    protected String mTableName;
+    private LinkedHashMap<String, Column> mColumns;
+    private LinkedHashMap<String, LinkedHashSet<ColumnJoin>> mForeignKeys;
+    private String mTableName;
+
+    /**
+     * Generic column that all tables have as ID column.
+     */
+    public static final String _ID = "_id";
 
 
     protected Table(){
         mColumns = new LinkedHashMap<String, Column>();
         mForeignKeys = new LinkedHashMap<String, LinkedHashSet<ColumnJoin>>();
-        defineColumnsAndForeignKeys();
+        defineTable();
     }
 
     protected Table(String table){
         mColumns = new LinkedHashMap<String, Column>();
         mForeignKeys = new LinkedHashMap<String, LinkedHashSet<ColumnJoin>>();
         mTableName = table;
-        defineColumnsAndForeignKeys();
+        defineTable();
     }
 
     /**
-     * Add information on mColumns and foreign keys. Call first Table's constructor, and then
-     * add column and foreign key definitions.
+     * Add information on mColumns and foreign keys, or any other necessary settings for the table. The table constructor will
+     * call this method to properly construct the table.
      * @return
      */
-    protected abstract void defineColumnsAndForeignKeys();
+    protected abstract void defineTable();
 
     public String getTableName(){
         return mTableName;
@@ -82,4 +88,21 @@ public abstract class Table {
     public Set<String> getForeignTables(){
         return (mForeignKeys == null)? null : mForeignKeys.keySet();
     }
+
+    public LinkedHashMap<String, Column> getColumnMap() {
+        return mColumns;
+    }
+
+    public void addColumn(String colId, Column col){
+        mColumns.put(colId, col);
+    }
+
+    public void addColumns(Map<String, Column> colMaps){
+        mColumns.putAll(colMaps);
+    }
+
+    public void addForeignTable(String foreignTableName, LinkedHashSet<ColumnJoin> joinDefinition){
+        mForeignKeys.put(foreignTableName, joinDefinition);
+    }
+
 }
