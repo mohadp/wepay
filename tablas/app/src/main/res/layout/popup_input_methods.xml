@@ -1,17 +1,50 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<TabHost xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/material_blue_grey_800">
+    android:layout_height="match_parent">
 
-    <TextView android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="@string/popup_expense_details" />
+        <TabWidget
+            android:id="@android:id/tabs"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
-    <EditText
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:background="@android:color/white"/>
+        <FrameLayout
+            android:id="@android:id/tabcontent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-</LinearLayout>
+            <FrameLayout
+                android:id="@+id/tab_currencies"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/tab_paid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <RecyclerView
+                    android:id="@+id/list_paid"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/tab_payers"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <RecyclerView
+                    android:id="@+id/list_payers"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+
+            </FrameLayout>
+
+        </FrameLayout>
+
+</TabHost>
