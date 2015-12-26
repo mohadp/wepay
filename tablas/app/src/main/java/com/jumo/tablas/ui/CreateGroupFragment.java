@@ -86,7 +86,6 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
             mAddedList.remove(mAddedListById.get(phone));
             mAddedListById.remove(phone);
             mAddedAdapter.notifyDataSetChanged();
-
         }
     };
 

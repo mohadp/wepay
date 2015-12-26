@@ -5,6 +5,7 @@ import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
@@ -28,8 +29,10 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.TabHost;
 
 import com.jumo.tablas.R;
+import com.jumo.tablas.common.TablasManager;
 import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.EntityCursor;
 import com.jumo.tablas.ui.adapters.ExpenseCursorAdapter;
@@ -48,18 +51,17 @@ import com.jumo.tablas.ui.views.LinearLayoutResize;
  * interface.
  */
 public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, OnKeyEventListener, CacheManager<Object, Bitmap> {
-
     private static final String TAG = "ExpenseFragment";
-
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     public static final String EXTRA_GROUP_ID = "com.jumo.wepay.group_id";
     public static final String EXTRA_USER_ID = "com.jumo.wepay.user_id";
-
     //Loaders
     public static final int LOADER_EXPENSES = 0;
     public static final int LOADER_MEMBERS = 1;
-
-    //private OnFragmentInteractionListener mListener;
+    //Tabhost's tabs
+    public static final String TAB_CURR = "currency";
+    public static final String TAB_PAID = "paid";
+    public static final String TAB_PAYERS = "payers";
 
     /**
      * The fragment's ListView/GridView.
@@ -69,15 +71,11 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
     private ImageButton mCurrencyButton;
     private EditText mConversationEditText;
     private EditText mAmountEditText;
-
     private FrameLayout mCustomKeyboardSpacer;
-    private View mPopupView;
     private int mMaxConversationHeight; // height for whenever there is no system keyboard
-
     //Other control variables
     private float mCustomKeyboardHeight;
     private boolean mShowCustomKeyboard = false;
-
     //Fragment's attributes
     private String mUserName;
     private long mGroupId;
@@ -144,6 +142,13 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
         mCurrencyButton = (ImageButton) view.findViewById(R.id.button_currency);
         mConversationEditText = (EditText) view.findViewById(R.id.edit_message);
         mAmountEditText = (EditText) view.findViewById(R.id.edit_amount);
+
+        Resources res = getActivity().getResources();
+        TabHost mTabHost = (TabHost)view.findViewById(android.R.id.tabhost);
+        mTabHost.setup();
+        mTabHost.addTab(mTabHost.newTabSpec(TAB_PAYERS).setIndicator(res.getString(R.string.text_payer_tab)).setContent(R.id.tab_payers));
+        mTabHost.addTab(mTabHost.newTabSpec(TAB_PAID).setIndicator(res.getString(R.string.text_paid_tab)).setContent(R.id.tab_paid));
+        mTabHost.addTab(mTabHost.newTabSpec(TAB_CURR).setIndicator(res.getString(R.string.text_curr_tab)).setContent(R.id.tab_currencies));
 
         prepareCustomKeyboard();
         return view;
@@ -245,7 +250,6 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
         return false;
     }
 
-
     private boolean isCustomKeyboardShowing(){
         return (mCustomKeyboardSpacer.getVisibility() == View.VISIBLE);
     }
@@ -257,7 +261,6 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
         }*/
         mCustomKeyboardSpacer.setVisibility(View.GONE);
     }
-
 
     @Override
     public void onDestroyView(){
@@ -298,12 +301,8 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
         Log.d(TAG, "onCreateLoader");
 
         if(id == LOADER_EXPENSES){
-            Uri uri = TablasContract.BASE_URI.buildUpon().appendPath(TablasContract.Expense.getInstance().getTableName())
-                    .appendPath("user").appendPath(mUserName).appendPath("group").appendPath(Long.toString(mGroupId))
-                    .build();
+            return TablasManager.getInstance(getActivity()).getExpensesWithBalanceLoader(mUserName, mGroupId);
 
-            StringBuilder sortBy = new StringBuilder(TablasContract.Expense.EXPENSE_CREATED_ON).append(" ASC");
-            return new CursorLoader(getActivity(), uri, null, null, null, sortBy.toString());
         }else if(id == LOADER_MEMBERS){
             return null;
         }
@@ -357,21 +356,5 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
 
         return mCache.get(key);
     }
-
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     *
-    public interface OnFragmentInteractionListener {
-        //public void onFragmentInteraction(String id);
-        public void onBackButtonPress();
-    }*/
 
 }

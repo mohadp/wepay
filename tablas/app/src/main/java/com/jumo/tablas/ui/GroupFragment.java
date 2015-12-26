@@ -1,18 +1,12 @@
 package com.jumo.tablas.ui;
 
-import android.app.Activity;
 import android.app.LoaderManager;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.provider.ContactsContract;
 import android.util.Log;
 import android.util.LruCache;
 import android.view.LayoutInflater;
@@ -24,14 +18,12 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import com.jumo.tablas.R;
-import com.jumo.tablas.account.AccountService;
 import com.jumo.tablas.common.TablasManager;
 import com.jumo.tablas.ui.adapters.GroupCursorAdapter;
 
 import android.widget.*;
 
 import com.jumo.tablas.model.Group;
-import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.*;
 import com.jumo.tablas.ui.util.CacheManager;
 
@@ -97,7 +89,7 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //expenseManager = TablasManager.newInstance(this.getActivity());
+        //expenseManager = TablasManager.getInstance(this.getActivity());
         setHasOptionsMenu(true);
         setRetainInstance(true);
 
@@ -115,7 +107,6 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
         View view = inflater.inflate(R.layout.fragment_group, container, false);
 
         // Set the adapter
@@ -124,96 +115,7 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
         mListView.setOnItemClickListener(new GroupListListener());
         mListView.setEmptyView(inflater.inflate(R.layout.list_empty, mListView, false));
 
-        //testContactProviderQuery(AccountService.ACCOUNT_TYPE);
-        //testRawContactSearch("Ju");
-
         return view;
-    }
-
-
-    private void testRawContactSearch(String test){
-        Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, ContactsContract.Contacts.Entity.CONTENT_DIRECTORY);  //ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
-        Context context = getActivity();
-
-        String[] projection = new String[]{ContactsContract.RawContacts._ID //ContactsContract.CommonDataKinds.Phone.RAW_CONTACT_ID
-                , ContactsContract.RawContacts.DISPLAY_NAME_PRIMARY //ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
-                , ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER
-                , ContactsContract.CommonDataKinds.Phone.LABEL};
-                //, ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI};
-
-        StringBuilder filter = (new StringBuilder())
-                .append(ContactsContract.RawContacts.Entity.MIMETYPE).append(" = ? AND ")
-                .append(ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET).append(" = ?");
-
-        String[] filterVals = new String[]{ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE, AccountService.ACCOUNT_TYPE};
-        String sortBy = ContactsContract.RawContacts.DISPLAY_NAME_PRIMARY + " ASC";
-
-        Cursor c = context.getContentResolver().query(uri, projection, filter.toString(), filterVals, sortBy);
-
-        logCursorContent(c);
-        c.close();
-    }
-
-    /**
-     * To test querying contacts
-     */
-    private void testContactProviderQuery(String accountType){
-        Uri contactsUri = ContactsContract.RawContacts.CONTENT_URI;
-
-        ContentResolver resolver = getActivity().getContentResolver();
-
-        String[] projection = new String[]{
-                ContactsContract.RawContacts.CONTACT_ID,
-                ContactsContract.RawContacts._ID,
-                ContactsContract.RawContacts.ACCOUNT_TYPE,
-                ContactsContract.RawContacts.ACCOUNT_NAME,
-                ContactsContract.RawContacts.DATA_SET,
-                ContactsContract.RawContacts.SOURCE_ID,
-                ContactsContract.RawContacts.DISPLAY_NAME_PRIMARY
-        };
-
-        String filter = ContactsContract.RawContacts.ACCOUNT_TYPE + " like ? "; //OR " + ContactsContract.RawContacts.ACCOUNT_NAME + " like ?";
-        String[] filterVals = new String[]{ accountType }; //AccountService.ACCOUNT_TYPE};
-
-        Cursor cursor = resolver.query(contactsUri, projection, filter, filterVals, null);
-        if(cursor != null) cursor.moveToFirst();
-
-        Log.d(TAG, "Queried Contacts:");
-        while(cursor != null && !cursor.isAfterLast()){
-            long rawContactId = cursor.getLong(1);
-            StringBuilder sb = new StringBuilder();
-            sb.append("Contact [").append(rawContactId).append(", ").append(cursor.getString(3)).append(", ").append(cursor.getString(2)).append(", ").append(cursor.getString(6)).append("]:");
-            Log.d(TAG, sb.toString());
-
-            ContentResolver resolverDetail = getActivity().getContentResolver();
-            Uri contactDetailUri = ContactsContract.Data.CONTENT_URI;
-            //ContactsContract.Data.CONTENT_URI;
-            //Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, ContactsContract.Contacts.Entity.CONTENT_DIRECTORY);
-
-            //Log.d(TAG, contactDetailUri.toString());
-
-            projection = new String[]{
-                    ContactsContract.CommonDataKinds.Phone.MIMETYPE,
-                    ContactsContract.CommonDataKinds.Phone.NUMBER,
-                    ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER,
-                    ContactsContract.Data.ACCOUNT_TYPE_AND_DATA_SET
-            };
-
-            //filter = ContactsContract.Contacts.Entity.RAW_CONTACT_ID + " = ?";
-            //filterVals = new String[]{ String.valueOf(rawContactId) };
-
-            filter = /*"(" + ContactsContract.Contacts.Entity.MIMETYPE + " = ?  " + /*AND " + ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER + " IS NOT NULL) */ /*" OR " + ContactsContract.Contacts.Entity.MIMETYPE  + " = ?) AND " + ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET + " = ? AND " + */ContactsContract.CommonDataKinds.Phone.RAW_CONTACT_ID + " = ?";
-            filterVals = new String[]{ /*ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE,  AccountService.ACCOUNT_TYPE, */String.valueOf(rawContactId)};
-
-            String sortBy = ContactsContract.Contacts.Entity.RAW_CONTACT_ID + " ASC"; //, " + ContactsContract.Contacts.Entity.DISPLAY_NAME + " ASC ";
-
-            //Retrieving all Data elements for every contact.
-            Cursor cursorDetail = resolverDetail.query(contactDetailUri, projection, filter, filterVals, null);
-            cursorDetail.moveToFirst();
-
-            logCursorContent(cursorDetail);
-            cursor.moveToNext();
-        }
     }
 
     private void logCursorContent(Cursor cursor){
@@ -230,7 +132,6 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
             Log.d(TAG, sbDetail.toString());
             cursor.moveToNext();
         }
-
         cursor.moveToNext();
     }
 
@@ -251,12 +152,6 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
         super.onResume();
     }
 
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-    }
-
     @Override
     public void onDetach() {
         super.onDetach();
@@ -265,15 +160,10 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
-        //no need to check for GROUPS_LOADER
-        Uri uri = TablasContract.BASE_URI.buildUpon().appendPath(TablasContract.Group.getInstance().getTableName())
-                .appendPath("user").appendPath(mUserName)
-                .build();
-
-        TablasManager.newInstance(getActivity()).createSampleData();
+        TablasManager.getInstance(getActivity()).createSampleData();
         Log.d(TAG, "Loader callback: onCreateLoad()");
 
-        return new CursorLoader(getActivity(), uri, null, null, null, null);
+        return TablasManager.getInstance(getActivity()).getGroupsWithBalanceLoader(mUserName);
     }
 
     @Override

@@ -14,21 +14,12 @@ public class Expense implements Entity {
 
 	public Expense(Entity m){
         entity = m;
-        setExchangeRate(1);
 	}
 
     public Expense(){
         entity = new ActualEntity(TablasContract.Expense.getInstance());
-        setExchangeRate(1);
     }
 
-	public double getExchangeRate(){
-		return getDouble(TablasContract.Expense.EXPENSE_EXCHANGE_RATE);
-	}
-	
-	public void setExchangeRate(double rate){
-        setField(TablasContract.Expense.EXPENSE_EXCHANGE_RATE, rate);
-	}
 
     public long getId() {
         return getLong(TablasContract.Expense._ID);
@@ -63,11 +54,11 @@ public class Expense implements Entity {
     }
 
     public String getCurrencyId() {
-        return getText(TablasContract.Expense.EXPENSE_CURRENCY);
+        return getText(TablasContract.Expense.EXPENSE_CURRENCY_ID);
     }
 
     public void setCurrencyId(String currencyId) {
-        setField(TablasContract.Expense.EXPENSE_CURRENCY, currencyId);
+        setField(TablasContract.Expense.EXPENSE_CURRENCY_ID, currencyId);
     }
 
     /*public long getLocationId() {

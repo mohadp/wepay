@@ -28,7 +28,7 @@ public class EntityCursor extends CursorWrapper {
         int colIndex = -1;
         for(Column column : table.getColumns()){
 
-            colIndex = getColumnIndex(column.name);
+            colIndex = getColumnIndex((column.alias == null)? column.name : column.alias);
 
             if(colIndex >= 0){
                 entity.setField(column.name, getColumnValue(column, colIndex));

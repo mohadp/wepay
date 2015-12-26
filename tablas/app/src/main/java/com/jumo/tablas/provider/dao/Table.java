@@ -2,7 +2,6 @@ package com.jumo.tablas.provider.dao;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -15,6 +14,8 @@ public abstract class Table {
     private LinkedHashMap<String, Column> mColumns;
     private LinkedHashMap<String, LinkedHashSet<ColumnJoin>> mForeignKeys;
     private String mTableName;
+    private String mAlias = null;
+
 
     /**
      * Generic column that all tables have as ID column.
@@ -105,4 +106,15 @@ public abstract class Table {
         mForeignKeys.put(foreignTableName, joinDefinition);
     }
 
+    public boolean isAlias() {
+        return (mAlias != null);
+    }
+
+    public String getAlias() {
+        return mAlias;
+    }
+
+    public void setAlias(String mAliasName) {
+        this.mAlias = mAliasName;
+    }
 }

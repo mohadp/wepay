@@ -11,6 +11,7 @@ import android.os.Message;
 import android.util.LruCache;
 
 import com.jumo.tablas.R;
+import com.jumo.tablas.common.TablasManager;
 import com.jumo.tablas.model.Member;
 import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.EntityCursor;
@@ -122,11 +123,7 @@ public class ExpenseUserThreadHandler extends HandlerThread {
         }
 
         private void getExpenseUserImages(String expenseId, ArrayList<String> imageIds, ArrayList<Bitmap> images){
-            Uri uri = TablasContract.BASE_URI.buildUpon().appendPath(TablasContract.Expense.getInstance().getTableName())
-                    .appendPath(expenseId).appendPath("users").build();
-            String sortOrder = TablasContract.Member.getInstance().getFullColumnName(TablasContract.Member.MEMBER_USER_ID) + " ASC";
-
-            Cursor cursor = mContextReference.get().getContentResolver().query(uri, null, null, null, sortOrder);
+            Cursor cursor = TablasManager.getInstance(mContextReference.get()).getExpenseUsers(Long.valueOf(expenseId));
             EntityCursor entityCursor = new EntityCursor(cursor);
 
             if(entityCursor == null)

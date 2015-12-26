@@ -27,7 +27,7 @@ public class Tree {
      */
     public boolean addNode(Table table){
         if(!tableNodes.keySet().contains(table)){
-            TreeNode node = new TreeNode(table.getTableName());
+            TreeNode node = new TreeNode(table);
             tableNodes.put(table, node);
             return true;
         }

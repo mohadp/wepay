@@ -74,6 +74,14 @@ public class Payer implements Entity {
         setField(TablasContract.Payer.PAYER_EXPENSE_ID, expenseId);
     }
 
+    public boolean isUserSet(){
+        return getBoolean(TablasContract.Payer.PAYER_USER_SET);
+    }
+
+    public void setUserSet(boolean userSet){
+        setField(TablasContract.Payer.PAYER_USER_SET, userSet);
+    }
+
     @Override
     public Table table(){
         return entity.table();

@@ -5,17 +5,11 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <!--FrameLayout
-        android:id="@+id/fragmentGroupList"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1"-->
-
     <android.support.v7.widget.RecyclerView
         android:id="@+id/list_messages"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1"/>
+        android:layout_weight="1" />
 
     <LinearLayout
         android:id="@+id/layout_chat_controls"
@@ -48,13 +42,6 @@
                     android:hint="@string/hint_message"
                     android:layout_weight="1" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="3dp"
-                    android:layout_marginRight="2dp"
-                    android:text="@string/text_currency_symbol"/>
-
                 <EditText
                     android:id="@+id/edit_amount"
                     android:layout_width="90dp"
@@ -64,47 +51,7 @@
 
             </LinearLayout>
 
-            <!--LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:orientation="horizontal">
-
-
-                <ImageButton
-                    android:id="@+id/button_fullEditor"
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:src="@android:drawable/ic_menu_edit" />
-
-                <ImageButton
-                    android:id="@+id/button_fullEditor"
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:src="@android:drawable/ic_menu_edit" />
-
-
-                <ImageButton
-                    android:id="@+id/button_category"
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:src="@android:drawable/ic_menu_myplaces" />
-
-                <ImageButton
-                    android:id="@+id/button_text"
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:src="@android:drawable/ic_menu_sort_alphabetically" />
-
-
-
-            </LinearLayout-->
-
         </LinearLayout>
-
-        <!--FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:background="@color/button_material_light"-->
 
         <ImageButton
             android:id="@+id/button_sendExpense"
@@ -113,10 +60,7 @@
             android:layout_gravity="center"
             android:src="@android:drawable/ic_menu_send" />
 
-        <!--/FrameLayout-->
-
     </LinearLayout>
-
 
     <FrameLayout
         android:id="@+id/inputMethod"

@@ -1,50 +1,46 @@
 <TabHost xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@android:id/tabhost"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:layout_gravity="top">
 
-        <TabWidget
-            android:id="@android:id/tabs"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+    <TabWidget
+        android:id="@android:id/tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <FrameLayout
+        android:id="@android:id/tabcontent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
         <FrameLayout
-            android:id="@android:id/tabcontent"
+            android:id="@+id/tab_paid"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
 
-            <FrameLayout
-                android:id="@+id/tab_currencies"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-
-            </FrameLayout>
-
-            <FrameLayout
-                android:id="@+id/tab_paid"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <RecyclerView
-                    android:id="@+id/list_paid"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"/>
-
-            </FrameLayout>
-
-            <FrameLayout
-                android:id="@+id/tab_payers"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <RecyclerView
-                    android:id="@+id/list_payers"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"/>
-
-            </FrameLayout>
+            <include layout="@layout/tab_paid" />
 
         </FrameLayout>
 
+        <FrameLayout
+            android:id="@+id/tab_payers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <include layout="@layout/tab_payers" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/tab_currencies"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <include layout="@layout/tab_currency" />
+
+        </FrameLayout>
+
+    </FrameLayout>
 </TabHost>

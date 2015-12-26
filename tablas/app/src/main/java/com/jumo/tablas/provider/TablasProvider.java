@@ -7,7 +7,6 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.util.Log;
 
 import com.jumo.tablas.provider.dao.Column;
 import com.jumo.tablas.provider.dao.ColumnJoin;
@@ -20,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by Moha on 7/3/15.
@@ -30,55 +30,31 @@ public class TablasProvider extends ContentProvider{
     //TODO: need to close database
 
     protected static final String PROVIDER_AUTHORITY = TablasContract.AUTHORITY;
-    //private static final int USER_ID = 1;
-    private static final int USERS = 18;
-    private static final int USER_GROUPS = 2;
-    private static final int GROUPS = 3;
-    private static final int GROUP_ID = 4;
-    //private static final int GROUP_MEMBER_USERS = 6;
-    private static final int USER_GROUP_EXPENSES = 7;
-    private static final int GROUP_EXPENSE_PAYERS = 8;
-    private static final int GROUP_PAYERS = 17;
-    private static final int MEMBER_ID = 9;
-    private static final int MEMBERS = 19;
-    private static final int MEMBER_USER = 10;
-    private static final int EXPENSE_ID = 11;
-    private static final int EXPENSES = 5;
-    private static final int EXPENSE_USERS = 21;     //Max
-    private static final int EXPENSE_PAYER_USERS = 12;
-    //private static final int EXPENSE_LOCATION = 13;
-    //private static final int EXPENSE_RECURRENCE = 14;
-    private static final int PAYERS = 20;
-    //private static final int RECURRENCE_ID = 15;
-    //private static final int LOCATION_ID = 16;
 
+    private static final int GROUPS = 1;
+    private static final int MEMBERS = 2;
+    private static final int EXPENSES = 3;
+    private static final int PAYERS = 4;
+    private static final int COUNTRY = 5;
+    private static final int CURRENCY = 6;
+    private static final int EXCHANGE_RATE = 7;
+    private static final int GROUP_BALANCE = 100;
+    private static final int EXPENSE_BALANCE = 101;
+    private static final int COUNTRY_CURRENCIES = 102;
 
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-
     static
     {
-        //sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.User.getInstance().getTableName() + "/*", USER_ID);
-        //sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.User.getInstance().getTableName(), USERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Group.getInstance().getTableName() + "/user/*", USER_GROUPS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Group.getInstance().getTableName(), GROUPS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Group.getInstance().getTableName() + "/#", GROUP_ID);
-        //sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Group.getInstance().getTableName() + "/#/users", GROUP_MEMBER_USERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Group.getInstance().getTableName() + "/#/expense/#/payers", GROUP_EXPENSE_PAYERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Group.getInstance().getTableName() + "/#/payers", GROUP_PAYERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Member.getInstance().getTableName() + "/#", MEMBER_ID);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Member.getInstance().getTableName(), MEMBERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Member.getInstance().getTableName() + "/#/users", MEMBER_USER);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Expense.getInstance().getTableName() + "/#", EXPENSE_ID);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Expense.getInstance().getTableName() + "/#/users", EXPENSE_USERS);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Expense.getInstance().getTableName() + "/user/*/group/#", USER_GROUP_EXPENSES);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Expense.getInstance().getTableName(), EXPENSES);
-        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Payer.getInstance().getTableName() + "/expense/#", EXPENSE_PAYER_USERS);
         sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Payer.getInstance().getTableName(), PAYERS);
-        //sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Location.getInstance().getTableName() + "/#", LOCATION_ID);
-        //sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Location.getInstance().getTableName() + "/expense/#", EXPENSE_LOCATION);
-        //sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Recurrence.getInstance().getTableName() + "/#", RECURRENCE_ID);
-        //sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Recurrence.getInstance().getTableName() + "/recurrence/#", EXPENSE_RECURRENCE);
-
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Country.getInstance().getTableName(), COUNTRY);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Currency.getInstance().getTableName(), CURRENCY);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.ExchangeRate.getInstance().getTableName(), EXCHANGE_RATE);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Compound.GroupBalance.getInstance().getTableName(), GROUP_BALANCE);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Compound.ExpenseBalance.getInstance().getTableName(), EXPENSE_BALANCE);
+        sURIMatcher.addURI(PROVIDER_AUTHORITY, TablasContract.Compound.CountryCurrency.getInstance().getTableName(), COUNTRY_CURRENCIES);
     }
 
     private TablasDatabaseHelper mDBHelper;
@@ -90,184 +66,73 @@ public class TablasProvider extends ContentProvider{
 
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder){
 
-        Cursor cursorResult = null;
-
-        //Additional preparation to query
-        StringBuffer newSelection = (selection == null)? new StringBuffer() : new StringBuffer(selection);
-        ArrayList<String> newSelectArgs = (selectionArgs == null)? new ArrayList<String>() : new ArrayList<String>(Arrays.asList(selectionArgs));
-        ArrayList<String> newProjection = (projection == null)? new ArrayList<String>() : new ArrayList<String>(Arrays.asList(projection));
-        String sqlQuery = null;
-        String[] defaultProjection = null;
-        CompositeTable compositeTable;
         SQLiteDatabase dbConnection = mDBHelper.getReadableDatabase();
+        Cursor cursorResult = null;
+        List<String> uriPaths = uri.getPathSegments();
 
-        switch(sURIMatcher.match(uri)){
-            //case USERS:
-            //    cursorResult = dbConnection.query(TablasContract.User.getInstance().getTableName(),projection, selection /*filter*/,
-            //            selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
-            //    break;
-
-            case USER_GROUPS: //This also adds a balance from the perspective of a user.
-                compositeTable = TablasContract.Compound.GroupBalance.getInstance();
-
-                defaultProjection = new String[] { TablasContract.Compound.GroupBalance.GROUP_ID, TablasContract.Compound.GroupBalance.GROUP_CREATED_ON,
-                        TablasContract.Compound.GroupBalance.GROUP_NAME, TablasContract.Compound.GroupBalance.GROUP_PICTURE,
-                        TablasContract.Compound.GroupBalance.USER_BALANCE };
-                newProjection.addAll(Arrays.asList(defaultProjection));
-
-                appendToFilter(newSelection, newSelectArgs, compositeTable.getColumn(TablasContract.Compound.GroupBalance.MEMBER_USER_ID), uri.getPathSegments().get(2)); // get the user ID from the path.
-                sqlQuery = select(compositeTable, newProjection.toArray(new String[]{}), newSelection.toString(), sortOrder, false);
-
-                cursorResult = dbConnection.rawQuery(sqlQuery, newSelectArgs.toArray(new String[]{}));
-                break;
-
-            case GROUPS:
-                cursorResult = dbConnection.query(TablasContract.Group.getInstance().getTableName(),projection, selection /*filter*/,
-                        selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
-                break;
-
-            case MEMBERS:
-                cursorResult = dbConnection.query(TablasContract.Member.getInstance().getTableName(), projection, selection /*filter*/,
-                        selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
-                break;
-
-            case EXPENSES:
-                cursorResult = dbConnection.query(TablasContract.Expense.getInstance().getTableName(), projection, selection /*filter*/,
-                        selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
-                break;
-
-            case PAYERS:
-                cursorResult = dbConnection.query(TablasContract.Payer.getInstance().getTableName(), projection, selection /*filter*/,
-                        selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
-                break;
-
-            case USER_GROUP_EXPENSES:
-                compositeTable = TablasContract.Compound.ExpenseBalance.getInstance();
-
-                defaultProjection = new String[]{ TablasContract.Compound.ExpenseBalance.EXPENSE_ID, TablasContract.Compound.ExpenseBalance.EXPENSE_AMOUNT,
-                        TablasContract.Compound.ExpenseBalance.EXPENSE_CATEGORY_ID, TablasContract.Compound.ExpenseBalance.EXPENSE_CREATED_ON,
-                        TablasContract.Compound.ExpenseBalance.EXPENSE_CURRENCY, TablasContract.Compound.ExpenseBalance.EXPENSE_EXCHANGE_RATE,
-                        TablasContract.Compound.ExpenseBalance.EXPENSE_GROUP_EXPENSE_ID, TablasContract.Compound.ExpenseBalance.EXPENSE_IS_PAYMENT,
-                        TablasContract.Compound.ExpenseBalance.EXPENSE_LATITUDE, TablasContract.Compound.ExpenseBalance.EXPENSE_LONGITUDE,
-                        TablasContract.Compound.ExpenseBalance.EXPENSE_MESSAGE, TablasContract.Compound.ExpenseBalance.EXPENSE_OFFSET,
-                        TablasContract.Compound.ExpenseBalance.EXPENSE_PERIODICITY, TablasContract.Compound.ExpenseBalance.EXPENSE_GROUP_ID,
-                        TablasContract.Compound.ExpenseBalance.USER_BALANCE };
-                newProjection.addAll(Arrays.asList(defaultProjection));
-
-                appendToFilter(newSelection, newSelectArgs, compositeTable.getColumn(TablasContract.Compound.ExpenseBalance.MEMBER_USER_ID), uri.getPathSegments().get(2)); // get the user ID from the path.
-                appendToFilter(newSelection, newSelectArgs, compositeTable.getColumn(TablasContract.Compound.ExpenseBalance.EXPENSE_GROUP_ID), uri.getPathSegments().get(4)); // // get the group ID from the path.
-                sqlQuery = select(TablasContract.Compound.ExpenseBalance.getInstance(), newProjection.toArray(new String[]{}), newSelection.toString(), sortOrder, false);
-                //Log.d(TAG, sqlQuery);
-                cursorResult = dbConnection.rawQuery(sqlQuery, newSelectArgs.toArray(new String[]{}));
-                break;
-
-            case EXPENSE_USERS: //returns entities for both Payer and Member (so both can be read throught their respective entities
-                compositeTable = TablasContract.Compound.ExpenseBalance.getInstance();
-
-                defaultProjection = new String[] { TablasContract.Compound.ExpenseBalance.MEMBER_ID, TablasContract.Compound.ExpenseBalance.MEMBER_GROUP_ID,
-                        TablasContract.Compound.ExpenseBalance.MEMBER_USER_ID, TablasContract.Compound.ExpenseBalance.MEMBER_IS_ADMIN,
-                        TablasContract.Compound.ExpenseBalance.MEMBER_LEFT_GROUP};
-                newProjection.addAll(Arrays.asList(defaultProjection));
-
-                appendToFilter(newSelection, newSelectArgs, compositeTable.getColumn(TablasContract.Compound.ExpenseBalance.PAYER_EXPENSE_ID), uri.getPathSegments().get(1)); //get the expense ID
-                sqlQuery = select(TablasContract.Compound.ExpenseBalance.getInstance(), newProjection.toArray(new String[]{}), newSelection.toString(), null, true);
-                //Log.d(TAG, sqlQuery);
-                cursorResult = dbConnection.rawQuery(sqlQuery, newSelectArgs.toArray(new String[]{}));
-                break;
-
-            default:
-                dbConnection.close();
+        int matcher = sURIMatcher.match(uri);
+        if(matcher >= 0 && matcher < 100){
+            cursorResult = dbConnection.query(uriPaths.get(0), projection, selection /*filter*/,
+                    selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
+        }else if(matcher >= 100){
+            CompositeTable compositeTable = (CompositeTable)TablasContract.getTable(uriPaths.get(0));
+            String sqlQuery = select(compositeTable, projection, selection, sortOrder, false);
+            cursorResult = dbConnection.rawQuery(sqlQuery, selectionArgs);
         }
+        //dbConnection.close();
 
         return cursorResult;
     }
 
-
-
-
     public String getType(Uri uri){
+        List<String> uriPaths = uri.getPathSegments();
         StringBuilder str = new StringBuilder("vnd.android.cursor");
-        switch(sURIMatcher.match(uri)){
-            /*case USER_ID:
-                return str.append(".item/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.User.getInstance().getTableName()).toString();
-            case USERS:
-                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.User.getInstance().getTableName()).toString();*/
-            case USER_GROUPS:
-                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.Group.getInstance().getTableName()).toString();
-            case GROUPS:
-                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.Group.getInstance().getTableName()).toString();
-            case MEMBERS:
-                return str.append("dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.Member.getInstance().getTableName()).toString();
-            case EXPENSES:
-                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.Expense.getInstance().getTableName()).toString();
-            case PAYERS:
-                return str.append("dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.Payer.getInstance().getTableName()).toString();
-            /*case GROUP_MEMBER_USERS:
-                return str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.User.getInstance().getTableName()).toString();*/
-            case USER_GROUP_EXPENSES:
-                return str.append("dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.Expense.getInstance().getTableName()).toString();
-            case EXPENSE_USERS:
-                return str.append("dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(TablasContract.Member.getInstance().getTableName()).toString();
+        String uriType = null;
+
+        int matcher = sURIMatcher.match(uri);
+        if(matcher >= 0){ //directory types for all URIs, for now.
+            str.append(".dir/").append("vnd.").append(PROVIDER_AUTHORITY).append(".").append(uriPaths.get(0));
+            uriType = str.toString();
         }
 
-        return null;
+        return uriType;
     }
-
-
 
     public int delete(Uri uri, String selection, String[] selectionArgs){
-        String table = tableToModify(uri);
+        String table = uri.getPathSegments().get(0);
 
-        if(table == null)
-            return 0;
-        else
-            return mDBHelper.getWritableDatabase().delete(table, selection, selectionArgs);
+        int matcher = sURIMatcher.match(uri);
+        int deletedId = 0;
+
+        if(matcher >= 0 && matcher < 100) {
+            deletedId = mDBHelper.getWritableDatabase().delete(table, selection, selectionArgs);
+        }
+        return deletedId;
     }
-
 
     public Uri insert(Uri uri, ContentValues values){
-        String table = tableToModify(uri);
+        String table = uri.getPathSegments().get(0);
 
-        if(table == null)
-            return null;
-        else {
-            return ContentUris.withAppendedId(uri, mDBHelper.getWritableDatabase().insert(table, null, values));
+        int matcher = sURIMatcher.match(uri);
+        Uri insertedUri = null;
+
+        if(matcher >= 0 && matcher < 100){
+            insertedUri = ContentUris.withAppendedId(uri, mDBHelper.getWritableDatabase().insert(table, null, values));
         }
+        return insertedUri;
     }
-
 
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs){
-        String table = tableToModify(uri);
+        String table = uri.getPathSegments().get(0);
 
-        if(table == null)
-            return 0;
-        else
-            return mDBHelper.getWritableDatabase().update(table, values, selection, selectionArgs);
-    }
+        int matcher = sURIMatcher.match(uri);
+        int affectedRows = 0;
 
-    private String tableToModify(Uri uri){
-        String table = null;
-
-        switch(sURIMatcher.match(uri)){
-            /*case USERS:
-                table = TablasContract.User.getInstance().getTableName();
-                break;
-            */case GROUPS:
-                table = TablasContract.Group.getInstance().getTableName();
-                break;
-            case MEMBERS:
-                table = TablasContract.Member.getInstance().getTableName();
-                break;
-            case EXPENSES:
-                table = TablasContract.Expense.getInstance().getTableName();
-                break;
-            case PAYERS:
-                table = TablasContract.Payer.getInstance().getTableName();
-                break;
+        if(matcher >= 0 && matcher < 100) {
+            affectedRows = mDBHelper.getWritableDatabase().update(table, values, selection, selectionArgs);
         }
-        return table;
+        return affectedRows;
     }
-
 
     private String select(CompositeTable entity, String[] projection, String selection, String sortOrder, boolean distict){
 
@@ -299,30 +164,6 @@ public class TablasProvider extends ContentProvider{
         //Log.d(TAG, query.toString());
         return query.toString();
     }
-    /**
-     * Adds a new selection condition to the selection text in the form of "[...] AND col = ?" with
-     * the new value added to the oritinalParams
-     * @param originalSelection
-     * @param originalParams
-     * @param col
-     * @param value
-     */
-    private void appendToFilter(StringBuffer originalSelection, ArrayList<String> originalParams, Column col, String value){
-        if(originalParams.size() > 0){
-            originalSelection.append(" AND ");
-        }
-        originalSelection.append(col.getFullName()).append(" = ?");
-        originalParams.add(value);
-    }
-
-    private void appendToProjection(Collection<Column> columns, ArrayList<String> originalProjection){
-        for(Column c : columns){
-            if(!c.metric){
-                originalProjection.add(c.getFullName());
-            }
-        }
-    }
-
 
     /**
      * Return the columns in the projection[]. The columns are identified with their full name, in the form of "table.column".
@@ -355,7 +196,6 @@ public class TablasProvider extends ContentProvider{
         }
     }
 
-
     /**
      * Auxiliary method that adds column names to the select and groupBy StringBuffers
      * @param table composite table
@@ -370,8 +210,9 @@ public class TablasProvider extends ContentProvider{
         String groupByCol = null;
 
         if(!col.metric) {
-            selectCol = col.getFullName();
-            groupByCol = col.getFullName();
+            //Supporting aliases (if alias is defined in column, add alias; else just the column).
+            selectCol = col.getFullName() + ((col.alias == null)? "" : (" as " + col.alias));  //Todo: Instead of concat strings, I could use StringBuffer here
+            groupByCol = (col.alias == null)? col.getFullName() : col.alias;
         }else{  //metric column
             Metric metric = table.getMetric(col.name);
             selectCol = metric.getColumnDefinition();
@@ -385,7 +226,6 @@ public class TablasProvider extends ContentProvider{
             groupBy.append(groupByCol);
         }
     }
-
 
     /**
      * They joining of multiple tables based on their foregin keys, according to the TablasContract tables's definitions.
@@ -405,7 +245,11 @@ public class TablasProvider extends ContentProvider{
     private StringBuffer traverseTree(TreeNode treeNode){
         StringBuffer sb = new StringBuffer();
         if(treeNode.getLeft() == null && treeNode.getRight() == null && treeNode.getTableName() != null){
-            return sb.append(treeNode.getTableName());
+            sb.append(treeNode.getTableName());
+            if(treeNode.getTable().isAlias()){
+                sb.append(" as ").append(treeNode.getTable().getAlias());
+            }
+            return sb;
         }else if(treeNode.getLeft() != null && treeNode.getRight() != null && treeNode.getTableName() == null){
             sb.append(traverseTree(treeNode.getLeft())).append(getJoinString(treeNode.getJoinType())).append(traverseTree(treeNode.getRight())).append(" ");
             if(treeNode.getColumnJoins() != null) {

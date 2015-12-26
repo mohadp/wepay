@@ -10,6 +10,7 @@ public class Column {
     public String dbtype;
     public String spec;
     public String table;
+    public String alias;
     public int datatype;
     public boolean metric;
 
@@ -50,6 +51,11 @@ public class Column {
     public Column(String tableName, String colName, String dbType, String definition, int internalDataType){
         this(tableName, colName, dbType, definition);
         datatype = internalDataType;
+    }
+
+    public Column(String tableName, String colName, String dbType, String definition, int internalDataType, String colAlias){
+        this(tableName, colName, dbType, definition, internalDataType);
+        alias = colAlias;
     }
 
     public Column(String tableName, String colName, String dbType, String definition, int internalDataType, boolean isAggregation){
