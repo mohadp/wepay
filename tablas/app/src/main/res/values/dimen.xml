@@ -3,6 +3,8 @@
     <dimen name="keyboard_height">230dip</dimen>
     <dimen name="list_group_img_size">40dp</dimen>
     <dimen name="list_expense_img_size">40dp</dimen>
+    <dimen name="list_payer_create_img_size">40dp</dimen>
     <dimen name="list_payers_img_size">15dp</dimen>
     <dimen name="edit_group_img_size">60dp</dimen>
+    <dimen name="edit_expense_amt">90dp</dimen>
 </resources>

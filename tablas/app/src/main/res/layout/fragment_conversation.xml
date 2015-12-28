@@ -44,7 +44,7 @@
 
                 <EditText
                     android:id="@+id/edit_amount"
-                    android:layout_width="90dp"
+                    android:layout_width="@dimen/edit_expense_amt"
                     android:layout_height="match_parent"
                     android:inputType="numberDecimal"
                     android:hint="@string/hint_amount"/>
