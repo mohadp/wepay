@@ -2,45 +2,50 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@android:id/tabhost"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="top">
+    android:layout_height="wrap_content">
 
-    <TabWidget
-        android:id="@android:id/tabs"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-    <FrameLayout
-        android:id="@android:id/tabcontent"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        <TabWidget
+            android:id="@android:id/tabs"
+            android:layout_width="wrap_content"
+            android:layout_height="34dp" />
 
         <FrameLayout
-            android:id="@+id/tab_paid"
+            android:id="@android:id/tabcontent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <include layout="@layout/tab_paid" />
+            <FrameLayout
+                android:id="@+id/tab_paid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <include layout="@layout/tab_paid" />
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/tab_payers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <include layout="@layout/tab_payer" />
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/tab_currencies"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <include layout="@layout/tab_currency" />
+
+            </FrameLayout>
 
         </FrameLayout>
-
-        <FrameLayout
-            android:id="@+id/tab_payers"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <include layout="@layout/tab_payers" />
-
-        </FrameLayout>
-
-        <FrameLayout
-            android:id="@+id/tab_currencies"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <include layout="@layout/tab_currency" />
-
-        </FrameLayout>
-
-    </FrameLayout>
+    </LinearLayout>
 </TabHost>
