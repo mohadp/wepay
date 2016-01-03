@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Tablas</string>
     <string name="button_transfers">Transfers to/from </string>
-    <string name="hint_amount">Amt</string>
+    <string name="hint_amount">USD</string>
     <string name="hint_message">Add description...</string>
     <string name="hint_group_name">Enter a group name...</string>
     <string name="hint_currency">Choose currency for expense...</string>

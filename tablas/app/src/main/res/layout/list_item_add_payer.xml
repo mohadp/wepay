@@ -9,7 +9,7 @@
         android:layout_width="@dimen/list_payer_create_img_size"
         android:layout_height="@dimen/list_payer_create_img_size"
         android:layout_margin="10dp"
-        android:src="@drawable/moha"/>
+        android:src="@drawable/ic_launcher"/>
 
     <Spinner
         android:layout_width="match_parent"

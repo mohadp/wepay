@@ -196,8 +196,8 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
             //TODO: I will call an interface method for upper class to either start an activity or just update a fragment
 
             Intent i = new Intent(GroupFragment.this.getActivity(), ExpenseActivity.class);
-            i.putExtra(ExpenseFragment.EXTRA_GROUP_ID, group.getId());
-            i.putExtra(ExpenseFragment.EXTRA_USER_ID, mUserName);
+            i.putExtra(ExpensesFragment.EXTRA_GROUP_ID, group.getId());
+            i.putExtra(ExpensesFragment.EXTRA_USER_ID, mUserName);
             startActivity(i);
         }
     }

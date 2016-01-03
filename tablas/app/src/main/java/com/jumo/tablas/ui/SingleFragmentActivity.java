@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 
 import com.jumo.tablas.R;
@@ -13,7 +14,7 @@ import com.jumo.tablas.ui.util.OnKeyEventListener;
 /**
  * Created by Moha on 2/4/15.
  */
-public abstract class SingleFragmentActivity extends ActionBarActivity {
+public abstract class SingleFragmentActivity extends AppCompatActivity {
     protected abstract Fragment createFragment();
     protected abstract void setDefaultPreferences();
 

@@ -3,20 +3,17 @@ package com.jumo.tablas.ui;
 import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.Loader;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.LruCache;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -28,12 +25,10 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.TabHost;
 
 import com.jumo.tablas.R;
 import com.jumo.tablas.common.TablasManager;
-import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.EntityCursor;
 import com.jumo.tablas.ui.adapters.ExpenseCursorAdapter;
 import com.jumo.tablas.ui.util.CacheManager;
@@ -50,24 +45,24 @@ import com.jumo.tablas.ui.views.LinearLayoutResize;
  * Activities containing this fragment MUST implement the {@linkx OnFragmentInteractionListener}
  * interface.
  */
-public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, OnKeyEventListener, CacheManager<Object, Bitmap> {
-    private static final String TAG = "ExpenseFragment";
+public class ExpensesFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, CacheManager<Object, Bitmap> {
+    private static final String TAG = "ExpensesFragment";
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    public static final String EXTRA_GROUP_ID = "com.jumo.wepay.group_id";
-    public static final String EXTRA_USER_ID = "com.jumo.wepay.user_id";
+    public static final String EXTRA_GROUP_ID = "com.jumo.tablas.group_id";
+    public static final String EXTRA_USER_ID = "com.jumo.tablas.user_id";
     //Loaders
     public static final int LOADER_EXPENSES = 0;
     public static final int LOADER_MEMBERS = 1;
     //Tabhost's tabs
-    public static final String TAB_CURR = "currency";
+    /*public static final String TAB_CURR = "currency";
     public static final String TAB_PAID = "paid";
-    public static final String TAB_PAYERS = "payers";
+    public static final String TAB_PAYERS = "payers";*/
 
     /**
      * The fragment's ListView/GridView.
      */
     private RecyclerView mRecyclerView;
-    private LinearLayoutResize mConversationLayout;
+    /*private LinearLayoutResize mConversationLayout;
     private ImageButton mCurrencyButton;
     private EditText mConversationEditText;
     private EditText mAmountEditText;
@@ -75,7 +70,7 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
     private int mMaxConversationHeight; // height for whenever there is no system keyboard
     //Other control variables
     private float mCustomKeyboardHeight;
-    private boolean mShowCustomKeyboard = false;
+    private boolean mShowCustomKeyboard = false;*/
     //Fragment's attributes
     private String mUserName;
     private long mGroupId;
@@ -83,8 +78,8 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
     private ExpenseUserThreadHandler mPayerLoader;
 
 
-    public static ExpenseFragment newInstance(String userId, long groupId) {
-        ExpenseFragment fragment = new ExpenseFragment();
+    public static ExpensesFragment newInstance(String userId, long groupId) {
+        ExpensesFragment fragment = new ExpensesFragment();
         Bundle args = new Bundle();
         args.putString(EXTRA_USER_ID, userId);
         args.putLong(EXTRA_GROUP_ID, groupId);
@@ -102,7 +97,7 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public ExpenseFragment() { }
+    public ExpensesFragment() { }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -137,8 +132,8 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         //Set the references to the components in the fragment layout
-        mConversationLayout = (LinearLayoutResize) view.findViewById(R.id.view_conversations);
-        mCustomKeyboardSpacer = (FrameLayout) view.findViewById(R.id.inputMethod);
+        /*mConversationLayout = (LinearLayoutResize) view.findViewById(R.id.expense_entry);
+        mCustomKeyboardSpacer = (FrameLayout) view.findViewById(R.id.input_method);
         mCurrencyButton = (ImageButton) view.findViewById(R.id.button_currency);
         mConversationEditText = (EditText) view.findViewById(R.id.edit_message);
         mAmountEditText = (EditText) view.findViewById(R.id.edit_amount);
@@ -150,10 +145,11 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
         mTabHost.addTab(mTabHost.newTabSpec(TAB_PAID).setIndicator(res.getString(R.string.text_paid_tab)).setContent(R.id.tab_paid));
         mTabHost.addTab(mTabHost.newTabSpec(TAB_CURR).setIndicator(res.getString(R.string.text_curr_tab)).setContent(R.id.tab_currencies));
 
-        prepareCustomKeyboard();
+        prepareCustomKeyboard();*/
         return view;
     }
 
+    /*
     public void prepareCustomKeyboard(){
         //first we update the height to be the dimension in the resource
         mCustomKeyboardHeight = getResources().getDimension(R.dimen.keyboard_height);
@@ -182,6 +178,7 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
             }
         };
 
+        //Show custom keyboard only after the system keyboard has been hidden (once the size of the layout changes)
         LinearLayoutResize.OnSizeChange onSizeChange = new LinearLayoutResize.OnSizeChange() {
             @Override
             public void onSizeChanged(int w, int h, int oldw, int oldh) {
@@ -213,7 +210,7 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
             showCustomKeyboard();
         } else {
             mShowCustomKeyboard = true;
-            hideSystemKeyboard(); //There is a listener on this layout resize; we will show the
+            hideSystemKeyboard(); //There is a listener on the LinearLayoutResize (the root layout); if the size of the layout is changed, and the custom keyboard is requested, we will show the keyboard.
         }
     }
 
@@ -233,7 +230,7 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
                 mCustomKeyboardSpacer.requestLayout();
             }
         });
-    }
+    }*/
 
     /**
      * This method determines if the system soft keyboard is showing or not depending on the top layout's size;
@@ -241,7 +238,7 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
      * or does nothing, this method does not return the correc
      * @return a boolean; true if system soft keyboard is showing; false if not.
      */
-    private boolean isSystemKeyboardShowing(){
+    /*private boolean isSystemKeyboardShowing(){
         Rect rect = new Rect();
         mConversationLayout.getDrawingRect(rect);
         if(rect.height() < mMaxConversationHeight){
@@ -256,11 +253,8 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
 
     private void dismissCustomKeyboard(){
         mShowCustomKeyboard = false;
-        /*if(isCustomKeyboardShowing()) {
-            mCustomKeyboard.dismiss();
-        }*/
         mCustomKeyboardSpacer.setVisibility(View.GONE);
-    }
+    }*/
 
     @Override
     public void onDestroyView(){
@@ -281,7 +275,7 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
     }
 
 
-    ///////////// Methods for OnKeyEventListener interface to handle this fragment's key listener /////////////
+    /*//////////// Methods for OnKeyEventListener interface to handle this fragment's key listener /////////////
 
     @Override
     public boolean onKeyPress(int keyEvent, KeyEvent event){
@@ -292,7 +286,7 @@ public class ExpenseFragment extends Fragment implements LoaderManager.LoaderCal
             }
         }
         return false;
-    }
+    }*/
 
     ///////////// Methods for LoaderCallbacks interface to handle this fragment's loaders /////////////
 
