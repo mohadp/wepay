@@ -9,14 +9,15 @@ import android.view.KeyEvent;
 
 import com.jumo.tablas.R;
 import com.jumo.tablas.ui.util.OnKeyEventListener;
+import com.jumo.tablas.ui.views.LinearLayoutResize;
 
 /**
  * Created by Moha on 7/3/15.
  */
-public class ExpenseActivity extends AppCompatActivity {
+public class ExpenseActivity extends AppCompatActivity implements ExpenseEditFragment.Callback, LinearLayoutResize.OnSizeChange {
 
-    private ExpensesFragment expensesFragment;
-    private ExpenseEditFragment expenseEditFragment;
+    private ExpensesFragment mExpensesFragment;
+    private ExpenseEditFragment mExpenseEditFragment;
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -26,21 +27,23 @@ public class ExpenseActivity extends AppCompatActivity {
 
         //Include
         FragmentManager fm = getFragmentManager();
-        Fragment fragmentExpenses = fm.findFragmentById(R.id.view_conversation);
-        Fragment fragmentEditExpenses = fm.findFragmentById(R.id.custom_keyboard);
+        mExpensesFragment = (ExpensesFragment) fm.findFragmentById(R.id.view_conversation);
+        mExpenseEditFragment = (ExpenseEditFragment) fm.findFragmentById(R.id.custom_keyboard);
 
         FragmentTransaction fragTransaction = fm.beginTransaction();
         boolean transOperations = false;
 
-        if(fragmentEditExpenses == null){
-            fragmentEditExpenses = createEditExpenseFragment();
-            fragTransaction.add(R.id.custom_keyboard, fragmentEditExpenses);
+        if(mExpenseEditFragment == null){
+            mExpenseEditFragment = createEditExpenseFragment();
+            mExpenseEditFragment.setCallback(this);
+            fragTransaction.add(R.id.custom_keyboard, mExpenseEditFragment);
             transOperations = true;
         }
 
-        if(fragmentExpenses == null){
-            fragmentExpenses = createExpenseFragment();
-            fragTransaction.add(R.id.view_conversation, fragmentExpenses);
+        if(mExpensesFragment == null){
+            mExpensesFragment = createExpenseFragment();
+            mExpensesFragment.setSizeListener(this);
+            fragTransaction.add(R.id.view_conversation, mExpensesFragment);
             transOperations = true;
         }
 
@@ -49,26 +52,36 @@ public class ExpenseActivity extends AppCompatActivity {
         }
     }
 
-    protected Fragment createExpenseFragment(){
+    protected ExpensesFragment createExpenseFragment(){
         String userName = getIntent().getStringExtra(ExpensesFragment.EXTRA_USER_ID);
         long groupId = getIntent().getLongExtra(ExpensesFragment.EXTRA_GROUP_ID, 0);
         return ExpensesFragment.newInstance(userName, groupId);
     }
 
-    protected Fragment createEditExpenseFragment(){
+    protected ExpenseEditFragment createEditExpenseFragment(){
         long expenseId = getIntent().getLongExtra(ExpenseEditFragment.EXTRA_EXPENSE_ID, 0);
         return ExpenseEditFragment.newInstance(expenseId);
     }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event){
-        Fragment fragment = getFragmentManager().findFragmentById(R.id.custom_keyboard);
-
-        if(fragment != null && fragment instanceof OnKeyEventListener){
-            OnKeyEventListener listener = (OnKeyEventListener) fragment;
+        if(mExpenseEditFragment != null){
+            OnKeyEventListener listener = (OnKeyEventListener) mExpenseEditFragment;
             return (listener.onKeyPress(keyCode, event))? true : super.onKeyDown(keyCode, event);
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean isSystemKeyboardShowing() {
+        return (mExpensesFragment != null)? mExpensesFragment.isSystemKeyboardShowing() : false;
+    }
+
+    @Override
+    public void onSizeChanged(int w, int h, int oldw, int oldh) {
+        if(mExpenseEditFragment != null){
+            mExpenseEditFragment.onSizeChanged(w, h, oldw, oldh);
+        }
     }
 
     //protected void setDefaultPreferences(){ return; }

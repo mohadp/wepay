@@ -1,13 +1,13 @@
-<!--?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<com.jumo.tablas.ui.views.LinearLayoutResize xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/view_conversations"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"-->
+    android:orientation="vertical">
 
     <android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/list_messages"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-<!--/LinearLayout-->
+</com.jumo.tablas.ui.views.LinearLayoutResize>

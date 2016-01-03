@@ -3,7 +3,6 @@ package com.jumo.tablas.ui;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.KeyEvent;
@@ -24,7 +23,7 @@ import com.jumo.tablas.ui.views.LinearLayoutResize;
 /**
  * Created by Moha on 12/30/15.
  */
-public class ExpenseEditFragment extends Fragment implements OnKeyEventListener {
+public class ExpenseEditFragment extends Fragment implements OnKeyEventListener, LinearLayoutResize.OnSizeChange {
     public static String EXTRA_EXPENSE_ID = "com.jumo.tablas.expense_id";
 
     //Tabs within Tabhost for custom keyboard
@@ -44,6 +43,8 @@ public class ExpenseEditFragment extends Fragment implements OnKeyEventListener 
     //Other control variables
     private float mCustomKeyboardHeight;
     private boolean mShowCustomKeyboard = false;
+
+    private Callback mCallback;
 
 
     public static ExpenseEditFragment newInstance(long expenseId){
@@ -124,25 +125,12 @@ public class ExpenseEditFragment extends Fragment implements OnKeyEventListener 
             }
         };
 
-        //Show custom keyboard only after the system keyboard has been hidden (once the size of the layout changes)
-        LinearLayoutResize.OnSizeChange onSizeChange = new LinearLayoutResize.OnSizeChange() {
-            @Override
-            public void onSizeChanged(int w, int h, int oldw, int oldh) {
-                if(oldh == 0){
-                    mMaxConversationHeight = h;
-                }
-                if(hasCustomKeyboardBeenCalled()){
-                    showCustomKeyboard();
-                }
-            }
-        };
-
         mCurrencyButton.setOnClickListener(mCustKeyboardToggleListener);
         mConversationEditText.setOnClickListener(clickDismissCustomKeyboard);
         mConversationEditText.setOnFocusChangeListener(focusDismissKeyboard);
         mAmountEditText.setOnClickListener(clickDismissCustomKeyboard);
         mAmountEditText.setOnFocusChangeListener(focusDismissKeyboard);
-        mExpenseEntryLayout.setOnSizeChange(onSizeChange);
+        //mExpenseEntryLayout.setOnSizeChange(onSizeChange);
         //mCustomKeyboard.setOnDismissListener(dismissListener);
     }
 
@@ -150,8 +138,6 @@ public class ExpenseEditFragment extends Fragment implements OnKeyEventListener 
     private void hideSystemKeyboard(){
         InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(mExpenseEntryLayout.getWindowToken(), 0);
-        imm.hideSoftInputFromWindow(mAmountEditText.getWindowToken(), 0);
-        imm.hideSoftInputFromWindow(mConversationEditText.getWindowToken(), 0);
     }
 
     private void callCustomKeyboard(){
@@ -182,24 +168,6 @@ public class ExpenseEditFragment extends Fragment implements OnKeyEventListener 
         });
     }
 
-    /**
-     * This method determines if the system soft keyboard is showing or not depending on the top layout's size;
-     * this method is accurate only if the activity is resized when the soft keyboard appears (when the app pans
-     * or does nothing, this method does not return the correc
-     * @return a boolean; true if system soft keyboard is showing; false if not.
-     */
-    private boolean isSystemKeyboardShowing(){
-        Rect rect = new Rect();
-        mExpenseEntryLayout.getDrawingRect(rect);
-        if(rect.height() < mMaxConversationHeight){
-            return true;
-        }
-        return false;
-    }
-
-    private boolean isCustomKeyboardShowing(){
-        return (mCustomKeyboardSpacer.getVisibility() == View.VISIBLE);
-    }
 
     private void dismissCustomKeyboard(){
         mShowCustomKeyboard = false;
@@ -207,6 +175,26 @@ public class ExpenseEditFragment extends Fragment implements OnKeyEventListener 
             mCustomKeyboard.dismiss();
         }*/
         mCustomKeyboardSpacer.setVisibility(View.GONE);
+    }
+
+
+    /**
+     * This method determines if the system soft keyboard is showing or not depending on the top layout's size;
+     * this method is accurate only if the activity is resized when the soft keyboard appears (when the app pans
+     * or does nothing, this method does not return the correc
+     * @return a boolean; true if system soft keyboard is showing; false if not.
+     */
+    private boolean isSystemKeyboardShowing(){
+        return (mCallback == null)? false : mCallback.isSystemKeyboardShowing();
+    }
+
+    private boolean isCustomKeyboardShowing(){
+        return (mCustomKeyboardSpacer.getVisibility() == View.VISIBLE);
+    }
+
+
+    public void setCallback(Callback fragmentInterface) {
+        this.mCallback = fragmentInterface;
     }
 
 
@@ -220,6 +208,27 @@ public class ExpenseEditFragment extends Fragment implements OnKeyEventListener 
             }
         }
         return false;
+    }
+
+    ///////////// Methods for LinearLayoutResize.OnSizeChange interface to handle this fragment's key listener /////////////
+
+    /**
+     * Show custom keyboard only after the system keyboard has been hidden (once the size of the layout changes)
+     * @param w
+     * @param h
+     * @param oldw
+     * @param oldh
+     */
+    @Override
+    public void onSizeChanged(int w, int h, int oldw, int oldh) {
+        if(hasCustomKeyboardBeenCalled()){
+            showCustomKeyboard();
+        }
+    }
+
+
+    public interface Callback {
+        public boolean isSystemKeyboardShowing();
     }
 
 }
