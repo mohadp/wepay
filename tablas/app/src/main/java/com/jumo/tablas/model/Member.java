@@ -9,16 +9,16 @@ import java.util.Iterator;
 /**
  * Created by Moha on 6/26/15.
  */
-public class Member implements Entity {
+public class Member extends BaseEntity {
 
-    private Entity entity;
+    //private Entity entity;
 
     public Member(Entity m){
-        entity = m;
+        super(m);
     }
 
     public Member(){
-        entity = new ActualEntity(TablasContract.Member.getInstance());
+        super();
     }
 
     public long getId() {
@@ -69,71 +69,4 @@ public class Member implements Entity {
         setField(TablasContract.Member.MEMBER_IS_CURR_USR, currUser);
     }
 
-
-    @Override
-    public Table table(){
-        return entity.table();
-    }
-
-    @Override
-    public Object get(String column){
-        return entity.get(column);
-    }
-    @Override
-    public int getInt(String column) {
-        return entity.getInt(column);
-    }
-
-    @Override
-    public long getLong(String column) {
-        return entity.getLong(column);
-    }
-
-    @Override
-    public double getDouble(String column) {
-        return entity.getDouble(column);
-    }
-
-    @Override
-    public boolean getBoolean(String column) {
-        return entity.getBoolean(column);
-    }
-
-    @Override
-    public String getText(String column) {
-        return entity.getText(column);
-    }
-
-    @Override
-    public Date getDate(String column) {
-        return entity.getDate(column);
-    }
-
-    @Override
-    public byte[] getBytes(String column) {
-        return entity.getBytes(column);
-    }
-
-    @Override
-    public void setField(String column, Object val) {
-        entity.setField(column, val);
-    }
-
-    @Override
-    public Iterator<String> getFieldNameIterator(){
-        return entity.getFieldNameIterator();
-    }
-
-    @Override
-    public String toString(){
-        return entity.toString();
-    }
-
-    public Entity getEntity() {
-        return entity;
-    }
-
-    public void setEntity(Entity m){
-        entity = m;
-    }
 }

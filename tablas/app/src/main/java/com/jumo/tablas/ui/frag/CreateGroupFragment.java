@@ -1,4 +1,4 @@
-package com.jumo.tablas.ui;
+package com.jumo.tablas.ui.frag;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -32,7 +32,7 @@ import android.widget.SearchView;
 import android.widget.SimpleAdapter;
 
 import com.jumo.tablas.R;
-import com.jumo.tablas.account.AccountService;
+import com.jumo.tablas.common.TablasManager;
 import com.jumo.tablas.model.Group;
 import com.jumo.tablas.model.Member;
 import com.jumo.tablas.provider.TablasContract;
@@ -74,7 +74,7 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
             if(constraint != null){
                 displayName = constraint.toString();
             }
-            return searchForContacts(displayName);
+            return TablasManager.getInstance(getActivity()).searchForContactsByName(displayName);
         }
     };
 
@@ -149,27 +149,6 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
                 return bitmap.getByteCount() / 1024; // The cache size will be measured in kilobytes
             }
         };
-    }
-
-    private Cursor searchForContacts(String displayName){
-        Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
-
-        Context context = getActivity();
-        String[] projection = new String[]{ ContactsContract.CommonDataKinds.Phone._ID
-                , ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
-                , ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER
-                , ContactsContract.CommonDataKinds.Phone.LABEL
-                , ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI};
-
-        StringBuilder filter = new StringBuilder();
-        filter.append("")
-                .append(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME).append(" like ? AND ")
-                .append(ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET).append(" = ?");
-
-        String[] filterVals = new String[]{"%"+ displayName + "%", AccountService.ACCOUNT_TYPE};
-        String sortBy = ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME + " ASC";
-
-        return context.getContentResolver().query(uri, projection, filter.toString(), filterVals, sortBy);
     }
 
     private void createGroupAndMembers(){

@@ -1,4 +1,4 @@
-package com.jumo.tablas.ui;
+package com.jumo.tablas.ui.frag;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
@@ -6,6 +6,7 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.widget.LinearLayoutManager;
@@ -43,24 +44,12 @@ public class ExpensesFragment extends Fragment implements LoaderManager.LoaderCa
     //Loaders
     public static final int LOADER_EXPENSES = 0;
     public static final int LOADER_MEMBERS = 1;
-    //Tabhost's tabs
-    /*public static final String TAB_CURR = "currency";
-    public static final String TAB_PAID = "paid";
-    public static final String TAB_PAYERS = "payers";*/
-
     /**
      * The fragment's ListView/GridView.
      */
     private RecyclerView mRecyclerView;
     private LinearLayoutResize mConversationLayout;
-    /*private ImageButton mCurrencyButton;
-    private EditText mConversationEditText;
-    private EditText mAmountEditText;
-    private FrameLayout mCustomKeyboardSpacer;*/
     private int mMaxConversationHeight; // height for whenever there is no system keyboard
-    //Other control variables
-    /*private float mCustomKeyboardHeight;
-    private boolean mShowCustomKeyboard = false;*/
     //Fragment's attributes
     private String mUserName;
     private long mGroupId;
@@ -139,104 +128,8 @@ public class ExpensesFragment extends Fragment implements LoaderManager.LoaderCa
         };
         mConversationLayout.setOnSizeChange(onSizeChange);
 
-        /*mCustomKeyboardSpacer = (FrameLayout) view.findViewById(R.id.input_method);
-        mCurrencyButton = (ImageButton) view.findViewById(R.id.button_currency);
-        mConversationEditText = (EditText) view.findViewById(R.id.edit_message);
-        mAmountEditText = (EditText) view.findViewById(R.id.edit_amount);
-
-        Resources res = getActivity().getResources();
-        TabHost mTabHost = (TabHost)view.findViewById(android.R.id.tabhost);
-        mTabHost.setup();
-        mTabHost.addTab(mTabHost.newTabSpec(TAB_PAYERS).setIndicator(res.getString(R.string.text_payer_tab)).setContent(R.id.tab_payers));
-        mTabHost.addTab(mTabHost.newTabSpec(TAB_PAID).setIndicator(res.getString(R.string.text_paid_tab)).setContent(R.id.tab_paid));
-        mTabHost.addTab(mTabHost.newTabSpec(TAB_CURR).setIndicator(res.getString(R.string.text_curr_tab)).setContent(R.id.tab_currencies));
-
-        prepareCustomKeyboard();*/
         return view;
     }
-
-    /*
-    public void prepareCustomKeyboard(){
-        //first we update the height to be the dimension in the resource
-        mCustomKeyboardHeight = getResources().getDimension(R.dimen.keyboard_height);
-
-        View.OnClickListener mCustKeyboardToggleListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (isCustomKeyboardShowing()) {
-                    dismissCustomKeyboard();
-                } else {
-                    callCustomKeyboard();
-                }
-            }
-        };
-
-        View.OnClickListener clickDismissCustomKeyboard = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismissCustomKeyboard();
-            }
-        };
-        View.OnFocusChangeListener focusDismissKeyboard = new View.OnFocusChangeListener(){
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                dismissCustomKeyboard();
-            }
-        };
-
-        //Show custom keyboard only after the system keyboard has been hidden (once the size of the layout changes)
-        LinearLayoutResize.OnSizeChange onSizeChange = new LinearLayoutResize.OnSizeChange() {
-            @Override
-            public void onSizeChanged(int w, int h, int oldw, int oldh) {
-                if(oldh == 0){
-                    mMaxConversationHeight = h;
-                }
-                if(hasCustomKeyboardBeenCalled()){
-                    showCustomKeyboard();
-                }
-            }
-        };
-
-        mCurrencyButton.setOnClickListener(mCustKeyboardToggleListener);
-        mConversationEditText.setOnClickListener(clickDismissCustomKeyboard);
-        mConversationEditText.setOnFocusChangeListener(focusDismissKeyboard);
-        mAmountEditText.setOnClickListener(clickDismissCustomKeyboard);
-        mAmountEditText.setOnFocusChangeListener(focusDismissKeyboard);
-        mConversationLayout.setOnSizeChange(onSizeChange);
-        //mCustomKeyboard.setOnDismissListener(dismissListener);
-    }
-
-    private void hideSystemKeyboard(){
-        InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(mConversationLayout.getWindowToken(), 0);
-    }
-
-    private void callCustomKeyboard(){
-        if (!isSystemKeyboardShowing()) {
-            showCustomKeyboard();
-        } else {
-            mShowCustomKeyboard = true;
-            hideSystemKeyboard(); //There is a listener on the LinearLayoutResize (the root layout); if the size of the layout is changed, and the custom keyboard is requested, we will show the keyboard.
-        }
-    }
-
-    private boolean hasCustomKeyboardBeenCalled(){
-        return mShowCustomKeyboard;
-    }
-
-    private void showCustomKeyboard(){
-        mCustomKeyboardSpacer.setVisibility(View.VISIBLE);
-        mCustomKeyboardSpacer.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) mCustomKeyboardHeight));
-
-        //Submit message on the UI thread to redraw the view tree because of these changes.
-        Handler handler = new Handler();
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                mCustomKeyboardSpacer.requestLayout();
-            }
-        });
-    }*/
 
     /**
      * This method determines if the system soft keyboard is showing or not depending on the top layout's size;
@@ -252,15 +145,6 @@ public class ExpensesFragment extends Fragment implements LoaderManager.LoaderCa
         }
         return false;
     }
-
-    /*private boolean isCustomKeyboardShowing(){
-        return (mCustomKeyboardSpacer.getVisibility() == View.VISIBLE);
-    }
-
-    private void dismissCustomKeyboard(){
-        mShowCustomKeyboard = false;
-        mCustomKeyboardSpacer.setVisibility(View.GONE);
-    }*/
 
     @Override
     public void onDestroyView(){
@@ -280,20 +164,6 @@ public class ExpensesFragment extends Fragment implements LoaderManager.LoaderCa
         inflater.inflate(R.menu.default_menu, menu);
     }
 
-
-    /*//////////// Methods for OnKeyEventListener interface to handle this fragment's key listener /////////////
-
-    @Override
-    public boolean onKeyPress(int keyEvent, KeyEvent event){
-        if(keyEvent == KeyEvent.KEYCODE_BACK){
-            if(isCustomKeyboardShowing()){
-                dismissCustomKeyboard();
-                return true;
-            }
-        }
-        return false;
-    }*/
-
     ///////////// Methods for LoaderCallbacks interface to handle this fragment's loaders /////////////
 
     @Override
@@ -301,10 +171,7 @@ public class ExpensesFragment extends Fragment implements LoaderManager.LoaderCa
         Log.d(TAG, "onCreateLoader");
 
         if(id == LOADER_EXPENSES){
-            return TablasManager.getInstance(getActivity()).getExpensesWithBalanceLoader(mUserName, mGroupId);
-
-        }else if(id == LOADER_MEMBERS){
-            return null;
+            return TablasManager.getInstance(getActivity()).getExpensesWithBalanceLoader(mUserName, mGroupId, "USD"); //TODO: Update the USD parameter to the user's currency preference
         }
         return null;
     }
@@ -357,8 +224,18 @@ public class ExpensesFragment extends Fragment implements LoaderManager.LoaderCa
         return mCache.get(key);
     }
 
-
     public void setSizeListener(LinearLayoutResize.OnSizeChange sizeListener) {
         mSizeListener = sizeListener;
+    }
+
+    /**
+     * Class that retrieves all the members and
+     */
+    class ExpenseMemberRetrieval extends AsyncTask<Long, Integer, Object>{
+
+        @Override
+        protected Object doInBackground(Long... params) {
+            return null;
+        }
     }
 }

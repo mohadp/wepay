@@ -1,6 +1,5 @@
 package com.jumo.tablas.ui;
 
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
@@ -8,6 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 
 import com.jumo.tablas.R;
+import com.jumo.tablas.ui.frag.ExpenseEditFragment;
+import com.jumo.tablas.ui.frag.ExpensesFragment;
 import com.jumo.tablas.ui.util.OnKeyEventListener;
 import com.jumo.tablas.ui.views.LinearLayoutResize;
 
@@ -83,7 +84,5 @@ public class ExpenseActivity extends AppCompatActivity implements ExpenseEditFra
             mExpenseEditFragment.onSizeChanged(w, h, oldw, oldh);
         }
     }
-
-    //protected void setDefaultPreferences(){ return; }
 
 }

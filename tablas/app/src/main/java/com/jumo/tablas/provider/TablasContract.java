@@ -237,7 +237,7 @@ public final class TablasContract {
             addColumn(PAYER_EXPENSE_ID, new Column(getTableName(), PAYER_EXPENSE_ID, Column.DB_TYPE_INTEGER, Expense.getExternalReference(Expense._ID), Column.INTERNAL_TYPE_LONG));
             addColumn(PAYER_ROLE, new Column(getTableName(), PAYER_ROLE, Column.DB_TYPE_INTEGER, null, Column.INTERNAL_TYPE_INT));
             addColumn(PAYER_PERCENTAGE, new Column(getTableName(), PAYER_PERCENTAGE, Column.DB_TYPE_DOUBLE, null, Column.INTERNAL_TYPE_DOUBLE));
-            addColumn(PAYER_USER_SET, new Column(getTableName(), PAYER_USER_SET, Column.DB_TYPE_INTEGER, null, Column.INTERNAL_TYPE_BOOL)); //boolean 0=false, 1=true
+            addColumn(PAYER_MANUALLY_SET, new Column(getTableName(), PAYER_MANUALLY_SET, Column.DB_TYPE_INTEGER, null, Column.INTERNAL_TYPE_BOOL)); //boolean 0=false, 1=true
 
             //Foreign keys
             ColumnJoin join = new ColumnJoin(getColumn(PAYER_MEMBER_ID), Member.getInstance().getColumn(Member._ID));
@@ -740,7 +740,7 @@ public final class TablasContract {
         public static final String PAYER_EXPENSE_ID = "payer_expense_id";
         public static final String PAYER_ROLE = "pay_role";
         public static final String PAYER_PERCENTAGE = "percentage";
-        public static final String PAYER_USER_SET = "manually_set";
+        public static final String PAYER_MANUALLY_SET = "manually_set"; //whether the amount is automatically or manually set.
     }
 
     /**

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.CursorLoader;
 import android.net.Uri;
 
+import com.jumo.tablas.account.AccountService;
 import com.jumo.tablas.model.Categories;
 import com.jumo.tablas.model.Expense;
 import com.jumo.tablas.model.Group;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import android.database.*;
+import android.provider.ContactsContract;
 import android.util.Log;
 
 /**
@@ -244,6 +246,55 @@ public class TablasManager {
         mContext = context;
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////// Methods that query the Contacts Content Provider //////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public Cursor searchForContactsByName(String displayName){
+        Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+
+        String[] projection = new String[]{ ContactsContract.CommonDataKinds.Phone._ID
+                , ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
+                , ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER
+                , ContactsContract.CommonDataKinds.Phone.LABEL
+                , ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI};
+
+        StringBuilder filter = new StringBuilder();
+        filter.append("")
+                .append(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME).append(" like ? AND ")
+                .append(ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET).append(" = ?");
+
+        String[] filterVals = new String[]{"%"+ displayName + "%", AccountService.ACCOUNT_TYPE};
+        String sortBy = ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME + " ASC";
+
+        return mContext.getContentResolver().query(uri, projection, filter.toString(), filterVals, sortBy);
+    }
+
+    public Cursor getContactsByUserId(String normalizedPhone){
+        Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+
+        String[] projection = new String[]{ ContactsContract.CommonDataKinds.Phone._ID
+                , ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
+                , ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER
+                , ContactsContract.CommonDataKinds.Phone.LABEL
+                , ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI};
+
+        StringBuilder filter = new StringBuilder();
+        filter.append("")
+                .append(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER).append(" like ? AND ")
+                .append(ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET).append(" = ?");
+
+        String[] filterVals = new String[]{normalizedPhone, AccountService.ACCOUNT_TYPE};
+        String sortBy = null; //ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME + " ASC";
+
+        return mContext.getContentResolver().query(uri, projection, filter.toString(), filterVals, sortBy);
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////// Methods that query the Tablas ContentProvider /////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     public CursorLoader getGroupsWithBalanceLoader(String userId){
         String[] projection = new String[] { TablasContract.Compound.GroupBalance.GROUP_ID, TablasContract.Compound.GroupBalance.GROUP_CREATED_ON,
                 TablasContract.Compound.GroupBalance.GROUP_NAME, TablasContract.Compound.GroupBalance.GROUP_PICTURE,
@@ -255,7 +306,7 @@ public class TablasManager {
         return new CursorLoader(mContext, TablasContract.Compound.GroupBalance.TABLE_URI, projection, selection.toString(), selectionValues, null);
     }
 
-    public CursorLoader getExpensesWithBalanceLoader(String userId, long groupId){
+    public CursorLoader getExpensesWithBalanceLoader(String userId, long groupId, String toCurrency){
         String[] projection = new String[]{ TablasContract.Compound.ExpenseBalance.EXPENSE_ID, TablasContract.Compound.ExpenseBalance.EXPENSE_AMOUNT,
                 TablasContract.Compound.ExpenseBalance.EXPENSE_CATEGORY_ID, TablasContract.Compound.ExpenseBalance.EXPENSE_CREATED_ON,
                 TablasContract.Compound.ExpenseBalance.EXPENSE_CURRENCY_ID,
@@ -267,14 +318,17 @@ public class TablasManager {
 
         StringBuffer selection = new StringBuffer();
         selection.append(TablasContract.Compound.ExpenseBalance.MEMBER_USER_ID).append(" = ? AND ")
-                .append(TablasContract.Compound.ExpenseBalance.EXPENSE_GROUP_ID).append(" = ?");
-        String[] selectionValues = new String[] {userId, String.valueOf(groupId)};
+                .append(TablasContract.Compound.ExpenseBalance.EXPENSE_GROUP_ID).append(" = ?")
+                .append(" AND (")
+                .append(TablasContract.Compound.ExpenseBalance.EXCHANGE_CURR_TO).append(" = ? OR ")
+                .append(TablasContract.Compound.ExpenseBalance.EXCHANGE_CURR_TO).append(" IS NULL)");
+        String[] selectionValues = new String[] {userId, String.valueOf(groupId), toCurrency};
         StringBuilder sortBy = new StringBuilder(TablasContract.Compound.ExpenseBalance.EXPENSE_CREATED_ON).append(" ASC");
 
         return new CursorLoader(mContext, TablasContract.Compound.ExpenseBalance.TABLE_URI, projection, selection.toString(), selectionValues, sortBy.toString());
     }
 
-    public Cursor getExpenseUsers(long expenseId){
+    public Cursor getPayingMembersForExpense(long expenseId){
         String[] projection = new String[] { TablasContract.Compound.ExpenseBalance.MEMBER_ID, TablasContract.Compound.ExpenseBalance.MEMBER_GROUP_ID,
                 TablasContract.Compound.ExpenseBalance.MEMBER_USER_ID, TablasContract.Compound.ExpenseBalance.MEMBER_IS_ADMIN,
                 TablasContract.Compound.ExpenseBalance.MEMBER_LEFT_GROUP};
@@ -284,6 +338,46 @@ public class TablasManager {
         StringBuffer sortOrder = new StringBuffer(TablasContract.Compound.ExpenseBalance.getInstance().getFullColumnName(TablasContract.Member.MEMBER_USER_ID)).append(" ASC");
 
         Cursor cursorResult = mContext.getContentResolver().query(TablasContract.Compound.ExpenseBalance.TABLE_URI, projection, selection.toString(), selectionValues, null);
+
+        return cursorResult;
+    }
+
+
+    public Cursor getExpenseMembersOrPayers(long expenseId, long groupId){
+        String[] projection = new String[] { TablasContract.Compound.GroupBalance.MEMBER_ID, TablasContract.Compound.GroupBalance.MEMBER_GROUP_ID,
+                TablasContract.Compound.GroupBalance.MEMBER_USER_ID, TablasContract.Compound.GroupBalance.MEMBER_IS_ADMIN,
+                TablasContract.Compound.GroupBalance.MEMBER_LEFT_GROUP,
+                TablasContract.Compound.GroupBalance.PAYER_EXPENSE_ID, TablasContract.Compound.ExpenseBalance.PAYER_PERCENTAGE,
+                TablasContract.Compound.GroupBalance.PAYER_ROLE, TablasContract.Compound.ExpenseBalance.PAYER_MANUALLY_SET};
+
+        StringBuffer selection = (new StringBuffer("("))
+                .append(TablasContract.Compound.GroupBalance.EXPENSE_ID).append(" = ? OR ")
+                .append(TablasContract.Compound.GroupBalance.EXPENSE_ID).append(" IS NULL ) AND ")
+                .append(TablasContract.Compound.GroupBalance.GROUP_ID).append(" = ?");
+        String[] selectionValues = new String[]{ String.valueOf(expenseId), String.valueOf(groupId) };
+        StringBuffer sortOrder = new StringBuffer(TablasContract.Compound.ExpenseBalance.getInstance().getFullColumnName(TablasContract.Member.MEMBER_USER_ID)).append(" ASC");
+
+        Cursor cursorResult = mContext.getContentResolver().query(TablasContract.Compound.ExpenseBalance.TABLE_URI, projection, selection.toString(), selectionValues, sortOrder.toString());
+
+        return cursorResult;
+    }
+
+
+    public Cursor getExpense(long expenseId){
+        String[] projection = new String[] { TablasContract.Expense._ID, TablasContract.Expense.EXPENSE_GROUP_ID,
+                TablasContract.Expense.EXPENSE_PERIODICITY, TablasContract.Expense.EXPENSE_OFFSET,
+                TablasContract.Expense.EXPENSE_GROUP_ID, TablasContract.Expense.EXPENSE_MESSAGE,
+                TablasContract.Expense.EXPENSE_AMOUNT, TablasContract.Expense.EXPENSE_CATEGORY_ID,
+                TablasContract.Expense.EXPENSE_CREATED_ON, TablasContract.Expense.EXPENSE_CURRENCY_ID,
+                TablasContract.Expense.EXPENSE_IS_PAYMENT, TablasContract.Expense.EXPENSE_CURRENCY_ID,
+                TablasContract.Expense.EXPENSE_GROUP_EXPENSE_ID, TablasContract.Expense.EXPENSE_LATITUDE,
+                TablasContract.Expense.EXPENSE_LONGITUDE};
+
+        StringBuffer selection = (new StringBuffer(TablasContract.Expense._ID)).append(" = ?");
+        String[] selectionValues = new String[]{ String.valueOf(expenseId)};
+        StringBuffer sortOrder = null;
+
+        Cursor cursorResult = mContext.getContentResolver().query(TablasContract.Expense.TABLE_URI, projection, selection.toString(), selectionValues, null);
 
         return cursorResult;
     }

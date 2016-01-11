@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
@@ -123,7 +122,7 @@ public class ExpenseUserThreadHandler extends HandlerThread {
         }
 
         private void getExpenseUserImages(String expenseId, ArrayList<String> imageIds, ArrayList<Bitmap> images){
-            Cursor cursor = TablasManager.getInstance(mContextReference.get()).getExpenseUsers(Long.valueOf(expenseId));
+            Cursor cursor = TablasManager.getInstance(mContextReference.get()).getPayingMembersForExpense(Long.valueOf(expenseId));
             EntityCursor entityCursor = new EntityCursor(cursor);
 
             if(entityCursor == null)

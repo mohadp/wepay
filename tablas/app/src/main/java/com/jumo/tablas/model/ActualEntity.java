@@ -12,7 +12,7 @@ import java.util.Iterator;
 /**
  * Created by Moha on 9/7/15.
  */
-public class ActualEntity implements Entity {
+public class ActualEntity extends Entity {
     private HashMap<String, Object> attributes;
     private Table table;
     private static final String TAG = "ActualEntity";

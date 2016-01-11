@@ -1,20 +1,22 @@
-package com.jumo.tablas.ui;
+package com.jumo.tablas.ui.frag;
 
 import android.app.Fragment;
+import android.app.LoaderManager;
 import android.content.Context;
-import android.content.res.Resources;
+import android.content.Loader;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.TabHost;
+import android.support.v4.view.ViewPager;
 
 import com.jumo.tablas.R;
 import com.jumo.tablas.ui.util.OnKeyEventListener;
@@ -23,29 +25,31 @@ import com.jumo.tablas.ui.views.LinearLayoutResize;
 /**
  * Created by Moha on 12/30/15.
  */
-public class ExpenseEditFragment extends Fragment implements OnKeyEventListener, LinearLayoutResize.OnSizeChange {
-    public static String EXTRA_EXPENSE_ID = "com.jumo.tablas.expense_id";
+public class ExpenseEditFragment extends Fragment implements OnKeyEventListener, LinearLayoutResize.OnSizeChange, LoaderManager.LoaderCallbacks<Cursor> {
+    private static final String TAG = "ExpenseEditFragment";
+
+    //Extras for initializing this fragment (this one is optional)
+    public static final String EXTRA_EXPENSE_ID = "com.jumo.tablas.expense_id";
+
+    //Loaders for this fragment
+    private static final int LOADER_MEMBERS = 1;
 
     //Tabs within Tabhost for custom keyboard
     public static final String TAB_CURR = "currency";
     public static final String TAB_PAID = "paid";
     public static final String TAB_PAYERS = "payers";
 
-    private long mExpenseId;
-
     //Views within the layout to refer to
     private LinearLayoutResize mExpenseEntryLayout;
     private ImageButton mCurrencyButton;
     private EditText mConversationEditText;
     private EditText mAmountEditText;
-    private FrameLayout mCustomKeyboardSpacer;
-    private int mMaxConversationHeight; // height for whenever there is no system keyboard
+    private ViewPager mCustomKeyboardSpacer;
     //Other control variables
     private float mCustomKeyboardHeight;
     private boolean mShowCustomKeyboard = false;
-
+    private long mExpenseId;
     private Callback mCallback;
-
 
     public static ExpenseEditFragment newInstance(long expenseId){
         ExpenseEditFragment fragment = new ExpenseEditFragment();
@@ -77,17 +81,18 @@ public class ExpenseEditFragment extends Fragment implements OnKeyEventListener,
 
         //Set the references to the components in the fragment layout
         mExpenseEntryLayout = (LinearLayoutResize) view.findViewById(R.id.expense_entry);
-        mCustomKeyboardSpacer = (FrameLayout) view.findViewById(R.id.input_method);
+        mCustomKeyboardSpacer = (ViewPager) view.findViewById(R.id.input_method);
         mCurrencyButton = (ImageButton) view.findViewById(R.id.button_currency);
         mConversationEditText = (EditText) view.findViewById(R.id.edit_message);
         mAmountEditText = (EditText) view.findViewById(R.id.edit_amount);
 
-        Resources res = getActivity().getResources();
+
+        /*Resources res = getActivity().getResources();
         TabHost mTabHost = (TabHost)view.findViewById(android.R.id.tabhost);
         mTabHost.setup();
         mTabHost.addTab(mTabHost.newTabSpec(TAB_PAYERS).setIndicator(res.getString(R.string.text_payer_tab)).setContent(R.id.tab_payers));
         mTabHost.addTab(mTabHost.newTabSpec(TAB_PAID).setIndicator(res.getString(R.string.text_paid_tab)).setContent(R.id.tab_paid));
-        mTabHost.addTab(mTabHost.newTabSpec(TAB_CURR).setIndicator(res.getString(R.string.text_curr_tab)).setContent(R.id.tab_currencies));
+        mTabHost.addTab(mTabHost.newTabSpec(TAB_CURR).setIndicator(res.getString(R.string.text_curr_tab)).setContent(R.id.tab_currencies));*/
 
         prepareCustomKeyboard();
 
@@ -197,6 +202,39 @@ public class ExpenseEditFragment extends Fragment implements OnKeyEventListener,
         this.mCallback = fragmentInterface;
     }
 
+    ///////////// Methods for LoaderCallbacks interface to handle this fragment's loaders /////////////
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Log.d(TAG, "onCreateLoader");
+
+        if(id == LOADER_MEMBERS){
+            return null;
+        }
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        Log.d(TAG, "onLoadFinished");
+        int id = loader.getId();
+
+        if(id == LOADER_MEMBERS) {
+            if (this.getActivity() == null)
+                return;
+            // Update the data in the corresponsing adapters for payers and paying people.
+            // ((ExpenseCursorAdapter) mRecyclerView.getAdapter()).changeCursor(new EntityCursor(data));
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        int id = loader.getId();
+
+        if(id == LOADER_MEMBERS) {
+            //((ExpenseCursorAdapter) mRecyclerView.getAdapter()).changeCursor(null);
+        }
+    }
 
     ///////////// Methods for OnKeyEventListener interface to handle this fragment's key listener /////////////
     @Override

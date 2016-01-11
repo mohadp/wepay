@@ -1,10 +1,10 @@
 package com.jumo.tablas.ui;
 
 import android.app.Fragment;
-import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.jumo.tablas.common.TablasPrefs;
+import com.jumo.tablas.ui.frag.CreateGroupFragment;
 
 /**
  * Created by Moha on 10/27/15.

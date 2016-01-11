@@ -56,7 +56,15 @@
 
     </LinearLayout>
 
-    <FrameLayout
+    <android.support.v4.view.ViewPager
+        android:id="@+id/input_method"
+        android:layout_height="@dimen/keyboard_height"
+        android:layout_width="match_parent"
+        android:visibility="gone" />
+
+
+
+    <!--FrameLayout
         android:id="@+id/input_method"
         android:layout_width="match_parent"
         android:layout_height="@dimen/keyboard_height"
@@ -65,6 +73,6 @@
 
         <include layout="@layout/popup_input_methods" />
 
-    </FrameLayout>
+    </FrameLayout-->
 
 </com.jumo.tablas.ui.views.LinearLayoutResize>

@@ -20,10 +20,9 @@
     <string name="text_paid_tab">Paid</string>
     <string name="text_payer_tab">Payer</string>
     <string name="text_currency">USD</string>
+    <string name="text_currency_desc">USD - United States Dollar</string>
     <string name="text_currency_amt">1</string>
-    <string name="text_currency_equal">=</string>
-    <string name="text_currency_from_desc">Expense currency</string>
-    <string name="text_currency_to_desc">Your currency</string>
+    <string name="text_currency_exchange">Exchange rate</string>
 
 
 

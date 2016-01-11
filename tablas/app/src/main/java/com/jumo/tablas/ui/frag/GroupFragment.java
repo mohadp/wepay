@@ -1,4 +1,4 @@
-package com.jumo.tablas.ui;
+package com.jumo.tablas.ui.frag;
 
 import android.app.LoaderManager;
 import android.content.Intent;
@@ -19,6 +19,8 @@ import android.widget.ListView;
 
 import com.jumo.tablas.R;
 import com.jumo.tablas.common.TablasManager;
+import com.jumo.tablas.ui.CreateGroupActivity;
+import com.jumo.tablas.ui.ExpenseActivity;
 import com.jumo.tablas.ui.adapters.GroupCursorAdapter;
 
 import android.widget.*;
