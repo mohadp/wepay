@@ -49,6 +49,8 @@ public class ExpenseCalculator {
         }
     }
 
+    //Todo: Add a removePayer method...
+
     public void updateExpenseAmount(double amount){
         mExpense.setAmount(amount);
         mShouldPay.rebalanceAmounts();

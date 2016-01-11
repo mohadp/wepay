@@ -7,7 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 
 import com.jumo.tablas.R;
-import com.jumo.tablas.ui.frag.ExpenseEditFragment;
+import com.jumo.tablas.ui.frag.ExpenseInputFragment;
 import com.jumo.tablas.ui.frag.ExpensesFragment;
 import com.jumo.tablas.ui.util.OnKeyEventListener;
 import com.jumo.tablas.ui.views.LinearLayoutResize;
@@ -15,10 +15,10 @@ import com.jumo.tablas.ui.views.LinearLayoutResize;
 /**
  * Created by Moha on 7/3/15.
  */
-public class ExpenseActivity extends AppCompatActivity implements ExpenseEditFragment.Callback, LinearLayoutResize.OnSizeChange {
+public class ExpenseActivity extends AppCompatActivity implements ExpenseInputFragment.Callback, LinearLayoutResize.OnSizeChange {
 
     private ExpensesFragment mExpensesFragment;
-    private ExpenseEditFragment mExpenseEditFragment;
+    private ExpenseInputFragment mExpenseEditFragment;
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -29,7 +29,7 @@ public class ExpenseActivity extends AppCompatActivity implements ExpenseEditFra
         //Include
         FragmentManager fm = getFragmentManager();
         mExpensesFragment = (ExpensesFragment) fm.findFragmentById(R.id.view_conversation);
-        mExpenseEditFragment = (ExpenseEditFragment) fm.findFragmentById(R.id.custom_keyboard);
+        mExpenseEditFragment = (ExpenseInputFragment) fm.findFragmentById(R.id.custom_keyboard);
 
         FragmentTransaction fragTransaction = fm.beginTransaction();
         boolean transOperations = false;
@@ -59,9 +59,9 @@ public class ExpenseActivity extends AppCompatActivity implements ExpenseEditFra
         return ExpensesFragment.newInstance(userName, groupId);
     }
 
-    protected ExpenseEditFragment createEditExpenseFragment(){
-        long expenseId = getIntent().getLongExtra(ExpenseEditFragment.EXTRA_EXPENSE_ID, 0);
-        return ExpenseEditFragment.newInstance(expenseId);
+    protected ExpenseInputFragment createEditExpenseFragment(){
+        long expenseId = getIntent().getLongExtra(ExpenseInputFragment.EXTRA_EXPENSE_ID, 0);
+        return ExpenseInputFragment.newInstance(expenseId);
     }
 
     @Override
