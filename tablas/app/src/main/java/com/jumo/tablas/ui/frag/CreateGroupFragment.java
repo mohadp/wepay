@@ -37,6 +37,7 @@ import com.jumo.tablas.model.Group;
 import com.jumo.tablas.model.Member;
 import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.ui.adapters.ContactSearchAdapter;
+import com.jumo.tablas.ui.util.BitmapCache;
 import com.jumo.tablas.ui.util.BitmapLoader;
 import com.jumo.tablas.ui.util.CacheManager;
 
@@ -49,7 +50,7 @@ import java.util.Map;
 /**
  * Created by Moha on 10/27/15.
  */
-public class CreateGroupFragment extends Fragment implements SearchView.OnQueryTextListener, SearchView.OnSuggestionListener, CacheManager<Object, Bitmap>{
+public class CreateGroupFragment extends Fragment implements SearchView.OnQueryTextListener, SearchView.OnSuggestionListener{
 
     private static final String TAG = "CreateGroupFragment";
     public static final String EXTRA_USER_ID = "user_id";
@@ -113,7 +114,7 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
         mSearchView = (SearchView)view.findViewById(R.id.search_contact);
         mSearchView.setOnSuggestionListener(this);
         mSearchView.setOnQueryTextListener(this);
-        mSearchView.setSuggestionsAdapter(new ContactSearchAdapter(getActivity(), null, this));
+        mSearchView.setSuggestionsAdapter(new ContactSearchAdapter(getActivity(), null));
 
         mAddedContacts = (ListView)view.findViewById(R.id.list_added_members);
         mAddedList = new ArrayList<HashMap<String, String>>();
@@ -274,28 +275,6 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
         return true;
     }
 
-    @Override
-    public void addToCache(Object key, Bitmap bitmap) {
-        if(mCache == null)
-            return;
-
-        synchronized (mCache) {
-            if (mCache.get(key) == bitmap) {
-                return;
-            } else {
-                mCache.put(key, bitmap);
-            }
-        }
-    }
-
-    @Override
-    public Bitmap retrieveFromCache(Object key) {
-        if(mCache == null)
-            return null;
-
-        return mCache.get(key);
-    }
-
     class SelectedContactAdapter extends SimpleAdapter {
         ViewBinder binder = new ViewBinder(){
             @Override
@@ -312,7 +291,7 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
                             (String)data,
                             ContactsContract.Contacts.Photo.PHOTO);
 
-                    BitmapLoader.asyncSetBitmapInImageView(imgRetrieval, (ImageView)view, getActivity(), CreateGroupFragment.this);
+                    BitmapLoader.asyncSetBitmapInImageView(imgRetrieval, (ImageView)view, getActivity(), BitmapCache.getInstance());
                     return true;
                 }
                 return false;

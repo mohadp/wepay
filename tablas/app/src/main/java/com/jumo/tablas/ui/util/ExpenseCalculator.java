@@ -7,7 +7,9 @@ import com.jumo.tablas.model.Member;
 import com.jumo.tablas.model.Payer;
 import com.jumo.tablas.provider.TablasContract;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * Created by Moha on 1/10/16.
@@ -40,13 +42,17 @@ public class ExpenseCalculator {
      * @param shouldPay Payer entity contains information on what the Person's member should paid current expense. This can be null.  This can be null, and is useful when start editing an existent expense with payers.
      */
     public void addPerson(Person person, Payer paid, Payer shouldPay){
-        mPeople.put(person.member.getId(), person);
+        addPerson(person);
         if(paid != null){
             addPayer(person.member.getId(), paid);
         }
         if(shouldPay != null){
             addPayer(person.member.getId(), shouldPay);
         }
+    }
+
+    public void addPerson(Person person){
+        mPeople.put(person.member.getId(), person);
     }
 
     //Todo: Add a removePayer method...
@@ -73,8 +79,34 @@ public class ExpenseCalculator {
         return addGenericPayer(memberId, amount, mHasPaid);
     }
 
+    public boolean addPayer(long memberId, int payerMode){
+        if(payerMode == TablasContract.Payer.OPTION_ROLE_PAID){
+            return addHasPaid(memberId);
+        }else if(payerMode == TablasContract.Payer.OPTION_ROLE_SHOULD_PAY){
+            return addShouldPay(memberId);
+        }
+        return false;
+    }
 
-    public boolean addGenericPayer(long memberId, PayerCalculator calculator){
+    public boolean addPayer(long memberId, double amount, int payerMode){
+        if(payerMode == TablasContract.Payer.OPTION_ROLE_PAID){
+            return addHasPaid(memberId, amount);
+        }else if(payerMode == TablasContract.Payer.OPTION_ROLE_SHOULD_PAY){
+            return addShouldPay(memberId, amount);
+        }
+        return false;
+    }
+
+    public double getAmountForMember(long memberId, int payerMode){
+        if(payerMode == TablasContract.Payer.OPTION_ROLE_PAID){
+            return mHasPaid.getAmountForMember(memberId);
+        }else if(payerMode == TablasContract.Payer.OPTION_ROLE_SHOULD_PAY){
+            return mShouldPay.getAmountForMember(memberId);
+        }
+        return 0;
+    }
+
+    private boolean addGenericPayer(long memberId, PayerCalculator calculator){
         if(!mPeople.containsKey(memberId)){
             Log.d(TAG, "Member is not in mPeople collection: " + memberId);
             return false;
@@ -83,7 +115,7 @@ public class ExpenseCalculator {
         return true;
     }
 
-    public boolean addGenericPayer(long memberId, double amount, PayerCalculator calculator){
+    private boolean addGenericPayer(long memberId, double amount, PayerCalculator calculator){
         if(!mPeople.containsKey(memberId)){
             Log.d(TAG, "Member is not in mPeople collection: " + memberId);
             return false;
@@ -101,6 +133,11 @@ public class ExpenseCalculator {
         calculator.addPayer(memberId, payer);
         return true;
     }
+
+    public Collection<Person> getPeople(){
+        return (mPeople == null)? null : mPeople.values();
+    }
+
 
     public static class Person{
         public String displayName;
@@ -125,6 +162,10 @@ public class ExpenseCalculator {
         public String getUserId(){
             return member.getUserId();
         }
+    }
+
+    public Expense getExpense(){
+        return mExpense;
     }
 
 }

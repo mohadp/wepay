@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:orientation="horizontal"
+    android:layout_margin="5dp">
+		
+    <com.jumo.tablas.ui.views.RoundImageView
+        android:id="@+id/list_contact_image"
+        android:layout_width="@dimen/list_group_img_size"
+        android:layout_height="@dimen/list_group_img_size"
+        android:layout_margin="5dp"
+        android:src="@drawable/ic_launcher"/>
+
+    <TextView android:id="@+id/list_contact_name"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:text="@string/text_contact_name"
+        android:gravity="center_vertical"
+        android:layout_marginStart="10dp"
+        android:layout_gravity="bottom"/>
+
+</LinearLayout>

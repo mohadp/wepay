@@ -36,7 +36,7 @@ import com.jumo.tablas.ui.views.LinearLayoutResize;
  * Activities containing this fragment MUST implement the {@linkx OnFragmentInteractionListener}
  * interface.
  */
-public class ExpensesFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, CacheManager<Object, Bitmap> {
+public class ExpensesFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = "ExpensesFragment";
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     public static final String EXTRA_GROUP_ID = "com.jumo.tablas.group_id";
@@ -53,7 +53,6 @@ public class ExpensesFragment extends Fragment implements LoaderManager.LoaderCa
     //Fragment's attributes
     private String mUserName;
     private long mGroupId;
-    private LruCache<Object, Bitmap> mCache;
     private ExpenseUserThreadHandler mPayerLoader;
     private LinearLayoutResize.OnSizeChange mSizeListener;
 
@@ -87,17 +86,7 @@ public class ExpensesFragment extends Fragment implements LoaderManager.LoaderCa
 
         mUserName = getArguments().getString(EXTRA_USER_ID);
         mGroupId = getArguments().getLong(EXTRA_GROUP_ID);
-
-        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-        final int cacheSize = maxMemory / 8;  // Use 1/8th of the available memory for this memory cache.
-        mCache = new LruCache<Object, Bitmap>(cacheSize){
-            @Override
-            protected int sizeOf(Object key, Bitmap bitmap) {
-                return bitmap.getByteCount() / 1024; // The cache size will be measured in kilobytes
-            }
-        };
-
-        mPayerLoader = new ExpenseUserThreadHandler(getActivity(), mCache, new Handler());
+        mPayerLoader = new ExpenseUserThreadHandler(getActivity(), new Handler());
         mPayerLoader.start();
         mPayerLoader.getLooper();
     }
@@ -108,7 +97,7 @@ public class ExpensesFragment extends Fragment implements LoaderManager.LoaderCa
 
         // Set the adapter
         mRecyclerView = (RecyclerView) view.findViewById(R.id.list_messages);
-		mRecyclerView.setAdapter(new ExpenseCursorAdapter(getActivity(), null, this, mPayerLoader));
+		mRecyclerView.setAdapter(new ExpenseCursorAdapter(getActivity(), null, mPayerLoader));
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         //Set the references to the components in the fragment layout
@@ -199,43 +188,8 @@ public class ExpensesFragment extends Fragment implements LoaderManager.LoaderCa
         }
     }
 
-
-    ///////////// Methods for CacheManager interface to handle this fragment's cache /////////////
-
-    @Override
-    public void addToCache(Object key, Bitmap bitmap) {
-        if(mCache == null)
-            return;
-
-        synchronized (mCache) {
-            if (mCache.get(key) == bitmap) {
-                return;
-            } else {
-                mCache.put(key, bitmap);
-            }
-        }
-    }
-
-    @Override
-    public Bitmap retrieveFromCache(Object key) {
-        if(mCache == null)
-            return null;
-
-        return mCache.get(key);
-    }
-
     public void setSizeListener(LinearLayoutResize.OnSizeChange sizeListener) {
         mSizeListener = sizeListener;
     }
 
-    /**
-     * Class that retrieves all the members and
-     */
-    class ExpenseMemberRetrieval extends AsyncTask<Long, Integer, Object>{
-
-        @Override
-        protected Object doInBackground(Long... params) {
-            return null;
-        }
-    }
 }

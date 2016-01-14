@@ -33,6 +33,7 @@ public class PayerCalculator {
         mExpense = expense;
         mPayers = new LinkedHashMap<Long, Double>();
         mPayersManuallySet = new ArrayList<Long>();
+        mPayerEntities = new HashMap<Long, Payer>();
     }
 
 
@@ -70,7 +71,8 @@ public class PayerCalculator {
     }
 
     public double getAmountForMember(long memberId){
-        return mPayers.get(memberId);
+        Double amount = mPayers.get(memberId);
+        return (amount == null)? 0d : amount;
     }
 
     private void moveFirstManuallySet(long memberId){

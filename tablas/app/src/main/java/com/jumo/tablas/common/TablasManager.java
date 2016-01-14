@@ -342,20 +342,28 @@ public class TablasManager {
         return cursorResult;
     }
 
+    public Cursor getGroupMembers(long groupId){
+        String[] projection = null;
+        StringBuffer selection = (new StringBuffer(TablasContract.Member.MEMBER_GROUP_ID)).append(" = ?");
+        String[] selectionValues = new String[]{ String.valueOf(groupId) };
+        StringBuffer sortOrder = new StringBuffer(TablasContract.Member.getInstance().getFullColumnName(TablasContract.Member.MEMBER_USER_ID)).append(" ASC");
 
-    public Cursor getExpenseMembersOrPayers(long expenseId, long groupId){
-        String[] projection = new String[] { TablasContract.Compound.GroupBalance.MEMBER_ID, TablasContract.Compound.GroupBalance.MEMBER_GROUP_ID,
-                TablasContract.Compound.GroupBalance.MEMBER_USER_ID, TablasContract.Compound.GroupBalance.MEMBER_IS_ADMIN,
-                TablasContract.Compound.GroupBalance.MEMBER_LEFT_GROUP,
-                TablasContract.Compound.GroupBalance.PAYER_EXPENSE_ID, TablasContract.Compound.ExpenseBalance.PAYER_PERCENTAGE,
-                TablasContract.Compound.GroupBalance.PAYER_ROLE, TablasContract.Compound.ExpenseBalance.PAYER_MANUALLY_SET};
+        Cursor cursorResult = mContext.getContentResolver().query(TablasContract.Member.TABLE_URI, projection, selection.toString(), selectionValues, sortOrder.toString());
 
-        StringBuffer selection = (new StringBuffer("("))
-                .append(TablasContract.Compound.GroupBalance.EXPENSE_ID).append(" = ? OR ")
-                .append(TablasContract.Compound.GroupBalance.EXPENSE_ID).append(" IS NULL ) AND ")
-                .append(TablasContract.Compound.GroupBalance.GROUP_ID).append(" = ?");
-        String[] selectionValues = new String[]{ String.valueOf(expenseId), String.valueOf(groupId) };
-        StringBuffer sortOrder = new StringBuffer(TablasContract.Compound.ExpenseBalance.getInstance().getFullColumnName(TablasContract.Member.MEMBER_USER_ID)).append(" ASC");
+        return cursorResult;
+    }
+
+
+    public Cursor getExpensePayersAndMembers(long expenseId){
+        String[] projection = new String[] { TablasContract.Compound.ExpenseBalance.MEMBER_ID,
+                TablasContract.Compound.ExpenseBalance.MEMBER_GROUP_ID, TablasContract.Compound.ExpenseBalance.MEMBER_USER_ID,
+                TablasContract.Compound.ExpenseBalance.MEMBER_IS_ADMIN, TablasContract.Compound.ExpenseBalance.MEMBER_LEFT_GROUP,
+                TablasContract.Compound.ExpenseBalance.PAYER_EXPENSE_ID, TablasContract.Compound.ExpenseBalance.PAYER_PERCENTAGE,
+                TablasContract.Compound.ExpenseBalance.PAYER_ROLE, TablasContract.Compound.ExpenseBalance.PAYER_MANUALLY_SET };
+
+        StringBuffer selection = (new StringBuffer(TablasContract.Compound.ExpenseBalance.EXPENSE_ID)).append(" = ?");
+        String[] selectionValues = new String[]{ String.valueOf(expenseId)};
+        StringBuffer sortOrder = new StringBuffer(TablasContract.Compound.ExpenseBalance.getInstance().getFullColumnName(TablasContract.Compound.ExpenseBalance.MEMBER_USER_ID)).append(" ASC");
 
         Cursor cursorResult = mContext.getContentResolver().query(TablasContract.Compound.ExpenseBalance.TABLE_URI, projection, selection.toString(), selectionValues, sortOrder.toString());
 

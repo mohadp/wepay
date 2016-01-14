@@ -15,8 +15,8 @@ import android.widget.*;
 
 import com.jumo.tablas.R;
 import com.jumo.tablas.provider.dao.*;
+import com.jumo.tablas.ui.util.BitmapCache;
 import com.jumo.tablas.ui.util.BitmapLoader;
-import com.jumo.tablas.ui.util.CacheManager;
 import com.jumo.tablas.ui.views.ImageViewRow;
 import com.jumo.tablas.ui.views.RoundImageView;
 import com.jumo.tablas.ui.loaders.ExpenseUserThreadHandler;
@@ -29,15 +29,13 @@ public class ExpenseCursorAdapter extends RecyclerView.Adapter<ExpenseCursorAdap
 	
 	//To get balances on a per-user basis for a particular group
     protected WeakReference<Context> mContextReference;
-    private WeakReference<CacheManager> mCacheContainerReference;
     private WeakReference<HandlerThread> mHandlerReference; //Initially, this is to load payers; we will change this and handle all here, by asynchcronously loading images for contacts.
     private EntityCursor mCursor;
 
-    public ExpenseCursorAdapter(Context context, EntityCursor cursor, CacheManager cacheManager, HandlerThread handler) {
+    public ExpenseCursorAdapter(Context context, EntityCursor cursor, HandlerThread handler) {
         super();
         mContextReference = new WeakReference<Context>(context);
         mHandlerReference = new WeakReference<HandlerThread>(handler);
-        mCacheContainerReference = new WeakReference<CacheManager>(cacheManager);
         mCursor = cursor;
     }
 
@@ -69,11 +67,11 @@ public class ExpenseCursorAdapter extends RecyclerView.Adapter<ExpenseCursorAdap
         // set up the start date text view
         BitmapLoader.asyncSetBitmapInImageView(
                 new BitmapLoader.ImageRetrieval(BitmapLoader.ImageRetrieval.RES_ID, R.drawable.moha),
-                holder.image, mContextReference.get(), mCacheContainerReference.get()); //loaded in separate thread if not present in cache
+                holder.image, mContextReference.get(), BitmapCache.getInstance()); //loaded in separate thread if not present in cache
 
         BitmapLoader.asyncSetBitmapInImageView( //TODO: will load image of category once I have the category images
                 new BitmapLoader.ImageRetrieval(BitmapLoader.ImageRetrieval.RES_ID, R.drawable.ic_launcher),
-                holder.category, mContextReference.get(), mCacheContainerReference.get());
+                holder.category, mContextReference.get(), BitmapCache.getInstance());
 
         loadPayersForExpense(expense, holder.payerImages); //TODO: replace this with BitmapLoader loading of class expenses (since we can use submit URI
 

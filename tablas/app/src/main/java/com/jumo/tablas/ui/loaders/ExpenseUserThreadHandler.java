@@ -14,6 +14,8 @@ import com.jumo.tablas.common.TablasManager;
 import com.jumo.tablas.model.Member;
 import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.EntityCursor;
+import com.jumo.tablas.ui.util.BitmapCache;
+import com.jumo.tablas.ui.util.CacheManager;
 import com.jumo.tablas.ui.views.ImageViewRow;
 
 import java.lang.ref.WeakReference;
@@ -35,7 +37,6 @@ public class ExpenseUserThreadHandler extends HandlerThread {
      *
      */
     Map<ImageViewRow, String> requestMap = Collections.synchronizedMap(new HashMap<ImageViewRow, String>());
-    private final WeakReference<LruCache<Object, Bitmap>> mCacheReference;
     private final WeakReference<Context> mContextReference;
 
     //Handler that will process all the messages in the looper
@@ -57,9 +58,8 @@ public class ExpenseUserThreadHandler extends HandlerThread {
         mContextReference = null;
     }*/
 
-    public ExpenseUserThreadHandler(Context context, LruCache<Object, Bitmap> cache, Handler responseHandler){
+    public ExpenseUserThreadHandler(Context context, Handler responseHandler){
         super(TAG);
-        mCacheReference = new WeakReference<LruCache<Object, Bitmap>>(cache);
         mContextReference = new WeakReference<Context>(context);
         mResponseHandler = responseHandler;
 
@@ -141,13 +141,13 @@ public class ExpenseUserThreadHandler extends HandlerThread {
 
         private Bitmap getUserBitmap(int resId){
             //first check in the cahce; if not, retrieve from wherever
-            LruCache<Object, Bitmap> cache = mCacheReference.get();
-            Bitmap bitmap = cache.get(resId);
+            CacheManager<Object, Bitmap> cacheManager = BitmapCache.getInstance();
+            Bitmap bitmap = cacheManager.retrieveFromCache(resId);
             Resources resources = mContextReference.get().getResources();
 
             if(bitmap == null){
                 bitmap = BitmapTask.decodeSampledBitmapFromResource(resources, resId, 100, 100, null);
-                cache.put(resId, bitmap);
+                cacheManager.addToCache(resId, bitmap);
             }
             return bitmap;
         }

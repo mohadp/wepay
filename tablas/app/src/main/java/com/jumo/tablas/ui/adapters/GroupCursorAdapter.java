@@ -25,12 +25,8 @@ public class GroupCursorAdapter extends DrawableCursorAdapter {
 
     public GroupCursorAdapter(Context context, EntityCursor cursor) {
         super(context, cursor);
-        //mCacheReference = new WeakReference<LruCache<Integer, Bitmap>>();
     }
 
-    public GroupCursorAdapter(Context context, EntityCursor cursor, CacheManager cacheManager) {
-        super(context, cursor, cacheManager);
-    }
 
     //Create view for each item
     @Override

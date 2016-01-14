@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
+import android.util.Log;
 
 import com.jumo.tablas.common.TablasManager;
 import com.jumo.tablas.model.Entity;
@@ -13,7 +14,6 @@ import com.jumo.tablas.model.Payer;
 import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.provider.dao.EntityCursor;
 import com.jumo.tablas.ui.util.ExpenseCalculator;
-import com.jumo.tablas.ui.util.PayerCalculator;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -22,13 +22,13 @@ import java.util.HashMap;
 /**
  * Created by Moha on 1/9/16.
  */
-public class ExpensePayerLoader extends AsyncTask<Long, Void, ExpenseCalculator> {
-
+public class ExpenseLoader extends AsyncTask<Long, Void, ExpenseCalculator> {
+    private static final String TAG = "ExpenseLoader";
     private ArrayList<OnExpenseCalculatorLoaded> mOnLoadedSubscribers;
     private WeakReference<Context> mContextReference;
 
 
-    public ExpensePayerLoader(Context context, long expenseId, long groupId){
+    public ExpenseLoader(Context context){
         mOnLoadedSubscribers = new ArrayList<OnExpenseCalculatorLoaded>();
         mContextReference = new WeakReference<Context>(context);
     }
@@ -50,7 +50,7 @@ public class ExpensePayerLoader extends AsyncTask<Long, Void, ExpenseCalculator>
         //Retrieve members and, if any, existent payers
         loadMembersAndPayers(tablasManager, calculator, expenseId, groupId);
 
-        return null;
+        return calculator;
     }
 
     private ExpenseCalculator loadExpense(TablasManager tablasManager, long expenseId){
@@ -68,26 +68,34 @@ public class ExpensePayerLoader extends AsyncTask<Long, Void, ExpenseCalculator>
     }
 
     private void loadMembersAndPayers(TablasManager tablasManager, ExpenseCalculator calculator, long expenseId, long groupId){
-        //Get all members
-        Cursor membersCursor = tablasManager.getExpenseMembersOrPayers(expenseId, groupId);
-        EntityCursor entityCursor = new EntityCursor(membersCursor);
+        boolean isNewExpense = calculator.getExpense().getId() <= 0; //If loaded expense id is 0 or less, no expense found; we are creating new expense.
+        //Get members
+        Cursor memberCursor = isNewExpense? tablasManager.getGroupMembers(groupId) : tablasManager.getExpensePayersAndMembers(expenseId);
+        EntityCursor entityCursor = new EntityCursor(memberCursor);
         HashMap<Long, ExpenseCalculator.Person> people = new HashMap<Long, ExpenseCalculator.Person>();
 
         while(entityCursor.moveToNext()){
-            Entity memberOrPayer = entityCursor.getEntity(TablasContract.Compound.GroupBalance.getInstance());
-            Payer payer = new Payer(memberOrPayer);
+            Entity memberOrPayer = entityCursor.getEntity(isNewExpense? TablasContract.Member.getInstance() : TablasContract.Compound.GroupBalance.getInstance());
             Member member = new Member(memberOrPayer);
 
             ExpenseCalculator.Person person = people.get(member.getId());
             person = (person == null)? new ExpenseCalculator.Person(member) : person;
+
             //Get contact information for current member
             loadContactInfoIntoPerson(tablasManager, person);
-            //Payers should be null if creating a new expense.
-            Payer hasPaid = (payer.getId() > 0 && payer.getRole() == TablasContract.Payer.OPTION_ROLE_PAID)? payer : null;
-            Payer shouldPay = (payer.getId() > 0 && payer.getRole() == TablasContract.Payer.OPTION_ROLE_SHOULD_PAY)? payer : null;
 
-            calculator.addPerson(person, hasPaid, shouldPay);
+            if(!isNewExpense) {
+                Payer payer = new Payer(memberOrPayer);
+                //Payers should be null if creating a new expense.
+                Payer hasPaid = (payer.getId() > 0 && payer.getRole() == TablasContract.Payer.OPTION_ROLE_PAID) ? payer : null;
+                Payer shouldPay = (payer.getId() > 0 && payer.getRole() == TablasContract.Payer.OPTION_ROLE_SHOULD_PAY) ? payer : null;
+
+                calculator.addPerson(person, hasPaid, shouldPay);
+            }else{
+                calculator.addPerson(person);
+            }
         }
+
 
         entityCursor.close();
     }
@@ -95,11 +103,26 @@ public class ExpensePayerLoader extends AsyncTask<Long, Void, ExpenseCalculator>
     private void loadContactInfoIntoPerson(TablasManager tablasManager, ExpenseCalculator.Person person){
         String userId = person.member.getUserId();
 
+        //Todo: to be commented out.
+        Log.d(TAG, "Contact Info: \n " + person.member.toString());
+
         Cursor contactCursor = tablasManager.getContactsByUserId(userId);
         //Assumption is that all contacts are in the phone.
         if(contactCursor == null || !contactCursor.isClosed() || contactCursor.getCount() == 0){
             return;
         }
+
+        //Todo: To be commented out...
+        while(contactCursor.moveToNext()){
+            StringBuffer sb = new StringBuffer("\t\t");
+            for(int i = 0 ; i < contactCursor.getColumnCount(); i++){
+                sb.append(contactCursor.getString(i)).append(", ");
+            }
+            sb.append("\n");
+
+            Log.d(TAG, sb.toString() );
+        }
+
         contactCursor.moveToFirst();
         String name = contactCursor.getString(contactCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
         String url = contactCursor.getString(contactCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI));
@@ -111,15 +134,20 @@ public class ExpensePayerLoader extends AsyncTask<Long, Void, ExpenseCalculator>
     @Override
     protected void onPostExecute(ExpenseCalculator result) {
         //showDialog("Downloaded " + result + " bytes");
+        notifySubscribersOnLoaded(result);
     }
 
-    public void notifyOnLoadedSubscribers(PayerCalculator result){
+    public void notifySubscribersOnLoaded(ExpenseCalculator result){
         for(OnExpenseCalculatorLoaded s : mOnLoadedSubscribers){
             s.onExpenseCalculatorLoader(result);
         }
     }
 
+    public void addSubscriberToNotify(OnExpenseCalculatorLoaded subscriber){
+        mOnLoadedSubscribers.add(subscriber);
+    }
+
     public interface OnExpenseCalculatorLoaded{
-        public void onExpenseCalculatorLoader(PayerCalculator result);
+        public void onExpenseCalculatorLoader(ExpenseCalculator result);
     }
 }

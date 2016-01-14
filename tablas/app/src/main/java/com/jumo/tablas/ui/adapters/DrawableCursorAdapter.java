@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
 
+import com.jumo.tablas.ui.util.BitmapCache;
 import com.jumo.tablas.ui.util.BitmapLoader;
 import com.jumo.tablas.ui.util.CacheManager;
 
@@ -15,7 +16,6 @@ import java.lang.ref.WeakReference;
  */
 public abstract class DrawableCursorAdapter extends CursorAdapter{
 
-    protected WeakReference<CacheManager> mCacheContainerReference;
     protected WeakReference<Context> mContextReference;
 
     public DrawableCursorAdapter(Context context, Cursor cursor) {
@@ -23,19 +23,13 @@ public abstract class DrawableCursorAdapter extends CursorAdapter{
         mContextReference = new WeakReference<Context>(context);
     }
 
-    public DrawableCursorAdapter(Context context, Cursor cursor, CacheManager cacheManager) {
-        super(context, cursor, 0);
-        mCacheContainerReference = new WeakReference<CacheManager>(cacheManager);
-        mContextReference = new WeakReference<Context>(context);
-    }
-
 
     protected void loadBitmap(BitmapLoader.ImageRetrieval resource, ImageView imageView){
-        if(mContextReference == null || mCacheContainerReference == null)
+        if(mContextReference == null)
             return;
 
         Context context = mContextReference.get();
-        CacheManager cacheManager = mCacheContainerReference.get();
+        CacheManager cacheManager = BitmapCache.getInstance();
         if(context == null || cacheManager == null)
             return;
 

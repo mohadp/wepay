@@ -38,7 +38,7 @@ import com.jumo.tablas.ui.util.CacheManager;
  * Activities containing this fragment MUST implement the {@links OnFragmentInteractionListener}
  * interface.
  */
-public class GroupFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, CacheManager<Object, Bitmap> {
+public class GroupFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = "GroupFragment";
 
@@ -113,7 +113,7 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
 
         // Set the adapter
         mListView = (ListView) view.findViewById(R.id.list_groups);
-        mListView.setAdapter(new GroupCursorAdapter(getActivity(), null, this));
+        mListView.setAdapter(new GroupCursorAdapter(getActivity(), null));
         mListView.setOnItemClickListener(new GroupListListener());
         mListView.setEmptyView(inflater.inflate(R.layout.list_empty, mListView, false));
 
@@ -222,28 +222,4 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
 
         }
     }
-
-    @Override
-    public void addToCache(Object key, Bitmap bitmap) {
-        if(mCache == null)
-            return;
-
-        synchronized (mCache) {
-            if (mCache.get(key) == bitmap) {
-                return;
-            } else {
-                mCache.put(key, bitmap);
-            }
-        }
-    }
-
-    @Override
-    public Bitmap retrieveFromCache(Object key) {
-        if(mCache == null)
-            return null;
-
-        return mCache.get(key);
-    }
-
-
 }

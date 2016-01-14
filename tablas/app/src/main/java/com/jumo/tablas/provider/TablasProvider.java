@@ -73,7 +73,7 @@ public class TablasProvider extends ContentProvider{
         int matcher = sURIMatcher.match(uri);
         if(matcher >= 0 && matcher < 100){
             cursorResult = dbConnection.query(uriPaths.get(0), projection, selection /*filter*/,
-                    selectionArgs /*filter values*/, null /*group by*/, sortOrder /* order by*/, null /* having*/);
+                    selectionArgs /*filter values*/, null /*group by*/, null /*having*/, sortOrder /* order by*/);
         }else if(matcher >= 100){
             CompositeTable compositeTable = (CompositeTable)TablasContract.getTable(uriPaths.get(0));
             String sqlQuery = select(compositeTable, projection, selection, sortOrder, false);

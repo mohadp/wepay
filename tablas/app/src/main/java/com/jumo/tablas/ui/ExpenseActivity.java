@@ -61,7 +61,8 @@ public class ExpenseActivity extends AppCompatActivity implements ExpenseInputFr
 
     protected ExpenseInputFragment createEditExpenseFragment(){
         long expenseId = getIntent().getLongExtra(ExpenseInputFragment.EXTRA_EXPENSE_ID, 0);
-        return ExpenseInputFragment.newInstance(expenseId);
+        long groupId = getIntent().getLongExtra(ExpensesFragment.EXTRA_GROUP_ID, 0);
+        return ExpenseInputFragment.newInstance(expenseId, groupId);
     }
 
     @Override
