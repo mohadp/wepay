@@ -19,6 +19,14 @@ public class EntityCursor extends CursorWrapper {
         super(c);
     }
 
+    /**
+     * Returns an entity that respresents the provided table (an entity with the columns of the table).
+     * The entity returns the entity with the fields named after the table column names (not the full column names, e.g.
+     * columns are named like "colname", not like "table.colname".
+     *
+     * @param table
+     * @return an Entity object
+     */
     public Entity getEntity(Table table){
         if(isBeforeFirst() || isAfterLast()){
             return null;

@@ -4,6 +4,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 
 import com.jumo.tablas.R;
@@ -17,6 +18,10 @@ import com.jumo.tablas.ui.views.LinearLayoutResize;
  */
 public class ExpenseActivity extends AppCompatActivity implements ExpenseInputFragment.Callback, LinearLayoutResize.OnSizeChange {
 
+    private static final String TAG = "ExpenseActivity";
+    private final static String SAVE_EXPENSE_FRAG = "e";
+    private final static String SAVE_EXPENSE_INPUT_FRAG = "ei";
+
     private ExpensesFragment mExpensesFragment;
     private ExpenseInputFragment mExpenseEditFragment;
 
@@ -25,32 +30,52 @@ public class ExpenseActivity extends AppCompatActivity implements ExpenseInputFr
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_conversation);
         //setDefaultPreferences();
-
-        //Include
         FragmentManager fm = getFragmentManager();
-        mExpensesFragment = (ExpensesFragment) fm.findFragmentById(R.id.view_conversation);
-        mExpenseEditFragment = (ExpenseInputFragment) fm.findFragmentById(R.id.custom_keyboard);
 
-        FragmentTransaction fragTransaction = fm.beginTransaction();
-        boolean transOperations = false;
+        if (savedInstanceState != null) {
+            //Restore the fragment's instance
+            mExpensesFragment = (ExpensesFragment)fm.getFragment(savedInstanceState, SAVE_EXPENSE_FRAG);
+            mExpenseEditFragment = (ExpenseInputFragment)fm.getFragment(savedInstanceState, SAVE_EXPENSE_INPUT_FRAG);
+            //Make sure to remove the previous mExpenseEditFragment:
+            //getFragmentManager().beginTransaction().remove(mExpenseEditFragment).commit();
+        }else {
+            FragmentTransaction fragTransaction = fm.beginTransaction();
+            boolean atLeastOneTransaction = false;
+            //Create the fragments
+            mExpensesFragment = (ExpensesFragment) fm.findFragmentById(R.id.view_conversation);
+            if(mExpensesFragment == null){
+                mExpensesFragment = createExpenseFragment();
+                fragTransaction.add(R.id.view_conversation, mExpensesFragment);
+                atLeastOneTransaction = true;
+            }
 
-        if(mExpenseEditFragment == null){
-            mExpenseEditFragment = createEditExpenseFragment();
-            mExpenseEditFragment.setCallback(this);
-            fragTransaction.add(R.id.custom_keyboard, mExpenseEditFragment);
-            transOperations = true;
+            mExpenseEditFragment = (ExpenseInputFragment) fm.findFragmentById(R.id.custom_keyboard);
+            if(mExpenseEditFragment == null) {
+                Log.d(TAG, "ExpenseEditFragment being created again!");
+                mExpenseEditFragment = createEditExpenseFragment();
+                fragTransaction.add(R.id.custom_keyboard, mExpenseEditFragment);
+                atLeastOneTransaction = true;
+            }
+
+            if(atLeastOneTransaction){
+                fragTransaction.commit();
+            }
         }
+        //Because of bug, I cannot "setRetainInstance(true)" this fragment; need to recreate every time: https://code.google.com/p/android/issues/detail?id=42601#c10
 
-        if(mExpensesFragment == null){
-            mExpensesFragment = createExpenseFragment();
-            mExpensesFragment.setSizeListener(this);
-            fragTransaction.add(R.id.view_conversation, mExpensesFragment);
-            transOperations = true;
-        }
+        mExpenseEditFragment.setCallback(this);
+        mExpensesFragment.setSizeListener(this);
+    }
 
-        if(transOperations) {
-            fragTransaction.commit();
-        }
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        //Save the fragment's instance
+        mExpensesFragment.setSizeListener(null);
+        mExpenseEditFragment.setCallback(null);
+        //Save ony one of them
+        getFragmentManager().putFragment(outState, SAVE_EXPENSE_FRAG, mExpensesFragment);
+        getFragmentManager().putFragment(outState, SAVE_EXPENSE_INPUT_FRAG, mExpenseEditFragment);
     }
 
     protected ExpensesFragment createExpenseFragment(){

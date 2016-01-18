@@ -15,6 +15,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"/>
         <ImageButton
+            android:id="@+id/button_add_payer"
             android:layout_width="@dimen/button_size"
             android:layout_height="@dimen/button_size"
             android:src="@android:drawable/ic_menu_save"

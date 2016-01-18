@@ -107,7 +107,7 @@ public class ExpensesFragment extends Fragment implements LoaderManager.LoaderCa
         LinearLayoutResize.OnSizeChange onSizeChange = new LinearLayoutResize.OnSizeChange() {
             @Override
             public void onSizeChanged(int w, int h, int oldw, int oldh) {
-                if(oldh == 0){
+                if(oldh == 0){ //always keep the largest drawing rectangle to know when the system keyboard is showing or not.
                     mMaxConversationHeight = h;
                 }
                 if(mSizeListener != null){

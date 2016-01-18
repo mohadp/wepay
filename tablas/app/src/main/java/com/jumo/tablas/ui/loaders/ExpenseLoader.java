@@ -103,24 +103,10 @@ public class ExpenseLoader extends AsyncTask<Long, Void, ExpenseCalculator> {
     private void loadContactInfoIntoPerson(TablasManager tablasManager, ExpenseCalculator.Person person){
         String userId = person.member.getUserId();
 
-        //Todo: to be commented out.
-        Log.d(TAG, "Contact Info: \n " + person.member.toString());
-
         Cursor contactCursor = tablasManager.getContactsByUserId(userId);
         //Assumption is that all contacts are in the phone.
-        if(contactCursor == null || !contactCursor.isClosed() || contactCursor.getCount() == 0){
+        if(contactCursor == null || contactCursor.isClosed() || contactCursor.getCount() == 0){
             return;
-        }
-
-        //Todo: To be commented out...
-        while(contactCursor.moveToNext()){
-            StringBuffer sb = new StringBuffer("\t\t");
-            for(int i = 0 ; i < contactCursor.getColumnCount(); i++){
-                sb.append(contactCursor.getString(i)).append(", ");
-            }
-            sb.append("\n");
-
-            Log.d(TAG, sb.toString() );
         }
 
         contactCursor.moveToFirst();
@@ -134,10 +120,6 @@ public class ExpenseLoader extends AsyncTask<Long, Void, ExpenseCalculator> {
     @Override
     protected void onPostExecute(ExpenseCalculator result) {
         //showDialog("Downloaded " + result + " bytes");
-        notifySubscribersOnLoaded(result);
-    }
-
-    public void notifySubscribersOnLoaded(ExpenseCalculator result){
         for(OnExpenseCalculatorLoaded s : mOnLoadedSubscribers){
             s.onExpenseCalculatorLoader(result);
         }

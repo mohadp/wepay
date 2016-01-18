@@ -271,23 +271,39 @@ public class TablasManager {
     }
 
     public Cursor getContactsByUserId(String normalizedPhone){
-        Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+        //Uri uri = Uri.withAppendedPath(ContactsContract.CommonDataKinds.Phone.CONTENT_FILTER_URI, Uri.encode(normalizedPhone)); //this also works, but only searchs on account_type_and_data_set is phonev2, not our com.jumo contacts
+        Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI; //this one searches on our contacts
 
         String[] projection = new String[]{ ContactsContract.CommonDataKinds.Phone._ID
                 , ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
+                //, ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET
                 , ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER
                 , ContactsContract.CommonDataKinds.Phone.LABEL
                 , ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI};
 
         StringBuilder filter = new StringBuilder();
         filter.append("")
-                .append(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER).append(" like ? AND ")
+                .append(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER).append(" = ? AND ")
                 .append(ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET).append(" = ?");
 
         String[] filterVals = new String[]{normalizedPhone, AccountService.ACCOUNT_TYPE};
         String sortBy = null; //ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME + " ASC";
 
-        return mContext.getContentResolver().query(uri, projection, filter.toString(), filterVals, sortBy);
+        Cursor c =  mContext.getContentResolver().query(uri, projection, filter.toString(), filterVals, sortBy); //mContext.getContentResolver().query(uri, projection, null, null, null);
+
+        /*while(c.moveToNext()){
+            StringBuffer sb = new StringBuffer("\t\t");
+            for(int i = 0 ; i < c.getColumnCount(); i++){
+                sb.append(c.getColumnName(i)).append(": ").append(c.getString(i)).append("; ");
+            }
+            sb.append("\n");
+
+            Log.d(TAG, sb.toString() );
+        }*/
+
+        return c;
+
+        //return mContext.getContentResolver().query(uri, projection, filter.toString(), filterVals, sortBy);
     }
 
 

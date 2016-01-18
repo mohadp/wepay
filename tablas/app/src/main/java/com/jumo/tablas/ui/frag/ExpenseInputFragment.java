@@ -1,12 +1,10 @@
 package com.jumo.tablas.ui.frag;
 
 import android.app.Fragment;
-import android.app.LoaderManager;
 import android.content.Context;
-import android.content.Loader;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.view.PagerTitleStrip;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -19,19 +17,19 @@ import android.widget.LinearLayout;
 import android.support.v4.view.ViewPager;
 
 import com.jumo.tablas.R;
-import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.ui.adapters.InputMethodPageAdapter;
 import com.jumo.tablas.ui.loaders.ExpenseLoader;
 import com.jumo.tablas.ui.util.ExpenseCalculator;
 import com.jumo.tablas.ui.util.OnKeyEventListener;
 import com.jumo.tablas.ui.views.LinearLayoutResize;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 
 /**
  * Created by Moha on 12/30/15.
  */
-public class ExpenseInputFragment extends Fragment implements OnKeyEventListener, LinearLayoutResize.OnSizeChange, LoaderManager.LoaderCallbacks<Cursor>, ExpenseLoader.OnExpenseCalculatorLoaded {
+public class ExpenseInputFragment extends Fragment implements OnKeyEventListener, LinearLayoutResize.OnSizeChange, ExpenseLoader.OnExpenseCalculatorLoaded{
     private static final String TAG = "ExpenseInputFragment";
 
     //Extras for initializing this fragment (this one is optional)
@@ -53,9 +51,9 @@ public class ExpenseInputFragment extends Fragment implements OnKeyEventListener
     //Other control variables
     private float mCustomKeyboardHeight;
     private boolean mShowCustomKeyboard = false;
-    private ExpenseCalculator mExpenseCalculator;
     private Callback mCallback;
-    private HashMap<Integer, Fragment> mKeyboardPages;
+    private InputMethodPageAdapter mKeyboardPageAdapter;
+    private ExpenseCalculator mExpenseCalculator;
 
     public static ExpenseInputFragment newInstance(long expenseId, long groupId){
         ExpenseInputFragment fragment = new ExpenseInputFragment();
@@ -68,27 +66,34 @@ public class ExpenseInputFragment extends Fragment implements OnKeyEventListener
 
     public ExpenseInputFragment(){  }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState){
-        super.onActivityCreated(savedInstanceState);
-        //Add loaders here
-        ExpenseLoader expenseLoader = new ExpenseLoader(getActivity());
-        expenseLoader.addSubscriberToNotify(this);
-        expenseLoader.execute(new Long(0), new Long(mGroupId));
-
-    }
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         mExpenseId = getArguments().getLong(EXTRA_EXPENSE_ID, 0);
         mGroupId = getArguments().getLong(EXTRA_GROUP_ID, 0);
-        mKeyboardPages = new HashMap<Integer, Fragment>();
-        mKeyboardPages.put(InputMethodPageAdapter.FRAGMENT_PAID, PayerInputFragment.newInstance(mExpenseId, TablasContract.Payer.OPTION_ROLE_PAID));
-        mKeyboardPages.put(InputMethodPageAdapter.FRAGMENT_SHOULD_PAY, PayerInputFragment.newInstance(mExpenseId, TablasContract.Payer.OPTION_ROLE_SHOULD_PAY));
-        mKeyboardPages.put(InputMethodPageAdapter.FRAGMENT_CURRENCY, CurrencyInputFragment.newInstance(mExpenseId, "USD")); //Todo: Change currency for it to be the user's currency preference.
+        Log.d(TAG, "ExpenseInputFragment created!, Arguments" +  this.toString() +": (ExpenseID: " + mExpenseId + ", GroupId: " + mGroupId + ")");
+
+        /*if(savedInstanceState != null){
+            mExpenseCalculator =
+        }*/
+
+        //Add loaders here: the asynch task that loads all members and payers for this expense.
+        ExpenseLoader expenseLoader = new ExpenseLoader(getActivity());
+        expenseLoader.addSubscriberToNotify(this);
+        expenseLoader.execute(new Long(0), new Long(mGroupId));
+
     }
 
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState){
+        super.onActivityCreated(savedInstanceState);
+        onExpenseCalculatorLoader(mExpenseCalculator);
+    }
+
+
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_custom_keyboard, container, false);
 
@@ -98,16 +103,28 @@ public class ExpenseInputFragment extends Fragment implements OnKeyEventListener
         mConversationEditText = (EditText) view.findViewById(R.id.edit_message);
         mAmountEditText = (EditText) view.findViewById(R.id.edit_amount);
 
+        //Set the custom keyboard pages
         mCustomKeyboard = (ViewPager) view.findViewById(R.id.input_method);
+        mKeyboardPageAdapter = new InputMethodPageAdapter(getChildFragmentManager(), getActivity(), mExpenseId, mGroupId);
+        mCustomKeyboard.setAdapter(mKeyboardPageAdapter);
 
-
-        InputMethodPageAdapter fragmentPageAdapter = new InputMethodPageAdapter(getChildFragmentManager(), mKeyboardPages);
-        mCustomKeyboard.setAdapter(fragmentPageAdapter);
-
+        //Enable keyboard showing and hiding
         prepareCustomKeyboard();
 
         return view;
     }
+
+    @Override
+    public void onDetach(){
+        super.onDetach();
+    }
+
+    /*@Override
+    public void onDestroy(){
+        super.onDestroy();
+        mCustomKeyboard.setAdapter(null);
+        mKeyboardPageAdapter = null;
+    }*/
 
     private void prepareCustomKeyboard(){
         //first we update the height to be the dimension in the resource
@@ -116,6 +133,7 @@ public class ExpenseInputFragment extends Fragment implements OnKeyEventListener
         View.OnClickListener mCustKeyboardToggleListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d(TAG, "ExpenseInputFragment Pressed Button: mCustomKeyboardToggleListener!");
                 if (isCustomKeyboardShowing()) {
                     dismissCustomKeyboard();
                 } else {
@@ -211,38 +229,13 @@ public class ExpenseInputFragment extends Fragment implements OnKeyEventListener
         this.mCallback = fragmentInterface;
     }
 
-    ///////////// Methods for LoaderCallbacks interface to handle this fragment's loaders /////////////
+    ///////////// Methods for OnExpenseCalculatorLoader interface to handle this fragment's key listener /////////////
     @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Log.d(TAG, "onCreateLoader");
-
-        if(id == LOADER_MEMBERS){
-            return null;
-        }
-        return null;
+    public void onExpenseCalculatorLoader(ExpenseCalculator result) {
+        mExpenseCalculator = result;
+        mKeyboardPageAdapter.setExpenseCalculator(mExpenseCalculator);
     }
 
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        Log.d(TAG, "onLoadFinished");
-        int id = loader.getId();
-
-        if(id == LOADER_MEMBERS) {
-            if (this.getActivity() == null)
-                return;
-            // Update the data in the corresponsing adapters for payers and paying people.
-            // ((ExpenseCursorAdapter) mRecyclerView.getAdapter()).changeCursor(new EntityCursor(data));
-        }
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        int id = loader.getId();
-
-        if(id == LOADER_MEMBERS) {
-            //((ExpenseCursorAdapter) mRecyclerView.getAdapter()).changeCursor(null);
-        }
-    }
 
     ///////////// Methods for OnKeyEventListener interface to handle this fragment's key listener /////////////
     @Override
@@ -271,14 +264,6 @@ public class ExpenseInputFragment extends Fragment implements OnKeyEventListener
         }
     }
 
-    ///////////// Methods for ExpenseLoader.OnExpenseCalculatorLoader to handle when expense information finished /////////////
-
-    @Override
-    public void onExpenseCalculatorLoader(ExpenseCalculator result) {
-        mExpenseCalculator = result;
-        ((PayerInputFragment)mKeyboardPages.get(InputMethodPageAdapter.FRAGMENT_PAID)).setExpenseCalculator(mExpenseCalculator);
-        ((PayerInputFragment)mKeyboardPages.get(InputMethodPageAdapter.FRAGMENT_SHOULD_PAY)).setExpenseCalculator(mExpenseCalculator);
-    }
 
     public interface Callback {
         public boolean isSystemKeyboardShowing();

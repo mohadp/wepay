@@ -19,6 +19,7 @@
     <string name="text_curr_tab">Currency</string>
     <string name="text_paid_tab">Paid</string>
     <string name="text_payer_tab">Payer</string>
+    <string name="text_category_tab">Payer</string>
     <string name="text_currency">USD</string>
     <string name="text_currency_desc">USD - United States Dollar</string>
     <string name="text_currency_amt">1</string>

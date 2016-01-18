@@ -3,18 +3,22 @@ package com.jumo.tablas.ui.frag;
 import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.media.Image;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 
 import com.jumo.tablas.R;
+import com.jumo.tablas.ui.loaders.ExpenseLoader;
 import com.jumo.tablas.ui.util.BitmapCache;
 import com.jumo.tablas.ui.util.BitmapLoader;
 import com.jumo.tablas.ui.util.ExpenseCalculator;
@@ -30,7 +34,8 @@ import java.util.Map;
 /**
  * Created by Moha on 1/9/16.
  */
-public class PayerInputFragment extends Fragment implements AdapterView.OnItemSelectedListener {
+public class PayerInputFragment extends Fragment implements AdapterView.OnItemSelectedListener, ExpenseLoader.OnExpenseCalculatorLoaded {
+    private static final String TAG = "PayerInputFragment";
     public static final String EXTRA_EXPENSE_ID = "com.jumo.tablas.expense_id";
     public static final String EXTRA_PAYER_MODE = "com.jumo.tablas.payer_mode";
 
@@ -42,6 +47,7 @@ public class PayerInputFragment extends Fragment implements AdapterView.OnItemSe
     private ArrayList<HashMap<String, String>> mAddedList;
     private LinkedHashMap<Long, HashMap<String, String>> mAddedListById;
     private Spinner mMemberSpinner;
+    private ImageButton mAddPayerButton;
 
 
     public static PayerInputFragment newInstance(long expenseId, int payerMode){
@@ -93,10 +99,22 @@ public class PayerInputFragment extends Fragment implements AdapterView.OnItemSe
         mMemberAdapter = new MembersSimpleAdapter(getActivity(), mAddedList, R.layout.list_item_contact_simple, fromCols, toViewIds);
         mMemberSpinner.setAdapter(mMemberAdapter);
 
+        mAddPayerButton = (ImageButton) view.findViewById(R.id.button_add_payer);
+        mAddPayerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "Button pressed");
+            }
+        });
+
         return view;
     }
 
     private void updateMemberAdapterList(){
+        if(mExpenseCalculator == null){
+            return;
+        }
+
         Collection<ExpenseCalculator.Person> people = mExpenseCalculator.getPeople();
         for(ExpenseCalculator.Person p : people){
             long memberId = p.member.getId();
@@ -114,19 +132,20 @@ public class PayerInputFragment extends Fragment implements AdapterView.OnItemSe
                 mAddedListById.remove(memberId);
             }
         }
+        if(mMemberAdapter != null){
+            mMemberAdapter.notifyDataSetChanged();
+        }
     }
 
     public ExpenseCalculator getExpenseCalculator() {
         return mExpenseCalculator;
     }
 
-    public void setExpenseCalculator(ExpenseCalculator mCalculator) {
-        this.mExpenseCalculator = mCalculator;
+    public void setExpenseCalculator(ExpenseCalculator expenseCalculator) {
+        mExpenseCalculator = expenseCalculator;
         updateMemberAdapterList();
-        if(mMemberAdapter != null){
-            mMemberAdapter.notifyDataSetChanged();
-        }
     }
+
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -135,6 +154,11 @@ public class PayerInputFragment extends Fragment implements AdapterView.OnItemSe
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {    }
+
+    @Override
+    public void onExpenseCalculatorLoader(ExpenseCalculator result) {
+        setExpenseCalculator(result);
+    }
 
     private class MembersSimpleAdapter extends SimpleAdapter implements SpinnerAdapter{
 
