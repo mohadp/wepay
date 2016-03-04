@@ -134,10 +134,48 @@ public class ExpenseCalculator {
         return true;
     }
 
+    public void removePayer(long memberId, int payerMode){
+        if(payerMode == TablasContract.Payer.OPTION_ROLE_PAID){
+            mHasPaid.removePayer(memberId);
+        }else if(payerMode == TablasContract.Payer.OPTION_ROLE_SHOULD_PAY){
+            mShouldPay.removePayer(memberId);
+        }
+    }
+
+    public boolean isPayer(long memberId, int payerMode){
+        boolean isPayer = false;
+        if(payerMode == TablasContract.Payer.OPTION_ROLE_PAID){
+            isPayer = mHasPaid.isPayer(memberId);
+        }else if(payerMode == TablasContract.Payer.OPTION_ROLE_SHOULD_PAY){
+            isPayer = mShouldPay.isPayer(memberId);
+        }
+        return isPayer;
+    }
+
+
+    public Collection<Long> getPayerMemberIds(int payerMode){
+        PayerCalculator p = null;
+        if(payerMode == TablasContract.Payer.OPTION_ROLE_PAID){
+            p = mHasPaid;
+        }else if(payerMode == TablasContract.Payer.OPTION_ROLE_SHOULD_PAY){
+            p = mShouldPay;
+        }
+        return (p == null)? null : p.getPayerMemberIds();
+    }
+
+    public Person getPerson(long memberId){
+        return mPeople.get(memberId);
+    }
+
     public Collection<Person> getPeople(){
         return (mPeople == null)? null : mPeople.values();
     }
 
+    public void setExpenseAmount(double amt){
+        mExpense.setAmount(amt);
+        mHasPaid.rebalanceAmounts();
+        mShouldPay.rebalanceAmounts();
+    }
 
     public static class Person{
         public String displayName;
@@ -168,4 +206,11 @@ public class ExpenseCalculator {
         return mExpense;
     }
 
+    public String toString(){
+        StringBuffer sb = new StringBuffer();
+        sb.append("ExpenseCalculator: \n");
+        sb.append("Paid ").append(mHasPaid.toString());
+        sb.append("Should Pay ").append(mShouldPay.toString());
+        return sb.toString();
+    }
 }

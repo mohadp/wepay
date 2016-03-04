@@ -4,6 +4,7 @@ import com.jumo.tablas.model.Expense;
 import com.jumo.tablas.model.Payer;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -69,6 +70,25 @@ public class PayerCalculator {
         }
         rebalanceAmounts();
     }
+
+    public void removePayer(long memberId){
+        mPayers.remove(memberId);
+        mPayerEntities.remove(memberId);
+        int position  = mPayersManuallySet.indexOf(memberId);
+        if(position >= 0) {
+            mPayersManuallySet.remove(position);
+        }
+        rebalanceAmounts();
+    }
+
+    public boolean isPayer(long memberId){
+        return (mPayers.get(memberId) != null);
+    }
+
+    public Collection<Long> getPayerMemberIds(){
+        return mPayers.keySet();
+    }
+
 
     public double getAmountForMember(long memberId){
         Double amount = mPayers.get(memberId);
@@ -153,6 +173,15 @@ public class PayerCalculator {
             payer.setPercentage(mPayers.get(l)/mExpense.getAmount());
         }
         return payers;
+    }
+
+    public String toString(){
+        StringBuffer sb = new StringBuffer();
+        sb.append("PayerCalculator:\n");
+        for(long member : mPayers.keySet()){
+            sb.append("\t").append(member).append(", ").append(mPayers.get(member)).append("\n");
+        }
+        return sb.toString();
     }
 
 

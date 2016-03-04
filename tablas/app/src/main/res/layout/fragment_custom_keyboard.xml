@@ -23,12 +23,6 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <ImageButton
-                    android:id="@+id/button_currency"
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:src="@android:drawable/ic_menu_compass" />
-
                 <EditText
                     android:id="@+id/edit_message"
                     android:layout_width="wrap_content"
@@ -42,6 +36,12 @@
                     android:layout_height="match_parent"
                     android:inputType="numberDecimal"
                     android:hint="@string/hint_amount"/>
+
+                <ImageButton
+                    android:id="@+id/button_currency"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:src="@android:drawable/ic_menu_compass" />
 
             </LinearLayout>
 

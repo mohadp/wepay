@@ -1,4 +1,4 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -6,13 +6,14 @@
     android:layout_marginStart="10dp"
     android:layout_marginEnd="10dp">
 
-    <LinearLayout
+    <!--LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <Spinner
             android:id="@+id/spinner_members"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:prompt="@string/hint_add_payer"
             android:layout_weight="1"/>
         <ImageButton
             android:id="@+id/button_add_payer"
@@ -20,7 +21,7 @@
             android:layout_height="@dimen/button_size"
             android:src="@android:drawable/ic_menu_save"
             android:layout_marginStart="10dp"/>
-    </LinearLayout>
+    </LinearLayout-->
 
     <!--SearchView
         android:layout_width="match_parent"
@@ -34,8 +35,16 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/list_payer"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="match_parent"
         android:layout_marginTop="10dp"
-        android:layout_weight="1"/>
+        />
 
-</LinearLayout>
+    <!--com.jumo.tablas.ui.views.RoundImageView
+        android:id="@+id/button_add_payer"
+        android:layout_gravity="right|bottom"
+        android:layout_width="@dimen/button_size"
+        android:layout_height="@dimen/button_size"
+        android:layout_margin="10dp"
+        android:src="@drawable/ic_launcher"/-->
+
+</FrameLayout>

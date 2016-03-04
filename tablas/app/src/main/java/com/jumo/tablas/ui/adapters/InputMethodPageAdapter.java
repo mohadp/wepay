@@ -107,6 +107,22 @@ public class InputMethodPageAdapter extends FragmentPagerAdapter {
 
     }
 
+    public void updateExpenseAmount(double amount){
+        if(mCalculator == null){
+            return;
+        }
+        mCalculator.setExpenseAmount(amount);
+
+        PayerInputFragment payerFragment = ((PayerInputFragment) mCurrentFragments.get(FRAGMENT_PAID));
+        if(payerFragment != null){
+            payerFragment.updatePayerAmounts();
+        }
+        payerFragment = ((PayerInputFragment) mCurrentFragments.get(FRAGMENT_SHOULD_PAY));
+        if(payerFragment != null){
+            payerFragment.updatePayerAmounts();
+        }
+    }
+
 
 
     /*@Override

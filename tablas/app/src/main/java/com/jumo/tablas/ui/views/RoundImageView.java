@@ -97,7 +97,7 @@ public class RoundImageView extends ImageView{
     }
 
 
-    private Bitmap createRoundBitmap(Bitmap bmp, int diameter) {
+    public static Bitmap createRoundBitmap(Bitmap bmp, int diameter) {
 		
 		if(bmp == null && !bmp.isRecycled()) return null;
 		
@@ -135,7 +135,7 @@ public class RoundImageView extends ImageView{
 		return output;	
 	} 
 	
-	private Bitmap createCircularBorder(float radius, int width, int height){
+	public static Bitmap createCircularBorder(float radius, int width, int height){
 		//Create new base bitmap over which the original image will be drawn, along with the circle effect.
 		Bitmap output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 		Canvas canvas = new Canvas(output);

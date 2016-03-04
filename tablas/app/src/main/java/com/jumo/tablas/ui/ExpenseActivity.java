@@ -9,20 +9,20 @@ import android.view.KeyEvent;
 
 import com.jumo.tablas.R;
 import com.jumo.tablas.ui.frag.ExpenseInputFragment;
-import com.jumo.tablas.ui.frag.ExpensesFragment;
+import com.jumo.tablas.ui.frag.ExpenseListFragment;
 import com.jumo.tablas.ui.util.OnKeyEventListener;
 import com.jumo.tablas.ui.views.LinearLayoutResize;
 
 /**
  * Created by Moha on 7/3/15.
  */
-public class ExpenseActivity extends AppCompatActivity implements ExpenseInputFragment.Callback, LinearLayoutResize.OnSizeChange {
+public class ExpenseActivity extends AppCompatActivity implements ExpenseInputFragment.CustomKeyboardHelper, LinearLayoutResize.OnSizeChange {
 
     private static final String TAG = "ExpenseActivity";
     private final static String SAVE_EXPENSE_FRAG = "e";
     private final static String SAVE_EXPENSE_INPUT_FRAG = "ei";
 
-    private ExpensesFragment mExpensesFragment;
+    private ExpenseListFragment mExpenseListFragment;
     private ExpenseInputFragment mExpenseEditFragment;
 
     @Override
@@ -34,7 +34,7 @@ public class ExpenseActivity extends AppCompatActivity implements ExpenseInputFr
 
         if (savedInstanceState != null) {
             //Restore the fragment's instance
-            mExpensesFragment = (ExpensesFragment)fm.getFragment(savedInstanceState, SAVE_EXPENSE_FRAG);
+            mExpenseListFragment = (ExpenseListFragment)fm.getFragment(savedInstanceState, SAVE_EXPENSE_FRAG);
             mExpenseEditFragment = (ExpenseInputFragment)fm.getFragment(savedInstanceState, SAVE_EXPENSE_INPUT_FRAG);
             //Make sure to remove the previous mExpenseEditFragment:
             //getFragmentManager().beginTransaction().remove(mExpenseEditFragment).commit();
@@ -42,10 +42,10 @@ public class ExpenseActivity extends AppCompatActivity implements ExpenseInputFr
             FragmentTransaction fragTransaction = fm.beginTransaction();
             boolean atLeastOneTransaction = false;
             //Create the fragments
-            mExpensesFragment = (ExpensesFragment) fm.findFragmentById(R.id.view_conversation);
-            if(mExpensesFragment == null){
-                mExpensesFragment = createExpenseFragment();
-                fragTransaction.add(R.id.view_conversation, mExpensesFragment);
+            mExpenseListFragment = (ExpenseListFragment) fm.findFragmentById(R.id.view_conversation);
+            if(mExpenseListFragment == null){
+                mExpenseListFragment = createExpenseFragment();
+                fragTransaction.add(R.id.view_conversation, mExpenseListFragment);
                 atLeastOneTransaction = true;
             }
 
@@ -62,31 +62,40 @@ public class ExpenseActivity extends AppCompatActivity implements ExpenseInputFr
             }
         }
         //Because of bug, I cannot "setRetainInstance(true)" this fragment; need to recreate every time: https://code.google.com/p/android/issues/detail?id=42601#c10
-
-        mExpenseEditFragment.setCallback(this);
-        mExpensesFragment.setSizeListener(this);
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         //Save the fragment's instance
-        mExpensesFragment.setSizeListener(null);
-        mExpenseEditFragment.setCallback(null);
-        //Save ony one of them
-        getFragmentManager().putFragment(outState, SAVE_EXPENSE_FRAG, mExpensesFragment);
+        getFragmentManager().putFragment(outState, SAVE_EXPENSE_FRAG, mExpenseListFragment);
         getFragmentManager().putFragment(outState, SAVE_EXPENSE_INPUT_FRAG, mExpenseEditFragment);
     }
 
-    protected ExpensesFragment createExpenseFragment(){
-        String userName = getIntent().getStringExtra(ExpensesFragment.EXTRA_USER_ID);
-        long groupId = getIntent().getLongExtra(ExpensesFragment.EXTRA_GROUP_ID, 0);
-        return ExpensesFragment.newInstance(userName, groupId);
+
+    @Override
+    protected void onStart(){
+        super.onStart();
+        mExpenseListFragment.setSizeListener(this);
+        mExpenseEditFragment.setCallback(this);
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+        mExpenseListFragment.setSizeListener(null);
+        mExpenseEditFragment.setCallback(null);
+    }
+
+    protected ExpenseListFragment createExpenseFragment(){
+        String userName = getIntent().getStringExtra(ExpenseListFragment.EXTRA_USER_ID);
+        long groupId = getIntent().getLongExtra(ExpenseListFragment.EXTRA_GROUP_ID, 0);
+        return ExpenseListFragment.newInstance(userName, groupId);
     }
 
     protected ExpenseInputFragment createEditExpenseFragment(){
         long expenseId = getIntent().getLongExtra(ExpenseInputFragment.EXTRA_EXPENSE_ID, 0);
-        long groupId = getIntent().getLongExtra(ExpensesFragment.EXTRA_GROUP_ID, 0);
+        long groupId = getIntent().getLongExtra(ExpenseListFragment.EXTRA_GROUP_ID, 0);
         return ExpenseInputFragment.newInstance(expenseId, groupId);
     }
 
@@ -101,7 +110,7 @@ public class ExpenseActivity extends AppCompatActivity implements ExpenseInputFr
 
     @Override
     public boolean isSystemKeyboardShowing() {
-        return (mExpensesFragment != null)? mExpensesFragment.isSystemKeyboardShowing() : false;
+        return (mExpenseListFragment != null)? mExpenseListFragment.isSystemKeyboardShowing() : false;
     }
 
     @Override

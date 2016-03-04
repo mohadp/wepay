@@ -4,7 +4,8 @@ import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.view.PagerTitleStrip;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -22,9 +23,6 @@ import com.jumo.tablas.ui.loaders.ExpenseLoader;
 import com.jumo.tablas.ui.util.ExpenseCalculator;
 import com.jumo.tablas.ui.util.OnKeyEventListener;
 import com.jumo.tablas.ui.views.LinearLayoutResize;
-
-import java.lang.reflect.Field;
-import java.util.HashMap;
 
 /**
  * Created by Moha on 12/30/15.
@@ -51,7 +49,7 @@ public class ExpenseInputFragment extends Fragment implements OnKeyEventListener
     //Other control variables
     private float mCustomKeyboardHeight;
     private boolean mShowCustomKeyboard = false;
-    private Callback mCallback;
+    private CustomKeyboardHelper mCustomKeyboardHelper;
     private InputMethodPageAdapter mKeyboardPageAdapter;
     private ExpenseCalculator mExpenseCalculator;
 
@@ -102,6 +100,7 @@ public class ExpenseInputFragment extends Fragment implements OnKeyEventListener
         mCurrencyButton = (ImageButton) view.findViewById(R.id.button_currency);
         mConversationEditText = (EditText) view.findViewById(R.id.edit_message);
         mAmountEditText = (EditText) view.findViewById(R.id.edit_amount);
+        mAmountEditText.addTextChangedListener(new AmountListener());
 
         //Set the custom keyboard pages
         mCustomKeyboard = (ViewPager) view.findViewById(R.id.input_method);
@@ -133,7 +132,7 @@ public class ExpenseInputFragment extends Fragment implements OnKeyEventListener
         View.OnClickListener mCustKeyboardToggleListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "ExpenseInputFragment Pressed Button: mCustomKeyboardToggleListener!");
+                //Log.d(TAG, "ExpenseInputFragment Pressed Button: mCustomKeyboardToggleListener!");
                 if (isCustomKeyboardShowing()) {
                     dismissCustomKeyboard();
                 } else {
@@ -217,17 +216,21 @@ public class ExpenseInputFragment extends Fragment implements OnKeyEventListener
      * @return a boolean; true if system soft keyboard is showing; false if not.
      */
     private boolean isSystemKeyboardShowing(){
-        return (mCallback == null)? false : mCallback.isSystemKeyboardShowing();
+        //Log.d(TAG, "isSystemKeyboardShowing:mCustomKeybaordHelper = " + mCustomKeyboardHelper);
+
+        return (mCustomKeyboardHelper == null)? false : mCustomKeyboardHelper.isSystemKeyboardShowing();
     }
 
     private boolean isCustomKeyboardShowing(){
+        //Log.d(TAG, "isCustomKeyboardShowing() = " + (mCustomKeyboard.getVisibility() == View.VISIBLE));
         return (mCustomKeyboard.getVisibility() == View.VISIBLE);
     }
 
 
-    public void setCallback(Callback fragmentInterface) {
-        this.mCallback = fragmentInterface;
+    public void setCallback(CustomKeyboardHelper fragmentInterface) {
+        this.mCustomKeyboardHelper = fragmentInterface;
     }
+
 
     ///////////// Methods for OnExpenseCalculatorLoader interface to handle this fragment's key listener /////////////
     @Override
@@ -265,8 +268,30 @@ public class ExpenseInputFragment extends Fragment implements OnKeyEventListener
     }
 
 
-    public interface Callback {
+    public interface CustomKeyboardHelper {
         public boolean isSystemKeyboardShowing();
+    }
+
+    protected class AmountListener implements TextWatcher {
+        public AmountListener(){ }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {  }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            double amount = 0;
+            try{
+                Log.d(TAG, "Amount for payer changed; updating payer amounts!");
+                amount = Double.valueOf(s.toString());
+                mKeyboardPageAdapter.updateExpenseAmount(amount);
+            }catch(NumberFormatException e){
+                Log.d(TAG, "Double Value could not be parsed", e);
+            }
+        }
     }
 
 }

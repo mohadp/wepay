@@ -27,7 +27,6 @@ import android.widget.*;
 
 import com.jumo.tablas.model.Group;
 import com.jumo.tablas.provider.dao.*;
-import com.jumo.tablas.ui.util.CacheManager;
 
 /**
  * A fragment representing a list of Items.
@@ -198,8 +197,8 @@ public class GroupFragment extends Fragment implements LoaderManager.LoaderCallb
             //TODO: I will call an interface method for upper class to either start an activity or just update a fragment
 
             Intent i = new Intent(GroupFragment.this.getActivity(), ExpenseActivity.class);
-            i.putExtra(ExpensesFragment.EXTRA_GROUP_ID, group.getId());
-            i.putExtra(ExpensesFragment.EXTRA_USER_ID, mUserName);
+            i.putExtra(ExpenseListFragment.EXTRA_GROUP_ID, group.getId());
+            i.putExtra(ExpenseListFragment.EXTRA_USER_ID, mUserName);
             startActivity(i);
         }
     }

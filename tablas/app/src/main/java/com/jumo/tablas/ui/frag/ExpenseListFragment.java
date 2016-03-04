@@ -4,15 +4,12 @@ import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.Loader;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -23,7 +20,6 @@ import com.jumo.tablas.R;
 import com.jumo.tablas.common.TablasManager;
 import com.jumo.tablas.provider.dao.EntityCursor;
 import com.jumo.tablas.ui.adapters.ExpenseCursorAdapter;
-import com.jumo.tablas.ui.util.CacheManager;
 import com.jumo.tablas.ui.loaders.ExpenseUserThreadHandler;
 import com.jumo.tablas.ui.views.LinearLayoutResize;
 
@@ -36,8 +32,8 @@ import com.jumo.tablas.ui.views.LinearLayoutResize;
  * Activities containing this fragment MUST implement the {@linkx OnFragmentInteractionListener}
  * interface.
  */
-public class ExpensesFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
-    private static final String TAG = "ExpensesFragment";
+public class ExpenseListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+    private static final String TAG = "ExpenseListFragment";
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     public static final String EXTRA_GROUP_ID = "com.jumo.tablas.group_id";
     public static final String EXTRA_USER_ID = "com.jumo.tablas.user_id";
@@ -57,8 +53,8 @@ public class ExpensesFragment extends Fragment implements LoaderManager.LoaderCa
     private LinearLayoutResize.OnSizeChange mSizeListener;
 
 
-    public static ExpensesFragment newInstance(String userId, long groupId) {
-        ExpensesFragment fragment = new ExpensesFragment();
+    public static ExpenseListFragment newInstance(String userId, long groupId) {
+        ExpenseListFragment fragment = new ExpenseListFragment();
         Bundle args = new Bundle();
         args.putString(EXTRA_USER_ID, userId);
         args.putLong(EXTRA_GROUP_ID, groupId);
@@ -76,7 +72,7 @@ public class ExpensesFragment extends Fragment implements LoaderManager.LoaderCa
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public ExpensesFragment() { }
+    public ExpenseListFragment() { }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -107,7 +103,10 @@ public class ExpensesFragment extends Fragment implements LoaderManager.LoaderCa
         LinearLayoutResize.OnSizeChange onSizeChange = new LinearLayoutResize.OnSizeChange() {
             @Override
             public void onSizeChanged(int w, int h, int oldw, int oldh) {
-                if(oldh == 0){ //always keep the largest drawing rectangle to know when the system keyboard is showing or not.
+                //Log.d(TAG, "Old sizes: w: " + w + ", h: " + h + ", " + ", oldw: " + oldw + ", oldh: " + oldh);
+                //Log.d(TAG, "MaxConversationHeight: " + mMaxConversationHeight);
+
+                if(oldh == 0 || mMaxConversationHeight < h){ //always keep the largest drawing rectangle to know when the system keyboard is showing or not.
                     mMaxConversationHeight = h;
                 }
                 if(mSizeListener != null){
@@ -129,6 +128,7 @@ public class ExpensesFragment extends Fragment implements LoaderManager.LoaderCa
     public boolean isSystemKeyboardShowing(){
         Rect rect = new Rect();
         mConversationLayout.getDrawingRect(rect);
+        Log.d(TAG, "DrawingRect: " + rect.height() + "    mMaxConversationHeight: " + mMaxConversationHeight);
         if(rect.height() < mMaxConversationHeight){
             return true;
         }
