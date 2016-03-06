@@ -8,6 +8,9 @@ import java.util.ArrayList;
  * Created by Moha on 9/7/15.
  */
 public class Metric {
+    /**
+     * Marks whether the metric needs a group-by clause or not; aggregation = true means the metric aggregatis multiple rows.
+     */
     public static final boolean IS_AGGREGATION = true;
 
     private ArrayList<Column> mDependedColumns;

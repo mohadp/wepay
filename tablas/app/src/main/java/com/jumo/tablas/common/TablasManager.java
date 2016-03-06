@@ -55,6 +55,10 @@ public class TablasManager {
         return tablasManager;
     }
 
+    public static String getCurrentUser(){
+        return CURRENT_USER;
+    }
+
     public void createSampleData(){
         ContentResolver content = mContext.getContentResolver();
 
