@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <com.jumo.tablas.ui.views.RoundImageView
+        android:id="@+id/img_contact"
+        android:layout_width="@dimen/list_payer_create_img_size"
+        android:layout_height="@dimen/list_payer_create_img_size"
+        android:layout_margin="10dp"
+        android:src="@drawable/moha"/>
+
+    <TextView
+        android:id="@+id/text_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/text_contact_name"
+        android:layout_gravity="center_vertical"
+        android:layout_marginRight="10dp"
+        android:layout_weight="1"/>
+
+    <EditText
+        android:id="@+id/edit_amount"
+        android:layout_width="@dimen/edit_expense_amt"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal"
+        android:ems="10"
+        android:hint="@string/hint_amount"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_gravity="center_vertical"/>
+
+    <ImageButton
+        android:id="@+id/btn_remove_contact"
+        android:layout_width="@dimen/list_payer_create_img_size"
+        android:layout_height="@dimen/list_payer_create_img_size"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:layout_marginRight="10dp"
+        android:layout_gravity="center_vertical" />
+
+
+</LinearLayout>

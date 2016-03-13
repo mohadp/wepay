@@ -1,9 +1,13 @@
 <resources>
     <string name="app_name">Tablas</string>
     <string name="button_transfers">Transfers to/from </string>
-    <string name="hint_amount">Amount</string>
+    <string name="hint_amount">USD</string>
     <string name="hint_message">Add description...</string>
     <string name="hint_group_name">Enter a group name...</string>
+    <string name="hint_currency">Choose currency for expense...</string>
+    <string name="hint_paid">Who else paid?</string>
+    <string name="hint_payer">Who else should pay?</string>
+    <string name="hint_add_payer">Add new payer</string>
     <string name="text_members">Members</string>
     <string name="menu_item">Settings...</string>
     <string name="menu_item_create_group">Create Group</string>
@@ -12,6 +16,17 @@
     <string name="text_contact_tel">+1 703 656 6202</string>
     <string name="text_contact_type">Mobile</string>
     <string name="menu_item_save_group">Save</string>
+    <string name="text_currency_symbol">$</string>
+    <string name="text_curr_tab">Currency</string>
+    <string name="text_paid_tab">Paid</string>
+    <string name="text_payer_tab">Payer</string>
+    <string name="text_category_tab">Payer</string>
+    <string name="text_currency">USD</string>
+    <string name="text_currency_desc">USD - United States Dollar</string>
+    <string name="text_currency_amt">1</string>
+    <string name="text_currency_exchange">Exchange rate</string>
+
+
 
 
     <!-- To be deleted; sample labels to delete stuff -->

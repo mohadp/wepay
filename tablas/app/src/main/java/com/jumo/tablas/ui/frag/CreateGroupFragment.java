@@ -1,8 +1,7 @@
-package com.jumo.tablas.ui;
+package com.jumo.tablas.ui.frag;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.ContentProvider;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.Context;
@@ -33,11 +32,12 @@ import android.widget.SearchView;
 import android.widget.SimpleAdapter;
 
 import com.jumo.tablas.R;
-import com.jumo.tablas.account.AccountService;
+import com.jumo.tablas.common.TablasManager;
 import com.jumo.tablas.model.Group;
 import com.jumo.tablas.model.Member;
 import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.ui.adapters.ContactSearchAdapter;
+import com.jumo.tablas.ui.util.BitmapCache;
 import com.jumo.tablas.ui.util.BitmapLoader;
 import com.jumo.tablas.ui.util.CacheManager;
 
@@ -50,7 +50,7 @@ import java.util.Map;
 /**
  * Created by Moha on 10/27/15.
  */
-public class CreateGroupFragment extends Fragment implements SearchView.OnQueryTextListener, SearchView.OnSuggestionListener, CacheManager<Object, Bitmap>{
+public class CreateGroupFragment extends Fragment implements SearchView.OnQueryTextListener, SearchView.OnSuggestionListener{
 
     private static final String TAG = "CreateGroupFragment";
     public static final String EXTRA_USER_ID = "user_id";
@@ -75,7 +75,7 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
             if(constraint != null){
                 displayName = constraint.toString();
             }
-            return searchForContacts(displayName);
+            return TablasManager.getInstance(getActivity()).searchForContactsByName(displayName);
         }
     };
 
@@ -87,7 +87,6 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
             mAddedList.remove(mAddedListById.get(phone));
             mAddedListById.remove(phone);
             mAddedAdapter.notifyDataSetChanged();
-
         }
     };
 
@@ -115,7 +114,7 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
         mSearchView = (SearchView)view.findViewById(R.id.search_contact);
         mSearchView.setOnSuggestionListener(this);
         mSearchView.setOnQueryTextListener(this);
-        mSearchView.setSuggestionsAdapter(new ContactSearchAdapter(getActivity(), null, this));
+        mSearchView.setSuggestionsAdapter(new ContactSearchAdapter(getActivity(), null));
 
         mAddedContacts = (ListView)view.findViewById(R.id.list_added_members);
         mAddedList = new ArrayList<HashMap<String, String>>();
@@ -153,27 +152,6 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
         };
     }
 
-    private Cursor searchForContacts(String displayName){
-        Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
-
-        Context context = getActivity();
-        String[] projection = new String[]{ ContactsContract.CommonDataKinds.Phone._ID
-                , ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
-                , ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER
-                , ContactsContract.CommonDataKinds.Phone.LABEL
-                , ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI};
-
-        StringBuilder filter = new StringBuilder();
-        filter.append("")
-                .append(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME).append(" like ? AND ")
-                .append(ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET).append(" = ?");
-
-        String[] filterVals = new String[]{"%"+ displayName + "%", AccountService.ACCOUNT_TYPE};
-        String sortBy = ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME + " ASC";
-
-        return context.getContentResolver().query(uri, projection, filter.toString(), filterVals, sortBy);
-    }
-
     private void createGroupAndMembers(){
         //TODO: add a toaster indicating that if there are no people, then there must be one person in the group.
         //TODO: Create a centrals static method to generate ContentProviderOperations.Builder for entities.
@@ -188,6 +166,7 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
         member.setAdmin(true);
         member.setLeftGroup(false);
         member.setUserId(mUserId);
+        member.setCurrentUser(true);
         ops.add(getMemberContentProviderOp(member));
 
         for(String userId : mAddedListById.keySet()){
@@ -195,6 +174,7 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
             member.setAdmin(false);
             member.setLeftGroup(false);
             member.setUserId(userId);
+            member.setCurrentUser(false);
             ops.add(getMemberContentProviderOp(member));
         }
 
@@ -213,8 +193,8 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
     private ContentProviderOperation getGroupContentProviderOp(Group group){
         Uri groupTable = TablasContract.BASE_URI.buildUpon().appendPath(TablasContract.Group.getInstance().getTableName()).build();
         ContentProviderOperation op = ContentProviderOperation.newInsert(groupTable)
-                .withValue(TablasContract.Group.NAME, group.getName())
-                .withValue(TablasContract.Group.CREATED_ON, group.getCreatedOn().getTime())
+                .withValue(TablasContract.Group.GROUP_NAME, group.getName())
+                .withValue(TablasContract.Group.GROUP_CREATED_ON, group.getCreatedOn().getTime())
                 .build();
         return op;
     }
@@ -222,10 +202,10 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
     private ContentProviderOperation getMemberContentProviderOp(Member member){
         Uri memberTable = TablasContract.BASE_URI.buildUpon().appendPath(TablasContract.Member.getInstance().getTableName()).build();
         ContentProviderOperation op = ContentProviderOperation.newInsert(memberTable)
-                .withValueBackReference(TablasContract.Member.GROUP_ID, 0)
-                .withValue(TablasContract.Member.USER_ID, member.getUserId())
-                .withValue(TablasContract.Member.IS_ADMIN, member.isAdmin() ? 1 : 0)
-                .withValue(TablasContract.Member.LEFT_GROUP, member.hasLeftGroup()? 1 : 0)
+                .withValueBackReference(TablasContract.Member.MEMBER_GROUP_ID, 0)
+                .withValue(TablasContract.Member.MEMBER_USER_ID, member.getUserId())
+                .withValue(TablasContract.Member.MEMBER_IS_ADMIN, member.isAdmin() ? 1 : 0)
+                .withValue(TablasContract.Member.MEMBER_LEFT_GROUP, member.hasLeftGroup()? 1 : 0)
                 .build();
         return op;
     }
@@ -295,28 +275,6 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
         return true;
     }
 
-    @Override
-    public void addToCache(Object key, Bitmap bitmap) {
-        if(mCache == null)
-            return;
-
-        synchronized (mCache) {
-            if (mCache.get(key) == bitmap) {
-                return;
-            } else {
-                mCache.put(key, bitmap);
-            }
-        }
-    }
-
-    @Override
-    public Bitmap retrieveFromCache(Object key) {
-        if(mCache == null)
-            return null;
-
-        return mCache.get(key);
-    }
-
     class SelectedContactAdapter extends SimpleAdapter {
         ViewBinder binder = new ViewBinder(){
             @Override
@@ -333,7 +291,7 @@ public class CreateGroupFragment extends Fragment implements SearchView.OnQueryT
                             (String)data,
                             ContactsContract.Contacts.Photo.PHOTO);
 
-                    BitmapLoader.asyncSetBitmapInImageView(imgRetrieval, (ImageView)view, getActivity(), CreateGroupFragment.this);
+                    BitmapLoader.asyncSetBitmapInImageView(imgRetrieval, (ImageView)view, getActivity(), BitmapCache.getInstance());
                     return true;
                 }
                 return false;

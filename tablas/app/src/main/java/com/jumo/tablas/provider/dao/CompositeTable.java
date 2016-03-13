@@ -3,10 +3,11 @@ package com.jumo.tablas.provider.dao;
 import com.jumo.tablas.provider.TablasContract;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -16,13 +17,24 @@ public abstract class CompositeTable extends Table {
 
     private static final String TAG = "CompositeTable";
     private LinkedHashSet<Table> mTables; //we want to keep the tables in the order in which they were imported
-    private LinkedHashMap<Table, LinkedHashSet<Table>> mTableGraph;
+    private HashMap<String, Metric> mMetrics; //we want to keep track of the metrics for this composite tables.
+
+
+    public static final String _ID = "_id";
 
     protected CompositeTable() {
-        super();
+        super();        //mTableGraph = buildGraph(mTables);
+
+    }
+
+    protected CompositeTable(String tableName){
+        super(tableName);
+    }
+
+    private void instantiateMembers(){
         mTables = new LinkedHashSet<Table>();
-        defineTables();
-        //mTableGraph = buildGraph(mTables);
+        mMetrics = new LinkedHashMap<String, Metric>();
+
     }
 
     /**
@@ -30,27 +42,57 @@ public abstract class CompositeTable extends Table {
      * Having all mTables in one collection will allow the querying layer to be able to join the mTables correctly.
      * Order in which tables are added to the mTables collection determines the order in which tables are joined.
      */
-    protected abstract void defineTables();
+    protected abstract void addTablesToCompositeTable();
 
-    protected void defineColumnsAndForeignKeys() {
-        mColumns = null;
-        mForeignKeys = null;
-        mTableName = null;
+    /**
+     * Includes metrics to this composite table definition. The metrics should be added with the addMetric method.
+     */
+    protected abstract void addMetrics();
+
+    /**
+     * Determines the column that will represent the ID of this composite table (generally the lowest-level table).
+     * @return
+     */
+    protected abstract Column getIdColumn();
+
+
+    /**
+     * Implementation of the define table; this implementation does the following:
+     * - Adds all the tables that make up this composite table (when adding tables,
+     *   this table's columns are added to the composite table' columns.
+     * - Determines the ID column of this composite table.
+     */
+    protected void defineTable() {
+        instantiateMembers();
+        addTablesToCompositeTable();
+        addColumn(_ID, getIdColumn());
+        addMetrics();
     }
+
+
+    /**
+     * Returns the metric for the provided column name
+     * @param colName
+     * @return
+     */
+    public Metric getMetric(String colName){
+        return (mMetrics == null)? null : mMetrics.get(colName);
+    }
+
 
     /**
      * Key in the hash map is the column name. The value contains a Column object with all its information.
      */
-    @Override
+    /*@Override
     public Collection<Column> getColumns() {
         ArrayList<Column> cols = new ArrayList<Column>();
         for (Table e : mTables) {
             cols.addAll(e.getColumns());
         }
         return cols;
-    }
+    }*/
 
-    @Override
+    /*@Override
     public Collection<String> getColumnNames() {
         ArrayList<String> cols = new ArrayList<String>();
         for (Table e : mTables) {
@@ -59,9 +101,14 @@ public abstract class CompositeTable extends Table {
             }
         }
         return cols;
-    }
+    }*/
 
-    @Override
+    /*
+     * Returns the Column object that represents the full column name (ful column name is in the form of table.column)
+     * @param fullColName
+     * @return
+     */
+    /*@Override
     public Column getColumn(String fullColName) {
         String[] colfullName = fullColName.split("\\.");
 
@@ -69,20 +116,66 @@ public abstract class CompositeTable extends Table {
             return null;
 
         Table table = TablasContract.getTable(colfullName[0]);
-        return table.getColumn(colfullName[1]);
-    }
+        if(table == null || !mTables.contains(table)) //the table of the column is not in this composite table
+            return null;
 
-    @Override
+        return table.getColumn(colfullName[1]);
+    }*/
+
+
+    /*@Override
     public String getFullColumnName(String fullColName) {
         return fullColName;
-    }
+    }*/
 
     public HashSet<Table> tables() {
         return mTables;
     }
 
-    public void addTable(Table e) {
-        mTables.add(e);
+    /**
+     * Adds the a table to this composite table if it hasn't been added, and also adds this  table's columns to this composite table, referred to it with the columns full column name.
+     *
+     * @param table
+     */
+    public void addTable(Table table) {
+        if(!mTables.contains(table)){
+            mTables.add(table);
+            addColumns(table.getColumnMap());
+            //The _id column is present in all tables. To keep this one in this composite table, we'll save these "_id" columns in the form of "tableName._id".
+            Column idColumn = table.getColumn(Table._ID);
+            if(idColumn != null){
+                addColumn(idColumn.getFullName(), idColumn);
+            }
+        }
+    }
+
+    /**
+     * Adds a metric to this composite table; this involves the following actions:
+     * - Adding all the dependent tables (and their columns, using the addTables method) required to calculate this metric to this composite table.
+     * - Adding this metric's column to this composite table columns, and relates it to its metric's column in the mMetrics map.
+     *
+     * A metric is not added to this composite table if any of the following is true:
+     * - the metric is already added (based on metric name, which is the metric's column name)
+     * - it does not have any dependent tables or
+     * - it does not have a column representing this metric, for example.
+     *
+     * @param metric the metric object to add.
+     * @return true if the metric was added, or false if it wasn't.
+     *
+     */
+    public boolean addMetric(Metric metric){
+        ArrayList<Table> dependentTables = metric.getDependentTables();
+        Column metricCol = metric.getColumn();
+        if(dependentTables == null || metricCol == null || metricCol.name == null || mMetrics.containsKey(metricCol.name))
+            return false;
+
+        for(Table t : dependentTables){
+            addTable(t);
+        }
+        addColumn(metricCol.name, metricCol);
+        mMetrics.put(metric.getColumnName(), metric);
+
+        return true;
     }
 
     /**

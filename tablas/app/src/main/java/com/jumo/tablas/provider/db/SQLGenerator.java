@@ -1,5 +1,6 @@
 package com.jumo.tablas.provider.db;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -128,5 +129,76 @@ class SQLGenerator {
             if (count-- > 1) sb.append(", ");
         }
         return sb;
+    }
+
+    private class Node{
+        public static final int OPERATOR_AND = 1;
+        public static final int OPERATOR_OR = 2;
+
+        protected Node left;
+        protected Node right;
+        protected int operator;
+        protected Expression data;
+
+
+        protected Node(Node l, Node r, int oper){
+            left = l;
+            right = r;
+            operator = oper;
+        }
+
+        protected Node(Expression e){
+            data = e;
+            operator = 0;
+        }
+
+        protected boolean hasAtLeastOneLimit(){
+            return hasLimitRecursively(this);
+        }
+
+        protected boolean hasLimitRecursively(Node n){
+            boolean atLeastOneLimit = false;
+            if(n.data != null && n.data.is_limit){
+                return true;
+            }else{
+                if(n.left != null) {
+                    atLeastOneLimit = atLeastOneLimit && hasLimitRecursively(n.left);
+                }
+                if(n.right != null){
+                    atLeastOneLimit = atLeastOneLimit && hasLimitRecursively(n.right);
+                }
+
+            }
+            return atLeastOneLimit;
+        }
+
+
+
+        /*protected boolean refactorFiltersFromLimits(Node original, Node filters, Node having){
+            boolean separatedSuccessfully;
+            //if ANDs have mixed
+            //problem is filter or limit (not possible)
+            //When  node does not have operator and there is no actual data, but one non-null child node
+            if(original.operator == 0 && original.data != null){
+
+
+            }else if(original.operator == 0 && original.data == null){
+                if(original.left != null){
+                    refactorFiltersFromLimits(original.left, filters, having);
+                }else if(original.right != null){
+                    refactorFiltersFromLimits(original.right, filters, having);
+                }
+            }else if(original.operator == OPERATOR_AND){
+                if(original.left)
+            }
+        }*/
+    }
+
+    private class Expression{
+        //Data elements
+        protected String col_prefix;
+        protected String column;
+        protected String comparisson;
+        protected boolean is_limit;
     }
 }

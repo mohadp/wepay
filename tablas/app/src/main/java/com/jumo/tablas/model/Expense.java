@@ -9,26 +9,17 @@ import java.util.Iterator;
 /**
  * Created by Moha on 6/20/15. Decorator class on ActualEntity, which allows to get fields for particular Table/table
  */
-public class Expense implements Entity {
-    private Entity entity;
+public class Expense extends BaseEntity {
+    //private Entity entity;
 
 	public Expense(Entity m){
-        entity = m;
-        setExchangeRate(1);
+        super(m);
 	}
 
     public Expense(){
-        entity = new ActualEntity(TablasContract.Expense.getInstance());
-        setExchangeRate(1);
+        super();
     }
 
-	public double getExchangeRate(){
-		return getDouble(TablasContract.Expense.EXCHANGE_RATE);
-	}
-	
-	public void setExchangeRate(double rate){
-        setField(TablasContract.Expense.EXCHANGE_RATE, rate);
-	}
 
     public long getId() {
         return getLong(TablasContract.Expense._ID);
@@ -39,35 +30,35 @@ public class Expense implements Entity {
     }
 
     public Date getCreatedOn() {
-        return getDate(TablasContract.Expense.CREATED_ON);
+        return getDate(TablasContract.Expense.EXPENSE_CREATED_ON);
     }
 
     public void setCreatedOn(Date createdOn) {
-        setField(TablasContract.Expense.CREATED_ON, createdOn);
+        setField(TablasContract.Expense.EXPENSE_CREATED_ON, createdOn);
     }
 
     public String getMessage() {
-        return getText(TablasContract.Expense.MESSAGE);
+        return getText(TablasContract.Expense.EXPENSE_MESSAGE);
     }
 
     public void setMessage(String message) {
-        setField(TablasContract.Expense.MESSAGE, message);
+        setField(TablasContract.Expense.EXPENSE_MESSAGE, message);
     }
 
     public double getAmount() {
-        return getDouble(TablasContract.Expense.AMOUNT);
+        return getDouble(TablasContract.Expense.EXPENSE_AMOUNT);
     }
 
     public void setAmount(double amount) {
-        setField(TablasContract.Expense.AMOUNT, amount);
+        setField(TablasContract.Expense.EXPENSE_AMOUNT, amount);
     }
 
     public String getCurrencyId() {
-        return getText(TablasContract.Expense.CURRENCY);
+        return getText(TablasContract.Expense.EXPENSE_CURRENCY_ID);
     }
 
     public void setCurrencyId(String currencyId) {
-        setField(TablasContract.Expense.CURRENCY, currencyId);
+        setField(TablasContract.Expense.EXPENSE_CURRENCY_ID, currencyId);
     }
 
     /*public long getLocationId() {
@@ -79,45 +70,45 @@ public class Expense implements Entity {
     }*/
 
     public long getCategoryId() {
-        return getLong(TablasContract.Expense.CATEGORY_ID);
+        return getLong(TablasContract.Expense.EXPENSE_CATEGORY_ID);
     }
 
     public void setCategoryId(long categoryId) {
-        setField(TablasContract.Expense.CATEGORY_ID, categoryId);
+        setField(TablasContract.Expense.EXPENSE_CATEGORY_ID, categoryId);
     }
 
     public boolean isPayment() {
-        return getBoolean(TablasContract.Expense.IS_PAYMENT);
+        return getBoolean(TablasContract.Expense.EXPENSE_IS_PAYMENT);
     }
 
     public void setPayment(boolean isPayment) {
-        setField(TablasContract.Expense.IS_PAYMENT, isPayment);
+        setField(TablasContract.Expense.EXPENSE_IS_PAYMENT, isPayment);
     }
 
     public double getLatitude() {
-        return getDouble(TablasContract.Expense.LATITUDE);
+        return getDouble(TablasContract.Expense.EXPENSE_LATITUDE);
     }
 
     public void setLatitude(double latitude) {
-        setField(TablasContract.Expense.LATITUDE, latitude);
+        setField(TablasContract.Expense.EXPENSE_LATITUDE, latitude);
     }
 
     public double getLongitude() {
-        return getDouble(TablasContract.Expense.LONGITUDE);
+        return getDouble(TablasContract.Expense.EXPENSE_LONGITUDE);
     }
 
     public void setLongitude(double longitude) {
-        setField(TablasContract.Expense.LONGITUDE, longitude);
+        setField(TablasContract.Expense.EXPENSE_LONGITUDE, longitude);
     }
 
 
 
     public long getGroupExpenseId() {
-        return getLong(TablasContract.Expense.GROUP_EXPENSE_ID);
+        return getLong(TablasContract.Expense.EXPENSE_GROUP_EXPENSE_ID);
     }
 
     public void setGroupExpenseId(long groupExpenseId) {
-        setField(TablasContract.Expense.GROUP_EXPENSE_ID, groupExpenseId);
+        setField(TablasContract.Expense.EXPENSE_GROUP_EXPENSE_ID, groupExpenseId);
     }
 
     /**
@@ -137,11 +128,11 @@ public class Expense implements Entity {
     }*/
 
     public long getPeriodicity() {
-        return getLong(TablasContract.Expense.PERIODICITY);
+        return getLong(TablasContract.Expense.EXPENSE_PERIODICITY);
     }
 
     public void setPeriodicity(long periodicity) {
-        setField(TablasContract.Expense.PERIODICITY, periodicity);
+        setField(TablasContract.Expense.EXPENSE_PERIODICITY, periodicity);
     }
 
     /**
@@ -151,95 +142,20 @@ public class Expense implements Entity {
      *  PERIODICITY_MONTHLY, offset = 1 means the first of the month, offset = OFFSET_LAST_OF_MONTH means last day of every month.
      **/
     public long getOffset() {
-        return getLong(TablasContract.Expense.OFFSET);
+        return getLong(TablasContract.Expense.EXPENSE_OFFSET);
     }
 
     public void setOffset(long offset) {
-        setField(TablasContract.Expense.OFFSET, offset);
+        setField(TablasContract.Expense.EXPENSE_OFFSET, offset);
     }
 
 
     public long getGroupId() {
-        return getLong(TablasContract.Expense.GROUP_ID);
+        return getLong(TablasContract.Expense.EXPENSE_GROUP_ID);
     }
 
     public void setGroupId(long groupId) {
-        setField(TablasContract.Expense.GROUP_ID, groupId);
+        setField(TablasContract.Expense.EXPENSE_GROUP_ID, groupId);
     }
 
-    public double getUserBalance() {
-        return getDouble(TablasContract.Expense.USER_BALANCE);
-    }
-
-    public void setUserBalance(double userBalance) {
-        setField(TablasContract.Expense.USER_BALANCE, userBalance);
-    }
-
-    @Override
-    public Table table(){
-        return entity.table();
-    }
-
-    @Override
-    public Object get(String column){
-        return entity.get(column);
-    }
-
-    @Override
-    public int getInt(String column) {
-        return entity.getInt(column);
-    }
-
-    @Override
-    public long getLong(String column) {
-        return entity.getLong(column);
-    }
-
-    @Override
-    public double getDouble(String column) {
-        return entity.getDouble(column);
-    }
-
-    @Override
-    public boolean getBoolean(String column) {
-        return entity.getBoolean(column);
-    }
-
-    @Override
-    public String getText(String column) {
-        return entity.getText(column);
-    }
-
-    @Override
-    public Date getDate(String column) {
-        return entity.getDate(column);
-    }
-
-    @Override
-    public byte[] getBytes(String column) {
-        return entity.getBytes(column);
-    }
-
-    @Override
-    public void setField(String column, Object val) {
-        entity.setField(column, val);
-    }
-
-    @Override
-    public Iterator<String> getFieldNameIterator(){
-        return entity.getFieldNameIterator();
-    }
-
-    @Override
-    public String toString(){
-        return entity.toString();
-    }
-
-    public Entity getEntity() {
-        return entity;
-    }
-
-    public void setEntity(Entity m){
-        entity = m;
-    }
 }

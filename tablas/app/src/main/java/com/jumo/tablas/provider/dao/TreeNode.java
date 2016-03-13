@@ -15,15 +15,16 @@ public class TreeNode {
     public final static int CROSS_JOIN = 4;
 
     private LinkedHashSet<ColumnJoin> mColumnJoins;
-    private String mTableName;
+    //private String mTableName;
+    private Table mTable;
     private int mJoinType;
     private TreeNode mLeft;
     private TreeNode mRight;
     private TreeNode mParent;
 
 
-    protected TreeNode(String tableName) {
-        this.mTableName = tableName;
+    protected TreeNode(Table table) {
+        this.mTable = table;
         mParent = null;
         mLeft = null;
         mRight = null;
@@ -53,8 +54,8 @@ public class TreeNode {
 
     protected boolean isInTableJoinTree(String tableName) {
         boolean isInJoinTree = false;
-        if (this.mTableName != null) {
-            if (this.mTableName.equals(tableName)) {
+        if (mTable != null) {
+            if (mTable.getTableName().equals(tableName)) {
                 isInJoinTree = true;
             }
         } else {
@@ -71,7 +72,7 @@ public class TreeNode {
 
     public TreeNode findTableNode(String tableName) {
         TreeNode foundNode = null;
-        if (mTableName != null && mTableName.equals(tableName)) {
+        if (mTable != null && mTable.getTableName().equals(tableName)) {
                 foundNode = this;
         } else {
             if (foundNode == null && mLeft != null) {
@@ -106,7 +107,7 @@ public class TreeNode {
 
     protected int numberOfTablesInJoinTree() {
         int noTables = 0;
-        if (mTableName != null) {
+        if (mTable != null) {
             noTables = 1;
         } else {
             if (mLeft != null) {
@@ -181,12 +182,9 @@ public class TreeNode {
     }
 
     public String getTableName() {
-        return mTableName;
+        return (mTable == null)? null : mTable.getTableName();
     }
 
-    public void setTableName(String tableName) {
-        this.mTableName = tableName;
-    }
 
     public static TreeNode findFirstCommonParent(TreeNode node1, TreeNode node2){
         if(node1 == node2) {
@@ -225,5 +223,13 @@ public class TreeNode {
 
     public void setJoinType(int mJoinType) {
         this.mJoinType = mJoinType;
+    }
+
+    public Table getTable() {
+        return mTable;
+    }
+
+    public void setTable(Table mTable) {
+        this.mTable = mTable;
     }
 }

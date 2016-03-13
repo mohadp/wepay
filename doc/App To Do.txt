@@ -5,6 +5,29 @@ CHANGING: Remove user table (refer to contact IDs, normalized telephone)
 - Modify the "Create Sample Data" methods (done - before 11/15/2015)
 - Make table ID columns to be auto increment (done - before 11/15/2015)
 
+****************************************************************************************************************
+SHOWING EXPENSES
+****************************************************************************************************************
+Types of expenses:
+- Payer (2)
+- Not Payer (1)
+- Simple Message (0)
+
+- Add Current_User column to member; identifies entries that correspond to current user's session.
+
+New Metrics:
+- Current User Metric: Identify if current user is a payer:
+	+ sum(case when <payer.role> = <payer> then member_curr_user else 0)
+- Payers: Aggregation of payers (role = payer)
+	Result (String): <userId>,<percentage>;<userId>,<percentage>... etc.
+- PeoplePaid: Aggregation of people who paid (role = paid)
+	Result (String): <userId>,<percentage>;<userId>,<percentage>... etc.
+
+
+
+
+
+
 
 
 Next Things for MVP:

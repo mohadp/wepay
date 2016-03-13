@@ -1,89 +1,119 @@
 <?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="5dp"
+    android:orientation="horizontal">
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
-	android:layout_width="match_parent" 
-	android:layout_height="match_parent"
-	android:orientation="horizontal" >
+    <com.jumo.tablas.ui.views.RoundImageView
+        android:id="@+id/list_message_image"
+        android:layout_width="@dimen/list_expense_img_size"
+        android:layout_height="@dimen/list_expense_img_size"
+        android:layout_margin="5dp" />
 
-	<com.jumo.tablas.ui.views.RoundImageView
-		android:id="@+id/list_message_image"
-		android:layout_width="@dimen/list_expense_img_size"
-		android:layout_height="@dimen/list_expense_img_size"
-		android:layout_margin="5dp" />
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginLeft="5dp"
+        android:padding="3dp"
+        card_view:cardUseCompatPadding="true" >
 
-	<LinearLayout 
-		android:layout_width="match_parent" 
-		android:layout_height="match_parent"
-		android:orientation="vertical" >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-		<LinearLayout 
-			android:layout_width="match_parent" 
-			android:layout_height="wrap_content"
-			android:orientation="horizontal" >
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-			<ImageView
-				android:id="@+id/list_message_category"
-				android:layout_width="10dp"
-				android:layout_height="10dp"
-				android:layout_margin="5dp"
-				android:src="@drawable/ic_launcher"/>
+                <TextView
+                    android:id="@+id/list_message_desc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/list_message_desc"
+                    android:layout_weight="1" />
 
-			<TextView 
-				android:id="@+id/list_message_desc"
-				android:layout_width="fill_parent"
-				android:layout_height="wrap_content"
-				android:layout_marginLeft="5dp"
-				android:text="@string/list_message_desc" 
-				android:layout_weight="1"/>
+                <ImageView
+                    android:id="@+id/list_message_category"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:layout_margin="5dp"
+                    android:src="@drawable/ic_launcher" />
 
-			<TextView 
-				android:id="@+id/list_message_balance"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content" 
-				android:layout_marginLeft="15dp"/>				
+            </LinearLayout>
 
-		</LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-		<LinearLayout 
-			android:layout_width="match_parent" 
-			android:layout_height="wrap_content"
-			android:orientation="horizontal" >
+                <!--View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginBottom="2dp"
+                    android:layout_marginTop="5dp"
+                    android:background="#ffeeeeee" /-->
 
-			<com.jumo.tablas.ui.views.ImageViewRow
-				android:id="@+id/list_message_payers_images"
-				android:layout_height="10dp"
-				android:layout_width="wrap_content"
-				android:orientation="horizontal" />
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
-			<TextView 
-				android:id="@+id/list_message_total"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content" 
-				android:layout_marginLeft="15dp"
-                android:layout_gravity="right"/>
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
 
-		</LinearLayout>
+                        <TextView
+                            android:id="@+id/list_message_total"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="left"
+                            android:layout_marginLeft="15dp" />
 
-		<LinearLayout android:layout_width="match_parent" 
-			android:layout_height="wrap_content"
-			android:orientation="horizontal">
+                        <com.jumo.tablas.ui.views.ImageViewRow
+                            android:id="@+id/list_message_payers_images"
+                            android:layout_width="wrap_content"
+                            android:layout_height="@dimen/list_payers_img_size"
+                            android:layout_toRightOf="@id/list_message_total"
+                            android:orientation="horizontal" />
 
-			<!-- location and date here -->
-			<TextView 
-				android:id="@+id/list_message_location"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content" 
-				android:layout_gravity="left"
-				android:layout_weight="1"/>	
+                    </RelativeLayout>
 
-			<TextView 
-				android:id="@+id/list_message_date"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_gravity="right" />	
+                    <TextView
+                        android:id="@+id/list_message_balance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="15dp"
+                        android:layout_gravity="right" />
 
-		</LinearLayout>
+                </FrameLayout>
 
-	</LinearLayout>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <!-- location and date here -->
+                    <TextView
+                        android:id="@+id/list_message_location"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="left" />
+
+                    <TextView
+                        android:id="@+id/list_message_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right" />
+
+                </FrameLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
 
 </LinearLayout>

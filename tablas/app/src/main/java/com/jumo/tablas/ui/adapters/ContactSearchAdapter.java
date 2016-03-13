@@ -20,8 +20,8 @@ import java.util.HashMap;
  */
 public class ContactSearchAdapter extends DrawableCursorAdapter {
 
-    public ContactSearchAdapter(Context context, Cursor cursor, CacheManager cacheManager) {
-        super(context, cursor, cacheManager);
+    public ContactSearchAdapter(Context context, Cursor cursor) {
+        super(context, cursor);
     }
 
     @Override

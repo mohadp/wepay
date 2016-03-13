@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="keyboard_height">230dip</dimen>
-    <dimen name="list_group_img_size">34dp</dimen>
-    <dimen name="list_expense_img_size">34dp</dimen>
+    <dimen name="keyboard_height">260dip</dimen>
+    <dimen name="list_group_img_size">40dp</dimen>
+    <dimen name="list_expense_img_size">40dp</dimen>
+    <dimen name="list_payer_create_img_size">30dp</dimen>
+    <dimen name="list_payers_img_size">15dp</dimen>
     <dimen name="edit_group_img_size">60dp</dimen>
+    <dimen name="edit_expense_amt">90dp</dimen>
+    <dimen name="button_size">35dp</dimen>
 </resources>
