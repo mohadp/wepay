@@ -129,7 +129,7 @@ public class ExpenseCursorAdapter extends RecyclerView.Adapter<ExpenseCursorAdap
                 imgView.setImageBitmap(img);
                 imgView.setTag(bitmapIds.get(currentBitmap));
             }
-            //If the image was just created, then we add it ot the imgRow
+            //If the image was just created, then we add it ot the imgRow; else, it is already added.
             if (newImageView) {
                 imgRow.addImageView(imgView);
             }

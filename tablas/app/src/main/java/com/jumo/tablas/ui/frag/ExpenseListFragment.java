@@ -160,7 +160,7 @@ public class ExpenseListFragment extends Fragment implements LoaderManager.Loade
         Log.d(TAG, "onCreateLoader");
 
         if(id == LOADER_EXPENSES){
-            return TablasManager.getInstance(getActivity()).getExpensesWithBalanceLoader(mUserName, mGroupId, "USD"); //TODO: Update the USD parameter to the user's currency preference
+            return TablasManager.getInstance(getActivity()).getExpensesWithBalanceLoader(mGroupId, "USD"); //TODO: Update the USD parameter to the user's currency preference
         }
         return null;
     }
@@ -171,8 +171,9 @@ public class ExpenseListFragment extends Fragment implements LoaderManager.Loade
         int id = loader.getId();
 
         if(id == LOADER_EXPENSES) {
-            if (this.getActivity() == null || mRecyclerView == null)
+            if (this.getActivity() == null || mRecyclerView == null) {
                 return;
+            }
             ((ExpenseCursorAdapter) mRecyclerView.getAdapter()).changeCursor(new EntityCursor(data));
         }
     }

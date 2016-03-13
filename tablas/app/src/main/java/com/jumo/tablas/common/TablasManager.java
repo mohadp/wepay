@@ -326,7 +326,15 @@ public class TablasManager {
         return new CursorLoader(mContext, TablasContract.Compound.GroupBalance.TABLE_URI, projection, selection.toString(), selectionValues, null);
     }
 
-    public CursorLoader getExpensesWithBalanceLoader(String userId, long groupId, String toCurrency){
+    /**
+     * Returns a loader based on a query to the TablasProvider against the ExpenseBalance composite table, returning all the expenses
+     * for a group, with balances for the current user as calcualted as the UserBalance metric as returned for the user as defined by
+     * TablasManager.getCurrentUser() method.
+     * @param groupId the group id for which the expenses should be returned.
+     * @param toCurrency the currency in which the balances should be
+     * @return
+     */
+    public CursorLoader getExpensesWithBalanceLoader(long groupId, String toCurrency){
         String[] projection = new String[]{ TablasContract.Compound.ExpenseBalance.EXPENSE_ID, TablasContract.Compound.ExpenseBalance.EXPENSE_AMOUNT,
                 TablasContract.Compound.ExpenseBalance.EXPENSE_CATEGORY_ID, TablasContract.Compound.ExpenseBalance.EXPENSE_CREATED_ON,
                 TablasContract.Compound.ExpenseBalance.EXPENSE_CURRENCY_ID,
@@ -334,15 +342,15 @@ public class TablasManager {
                 TablasContract.Compound.ExpenseBalance.EXPENSE_LATITUDE, TablasContract.Compound.ExpenseBalance.EXPENSE_LONGITUDE,
                 TablasContract.Compound.ExpenseBalance.EXPENSE_MESSAGE, TablasContract.Compound.ExpenseBalance.EXPENSE_OFFSET,
                 TablasContract.Compound.ExpenseBalance.EXPENSE_PERIODICITY, TablasContract.Compound.ExpenseBalance.EXPENSE_GROUP_ID,
-                TablasContract.Compound.ExpenseBalance.USER_BALANCE };
+                TablasContract.Compound.ExpenseBalance.USER_BALANCE, TablasContract.Compound.ExpenseBalance.CURR_USER_PAID,
+                TablasContract.Compound.ExpenseBalance.SPLIT_USERS};
 
         StringBuffer selection = new StringBuffer();
-        selection.append(TablasContract.Compound.ExpenseBalance.MEMBER_USER_ID).append(" = ? AND ")
-                .append(TablasContract.Compound.ExpenseBalance.EXPENSE_GROUP_ID).append(" = ?")
+        selection.append(TablasContract.Compound.ExpenseBalance.EXPENSE_GROUP_ID).append(" = ?")
                 .append(" AND (")
                 .append(TablasContract.Compound.ExpenseBalance.EXCHANGE_CURR_TO).append(" = ? OR ")
                 .append(TablasContract.Compound.ExpenseBalance.EXCHANGE_CURR_TO).append(" IS NULL)");
-        String[] selectionValues = new String[] {userId, String.valueOf(groupId), toCurrency};
+        String[] selectionValues = new String[] {String.valueOf(groupId), toCurrency};
         StringBuilder sortBy = new StringBuilder(TablasContract.Compound.ExpenseBalance.EXPENSE_CREATED_ON).append(" ASC");
 
         return new CursorLoader(mContext, TablasContract.Compound.ExpenseBalance.TABLE_URI, projection, selection.toString(), selectionValues, sortBy.toString());

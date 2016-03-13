@@ -38,6 +38,12 @@ public class Column {
         metric = false;
     }
 
+    /**
+     * Constructs an object representing a column
+     * @param colName is the column name
+     * @param dbType is the data tayp of the column
+     * @param definition has additional information on the definition of the columns (primary key, default value, etc.).
+     */
     private Column(String colName, String dbType, String definition) {
         this(dbType, definition);
         name = colName;

@@ -2,6 +2,7 @@ package com.jumo.tablas.provider;
 
 import android.net.Uri;
 
+import com.jumo.tablas.common.TablasManager;
 import com.jumo.tablas.provider.dao.Column;
 import com.jumo.tablas.provider.dao.ColumnJoin;
 import com.jumo.tablas.provider.dao.CompositeTable;
@@ -495,7 +496,11 @@ public final class TablasContract {
             public static final String EXPENSE_ID = EXPENSE_TABLE.getColumn(Expense._ID).getFullName();
             public static final String MEMBER_ID = MEMBER_TABLE.getColumn(Member._ID).getFullName();
             public static final String _ID = "_id";
-            public static final String USER_BALANCE = "user_balance";
+            public static final String USER_BALANCE = "user_balance";       //Metric column for balance of every expense.
+            public static final String CURR_USER_PAID = "curr_user_paid";   //Metric column to identify if current user paid for part or all of the expense
+            public static final String CURR_USER_SHOULD_PAY = "curr_user_should_pay";   //Metric column to identify if current user should pay for part or all of the expense
+            public static final String SPLIT_USERS = "split_users";         //Metric column that has the set of users among which the expense should be split
+
 
             //Singleton table
             private static CompositeTable mInstance;
@@ -521,6 +526,9 @@ public final class TablasContract {
             @Override
             protected void addMetrics(){
                 addMetric(TablasContract.getUserBalanceMetric(USER_BALANCE));
+                addMetric(TablasContract.getHasCurrUserPaidMetric(CURR_USER_PAID));
+                addMetric(TablasContract.getSplitUsersMetric(SPLIT_USERS));
+                addMetric(TablasContract.getCurrUserShouldPayMetric(CURR_USER_SHOULD_PAY));
             }
 
             @Override
@@ -786,38 +794,116 @@ public final class TablasContract {
         public static final String CURRENCY_TO_SYMBOL = "curr_to_symbol";
     }
 
+    /**
+     * Metric that represents the expression to calculate the balance of the current user' (as returned by
+     * TablasManager.getCurrentUser()) for an expense or group.
+     * @param name
+     * @return
+     */
     protected static Metric getUserBalanceMetric(String name){
         Column expAmount = TablasContract.Expense.getInstance().getColumn(TablasContract.Expense.EXPENSE_AMOUNT);
         Column expExchange = TablasContract.ExchangeRate.getInstance().getColumn(ExchangeRate.EXCHANGE_RATE);  //TablasContract.Expense.getInstance().getColumn(TablasContract.Expense.EXPENSE_EXCHANGE_RATE);
         Column payPercent = TablasContract.Payer.getInstance().getColumn(TablasContract.Payer.PAYER_PERCENTAGE);
+        Column userIdCol = TablasContract.Member.getInstance().getColumn(TablasContract.Member.MEMBER_USER_ID);
 
         ArrayList<Column> columns = new ArrayList();
         columns.add(expAmount);
         columns.add(expExchange);
         columns.add(payPercent);
+        columns.add(userIdCol);
 
-        StringBuffer expression = new StringBuffer("sum(");
-        expression.append(expAmount.getFullName()).
-                append(" * coalesce(").
-                append(expExchange.getFullName()).
-                append(", 1) * ").
-                append(payPercent.getFullName()).append(")");
+        String userId = TablasManager.getCurrentUser();
+
+        StringBuffer expression = new StringBuffer("sum(case when (");
+        expression.append(userIdCol.getFullName()).append(" = '").append(TablasManager.getCurrentUser()).append("') then (")
+                .append(expAmount.getFullName())
+                .append(" * coalesce(")
+                .append(expExchange.getFullName())
+                .append(", 1) * ")
+                .append(payPercent.getFullName())
+                .append(")")
+                .append(" else 0 end")
+                .append(")");
 
         Column metricCol = new Column(null, name, Column.DB_TYPE_DOUBLE, null, Column.INTERNAL_TYPE_DOUBLE, Column.IS_METRIC);
 
         return new Metric(columns, expression.toString(), Metric.IS_AGGREGATION, metricCol);
     }
 
-    protected static Metric getIsCurrentUserMetric(String name){
+    /**
+     * Metric that represents whether the "current user" paid for part or the full amount of the expense.
+     * MAX(CASE WHEN (PAYER_ROLE = [paid]) AND MEMBER.USER_ID = '[userID]') THEN 1 ELSE 0 END)
+     * The user id is retrieved from the application's context (preferences, for example), retrieved from the TablasManager class.
+     * @param name represents the column name that will represent this metric
+     * @return true or false, as an integer 1 or 0, respectively.
+     */
+    protected static Metric getHasCurrUserPaidMetric(String name){
+        //Aggregation metric
+        Column memberUserId = TablasContract.Member.getInstance().getColumn(Member.MEMBER_USER_ID);
+        Column payerRole = TablasContract.Payer.getInstance().getColumn(Payer.PAYER_ROLE);
 
-        return null;
+        ArrayList<Column> cols = new ArrayList<Column>();
+        cols.add(memberUserId);
+        cols.add(payerRole);
+
+        StringBuffer expression = new StringBuffer("max(case when (");
+        expression.append(payerRole.getFullName()).append(" = ").append(Payer.OPTION_ROLE_PAID)
+                .append(" AND ")
+                .append(memberUserId.getFullName()).append(" = '").append(TablasManager.getCurrentUser()).append("') then 1 else 0 end)");
+
+        Column metricCol = new Column(null, name, Column.DB_TYPE_INTEGER, null, Column.INTERNAL_TYPE_INT, Column.IS_METRIC);
+
+        return new Metric(cols, expression.toString(), Metric.IS_AGGREGATION, metricCol);
     }
 
-    protected static Metric getNumberOfPayingPayers(String name){
 
-        return null;
+    /**
+     * Metric that represents whether the "current user" paid for part or the full amount of the expense.
+     * MAX(CASE WHEN (PAYER_ROLE = [paid]) AND MEMBER.USER_ID = '[userID]') THEN 1 ELSE 0 END)
+     * The user id is retrieved from the application's context (preferences, for example), retrieved from the TablasManager class.
+     * @param name represents the column name that will represent this metric
+     * @return true or false, as an integer 1 or 0, respectively.
+     */
+    protected static Metric getCurrUserShouldPayMetric(String name){
+        //Aggregation metric
+        Column memberUserId = TablasContract.Member.getInstance().getColumn(Member.MEMBER_USER_ID);
+        Column payerRole = TablasContract.Payer.getInstance().getColumn(Payer.PAYER_ROLE);
+
+        ArrayList<Column> cols = new ArrayList<Column>();
+        cols.add(memberUserId);
+        cols.add(payerRole);
+
+        StringBuffer expression = new StringBuffer("max(case when (");
+        expression.append(payerRole.getFullName()).append(" = ").append(Payer.OPTION_ROLE_SHOULD_PAY)
+                .append(" AND ")
+                .append(memberUserId.getFullName()).append(" = '").append(TablasManager.getCurrentUser()).append("') then 1 else 0 end)");
+
+        Column metricCol = new Column(null, name, Column.DB_TYPE_INTEGER, null, Column.INTERNAL_TYPE_INT, Column.IS_METRIC);
+
+        return new Metric(cols, expression.toString(), Metric.IS_AGGREGATION, metricCol);
     }
 
+    /**
+     * Metric that represents the different users that should pay for an expense.
+     * GROUP_CONCAT(CASE WHEN (PAYER_ROLE =  [shouldPay]) THEN MEMBER.USER_ID ELSE NULL)
+     * @param name represents the column name that will represent this metric
+     * @return a string concatenating the different user IDs that conform the users that should pay for an expense, separating each user ID with a comma.
+     */
+    protected static Metric getSplitUsersMetric(String name){
+        //Aggregation metric
+        Column payerRole = TablasContract.Payer.getInstance().getColumn(Payer.PAYER_ROLE);
+        Column memberUserId = TablasContract.Member.getInstance().getColumn(Member.MEMBER_USER_ID);
 
+        ArrayList<Column> cols = new ArrayList<Column>();
+        cols.add(payerRole);
+
+        StringBuffer expression = new StringBuffer("group_concat(case when (");
+        expression.append(payerRole.getFullName()).append(" = ").append(Payer.OPTION_ROLE_SHOULD_PAY)
+                .append(") then ").append(memberUserId.getFullName()).append(" else null end)");
+
+        Column metricCol = new Column(null, name, Column.DB_TYPE_TEXT, null, Column.INTERNAL_TYPE_STRING, Column.IS_METRIC);
+
+        return new Metric(cols, expression.toString(), Metric.IS_AGGREGATION, metricCol);
+    }
 
 }

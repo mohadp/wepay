@@ -87,4 +87,5 @@ public class EntityCursor extends CursorWrapper {
 
         return sb.toString();
     }
+
 }
