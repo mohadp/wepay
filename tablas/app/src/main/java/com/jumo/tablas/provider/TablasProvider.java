@@ -84,7 +84,7 @@ public class TablasProvider extends ContentProvider{
             cursorResult = dbConnection.rawQuery(sqlQuery, selectionArgs);
 
             String rowsResults = GeneralUtil.cursorToString(cursorResult);
-            Log.d(TAG, sqlQuery);
+            //Log.d(TAG, sqlQuery);
         }
         //dbConnection.close();
 

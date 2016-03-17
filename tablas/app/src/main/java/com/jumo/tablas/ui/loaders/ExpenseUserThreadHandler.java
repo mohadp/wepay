@@ -1,21 +1,12 @@
 package com.jumo.tablas.ui.loaders;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
-import android.util.LruCache;
 
-import com.jumo.tablas.R;
 import com.jumo.tablas.common.TablasManager;
-import com.jumo.tablas.model.Member;
-import com.jumo.tablas.provider.TablasContract;
-import com.jumo.tablas.provider.dao.EntityCursor;
-import com.jumo.tablas.ui.util.BitmapCache;
-import com.jumo.tablas.ui.util.CacheManager;
 import com.jumo.tablas.ui.views.ImageViewRow;
 
 import java.lang.ref.WeakReference;
@@ -23,9 +14,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * Created by Moha on 8/29/15.
+ * Created by Moha on 8/29/15. Queries the Contacts provider to get user photo URIs based on user ID (in this case,
+ * normalized telephone numbers).
  */
 public class ExpenseUserThreadHandler extends HandlerThread {
     private static final String TAG = "ExpenseUserThreadHandler";
@@ -45,8 +39,8 @@ public class ExpenseUserThreadHandler extends HandlerThread {
     //Handler that represents the UI thread
     private Handler mResponseHandler;
 
-    //Listener which onImagesLoaded method will be called, to be done by the UI thread.
-    private OnImagesLoaded onImagesLoaded;
+    //Listener which onContactInfoLoaded method will be called, to be done by the UI thread.
+    private OnContactInfoLoaded onContactInfoLoaded;
 
 
 
@@ -74,18 +68,18 @@ public class ExpenseUserThreadHandler extends HandlerThread {
         mHandler = new UserImageGetter();
     }
 
-    public void queueExpensePayers(ImageViewRow imageRow, long expenseId){
-        requestMap.put(imageRow, String.valueOf(expenseId));
+    public void queueExpensePayers(ImageViewRow imgRow, String users){
+        requestMap.put(imgRow, users);
         //Create a new message with the ImageViewRow as object, once we have all the information to query its images with teh expense ID.
-        mHandler.obtainMessage(MSG_TYPE_EXPENSE_USERS, imageRow).sendToTarget();
+        mHandler.obtainMessage(MSG_TYPE_EXPENSE_USERS, imgRow).sendToTarget();
     }
 
     public void clearQueue(){
         requestMap.clear();
     }
 
-    public void setOnImagesLoaded(OnImagesLoaded onImagesLoaded) {
-        this.onImagesLoaded = onImagesLoaded;
+    public void setOnContactInfoLoaded(OnContactInfoLoaded onContactInfoLoaded) {
+        this.onContactInfoLoaded = onContactInfoLoaded;
     }
 
     private class UserImageGetter extends Handler{
@@ -104,16 +98,15 @@ public class ExpenseUserThreadHandler extends HandlerThread {
             switch(msg.what){
                 case MSG_TYPE_EXPENSE_USERS:
                     final ImageViewRow imageRow = (ImageViewRow)msg.obj;
-                    final String expenseId = requestMap.get(imageRow);
-                    final ArrayList<Bitmap> images = new ArrayList<Bitmap>();
-                    final ArrayList<String> imageIds = new ArrayList<String>();
-                    getExpenseUserImages(expenseId, imageIds, images); //this adds ids and bitmaps to the ArrayLists
+                    final String users = requestMap.get(imageRow);
+                    ArrayList<String> userIds = parseUserIds(users);
+                    final Cursor cursor = TablasManager.getInstance(mContextReference.get()).getContactsByUserId(userIds.toArray(new String[]{}));
 
                     mResponseHandler.post(new Runnable(){
                         public void run(){
-                            if(requestMap.get(imageRow) == null || requestMap.get(imageRow).equals(expenseId)) {
+                            if(requestMap.get(imageRow) == null || requestMap.get(imageRow).equals(users)) {
                                 requestMap.remove(imageRow);
-                                onImagesLoaded.onImagesLoaded(imageRow, imageIds, images);
+                                onContactInfoLoaded.onImagesLoaded(cursor, imageRow);
                             }
                         }
                     });
@@ -121,39 +114,22 @@ public class ExpenseUserThreadHandler extends HandlerThread {
             }
         }
 
-        private void getExpenseUserImages(String expenseId, ArrayList<String> imageIds, ArrayList<Bitmap> images){
-            Cursor cursor = TablasManager.getInstance(mContextReference.get()).getPayingMembersForExpense(Long.valueOf(expenseId));
-            EntityCursor entityCursor = new EntityCursor(cursor);
+        private ArrayList<String> parseUserIds(String users){
+            String regex = "[,;\\s]*([^,]*)[,;\\s]*";
 
-            if(entityCursor == null)
-                return;
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(users);
 
-            int counter = 0;
-            while(entityCursor.moveToNext()){
-                Member user = new Member(entityCursor.getEntity(TablasContract.Member.getInstance()));
-                //TODO: Need to update the image to load dynamically based on user
-                Bitmap bitmap = getUserBitmap(R.drawable.moha);
-                images.add(bitmap);
-                imageIds.add(String.valueOf(R.drawable.moha));
+            ArrayList<String> userIds = new ArrayList<String>();
+            while(matcher.find()){
+                String id = matcher.group(1);
+                userIds.add(id);
             }
-            cursor.close();
-        }
-
-        private Bitmap getUserBitmap(int resId){
-            //first check in the cahce; if not, retrieve from wherever
-            CacheManager<Object, Bitmap> cacheManager = BitmapCache.getInstance();
-            Bitmap bitmap = cacheManager.retrieveFromCache(resId);
-            Resources resources = mContextReference.get().getResources();
-
-            if(bitmap == null){
-                bitmap = BitmapTask.decodeSampledBitmapFromResource(resources, resId, 100, 100, null);
-                cacheManager.addToCache(resId, bitmap);
-            }
-            return bitmap;
+            return userIds;
         }
     }
 
-    public interface OnImagesLoaded{
-        public void onImagesLoaded(ImageViewRow imgRow, ArrayList<String> bitmapIds, ArrayList<Bitmap> images);
+    public interface OnContactInfoLoaded {
+        public void onImagesLoaded(Cursor cursor, ImageViewRow imgRow);
     }
 }

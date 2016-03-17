@@ -273,6 +273,43 @@ public class TablasManager {
 
         return mContext.getContentResolver().query(uri, projection, filter.toString(), filterVals, sortBy);
     }
+    public Cursor getContactsByUserId(String normalizedPhones[]){
+        //Uri uri = Uri.withAppendedPath(ContactsContract.CommonDataKinds.Phone.CONTENT_FILTER_URI, Uri.encode(normalizedPhone)); //this also works, but only searchs on account_type_and_data_set is phonev2, not our com.jumo contacts
+        Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI; //this one searches on our contacts
+
+        String[] projection = new String[]{ ContactsContract.CommonDataKinds.Phone._ID
+                , ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
+                //, ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET
+                , ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER
+                , ContactsContract.CommonDataKinds.Phone.LABEL
+                , ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI};
+
+        StringBuilder filter = new StringBuilder();
+        filter.append("")
+                .append(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER).append(" in (");
+
+        String[] filterVals = new String[normalizedPhones.length + 1];
+        for(int i = 0; i < normalizedPhones.length; i++){
+            filterVals[i] = normalizedPhones[i];
+            filter.append("?");
+            if(i < normalizedPhones.length - 1){
+                filter.append(", ");
+            }
+        }
+
+        filter.append(") AND ")
+                .append(ContactsContract.CommonDataKinds.Phone.ACCOUNT_TYPE_AND_DATA_SET).append(" = ?");
+
+        filterVals[normalizedPhones.length] = AccountService.ACCOUNT_TYPE; //last position of array
+        String sortBy = null; //ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME + " ASC";
+
+        Cursor c =  mContext.getContentResolver().query(uri, projection, filter.toString(), filterVals, sortBy); //mContext.getContentResolver().query(uri, projection, null, null, null);
+
+        return c;
+
+        //return mContext.getContentResolver().query(uri, projection, filter.toString(), filterVals, sortBy);
+    }
+
 
     public Cursor getContactsByUserId(String normalizedPhone){
         //Uri uri = Uri.withAppendedPath(ContactsContract.CommonDataKinds.Phone.CONTENT_FILTER_URI, Uri.encode(normalizedPhone)); //this also works, but only searchs on account_type_and_data_set is phonev2, not our com.jumo contacts

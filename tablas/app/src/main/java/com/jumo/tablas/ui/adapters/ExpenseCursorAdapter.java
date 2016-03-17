@@ -1,14 +1,13 @@
 package com.jumo.tablas.ui.adapters;
 
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.os.HandlerThread;
 
 import com.jumo.tablas.provider.TablasContract;
 
 import android.content.Context;
+import android.provider.ContactsContract;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.*;
 import com.jumo.tablas.model.*;
 import android.widget.*;
@@ -22,7 +21,6 @@ import com.jumo.tablas.ui.views.RoundImageView;
 import com.jumo.tablas.ui.loaders.ExpenseUserThreadHandler;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 
 public class ExpenseCursorAdapter extends RecyclerView.Adapter<ExpenseCursorAdapter.ExpenseViewHolder> {
 	private static final String TAG = "ExpenseCursorAdapter";
@@ -62,6 +60,7 @@ public class ExpenseCursorAdapter extends RecyclerView.Adapter<ExpenseCursorAdap
         // get the run for the current row
         final Entity entity = mCursor.getEntity(TablasContract.Compound.ExpenseBalance.getInstance());
         final Expense expense = new Expense(entity);
+
         //Log.d(TAG, "Position " + getCursor().getPosition() + ": " + expense.toString());
 
         // set up the start date text view
@@ -73,7 +72,7 @@ public class ExpenseCursorAdapter extends RecyclerView.Adapter<ExpenseCursorAdap
                 new BitmapLoader.ImageRetrieval(BitmapLoader.ImageRetrieval.RES_ID, R.drawable.ic_launcher),
                 holder.category, mContextReference.get(), BitmapCache.getInstance());
 
-        loadPayersForExpense(expense, holder.payerImages); //TODO: replace this with BitmapLoader loading of class expenses (since we can use submit URI
+        asynchLoadPayerImages(expense, holder.payerImages); //TODO: replace this with BitmapLoader loading of class expenses (since we can use submit URI
 
 
         holder.desc.setText(expense.getMessage());
@@ -93,52 +92,49 @@ public class ExpenseCursorAdapter extends RecyclerView.Adapter<ExpenseCursorAdap
     }
 
 
-    private void loadPayersForExpense(Expense expense, ImageViewRow payerImages){
+    private void asynchLoadPayerImages(Expense expense, ImageViewRow payerImages) {
         //Let the loading of the images for the payers be done on a separate thread only if they have not yet been loaded.
-        Long imageRowTag = (Long)payerImages.getTag();
-        final long expenseId = expense.getId();
-
+        final String users = expense.getText(TablasContract.Compound.ExpenseBalance.SPLIT_USERS);
         //Load all the bitmaps representing all the payers per expense. We then update the imageRows once the bitmaps are loaded.
         ExpenseUserThreadHandler payerWorker = (ExpenseUserThreadHandler) mHandlerReference.get();
-        payerWorker.setOnImagesLoaded(new ExpenseUserThreadHandler.OnImagesLoaded() {
+        payerWorker.setOnContactInfoLoaded(new ExpenseUserThreadHandler.OnContactInfoLoaded() {
             @Override
-            public void onImagesLoaded(ImageViewRow imgRow, ArrayList<String> bitmapIds, ArrayList<Bitmap> images) {
-                setRoundImageViewBitmaps(imgRow, bitmapIds, images);
+            public void onImagesLoaded(Cursor cursor, ImageViewRow images) {
+                setExpenseImages(cursor, images);
             }
         });
-        payerWorker.queueExpensePayers(payerImages, expense.getId());
-
+        payerWorker.queueExpensePayers(payerImages, users); //pass not the expense ID, but the list of strings
     }
 
-    public void setRoundImageViewBitmaps(ImageViewRow imgRow, ArrayList<String> bitmapIds, ArrayList<Bitmap> bitmaps){
 
-        int currentBitmap;
-        for (currentBitmap = 0; currentBitmap < bitmaps.size(); currentBitmap++) {
-            ImageView imgView = (ImageView) imgRow.getChildAt(currentBitmap);
-            Bitmap img = bitmaps.get(currentBitmap);
-            boolean newImageView = false;
-
-            if(imgView == null){
-                imgView = new RoundImageView(imgRow.getContext());
-                newImageView = true;
+    private void setExpenseImages(Cursor cursor, ImageViewRow payerImages){
+        int iterator = 0;
+        if (cursor != null && cursor.getCount() > 0) {
+            while (cursor.moveToNext()) {
+                //get Imageview at this location to set its bitmap
+                ImageView imgView = (ImageView) payerImages.getChildAt(iterator);
+                if (imgView == null) {
+                    imgView = new RoundImageView(payerImages.getContext());
+                    payerImages.addImageView(imgView);
+                }
+                //Get the URI for the photo, retrieve it, and load bitmap asynchronously.
+                String photoUriStr = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI));
+                BitmapLoader.ImageRetrieval retrieval = new BitmapLoader.ImageRetrieval(
+                        BitmapLoader.ImageRetrieval.CONTENT_URI,
+                        photoUriStr,
+                        ContactsContract.CommonDataKinds.Photo.PHOTO);
+                BitmapLoader.asyncSetBitmapInImageView(retrieval, imgView, mContextReference.get(), BitmapCache.getInstance());
+                iterator++;
             }
-            String imgViewTag = (String)imgView.getTag();
-
-            //We verify that the tag has the ID of the bitmap. If it is the same, we do not update the image (it already has the correct bitmap).
-            if(imgViewTag == null || !imgViewTag.equals(bitmapIds.get(currentBitmap))) {
-                imgView.setImageBitmap(img);
-                imgView.setTag(bitmapIds.get(currentBitmap));
-            }
-            //If the image was just created, then we add it ot the imgRow; else, it is already added.
-            if (newImageView) {
-                imgRow.addImageView(imgView);
-            }
+            cursor.close();
         }
-
-        ImageView imgView = (ImageView) imgRow.getChildAt(currentBitmap);
-        while (imgView != null) {
-            imgView.setImageBitmap(null);
-            imgView = (ImageView) imgRow.getChildAt(++currentBitmap);
+        //Here, we unset bitmaps for ImageViews that will not be used for current ImageRow
+        while(iterator < payerImages.getChildCount()){
+            ImageView imgView = (ImageView)payerImages.getChildAt(iterator);
+            if (imgView != null) {
+                imgView.setImageBitmap(null);
+            }
+            iterator++;
         }
     }
 
