@@ -1,6 +1,7 @@
 package com.jumo.tablas.ui.adapters;
 
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.os.HandlerThread;
 
 import com.jumo.tablas.provider.TablasContract;
@@ -21,9 +22,13 @@ import com.jumo.tablas.ui.views.RoundImageView;
 import com.jumo.tablas.ui.loaders.ExpenseUserThreadHandler;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 
 public class ExpenseCursorAdapter extends RecyclerView.Adapter<ExpenseCursorAdapter.ExpenseViewHolder> {
 	private static final String TAG = "ExpenseCursorAdapter";
+
+    private final static int MESSAGE_TYPE_OTHERS = 0;
+    private final static int MESSAGE_TYPE_ME = 1;
 	
 	//To get balances on a per-user basis for a particular group
     protected WeakReference<Context> mContextReference;
@@ -43,10 +48,24 @@ public class ExpenseCursorAdapter extends RecyclerView.Adapter<ExpenseCursorAdap
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
 
-        View view = inflater.inflate(R.layout.list_item_message, parent, false);
+        int layoutId = (viewType == MESSAGE_TYPE_ME)? R.layout.list_item_message_me : R.layout.list_item_message;
+        View view = inflater.inflate(layoutId, parent, false);
         ExpenseViewHolder viewHolder = new ExpenseViewHolder(view);
 
         return viewHolder;
+    }
+
+    @Override
+    public int getItemViewType(int position){
+        if(mCursor == null || mCursor.isClosed()){
+            return MESSAGE_TYPE_OTHERS;
+        }
+        mCursor.moveToPosition(position);
+
+        Entity entity = mCursor.getEntity(TablasContract.Compound.ExpenseBalance.getInstance());
+        boolean hasCurrUserPaid = entity.getInt(TablasContract.Compound.ExpenseBalance.CURR_USER_PAID) == 1;
+
+        return (hasCurrUserPaid)? MESSAGE_TYPE_ME : MESSAGE_TYPE_OTHERS;
     }
 
     @Override
@@ -63,16 +82,13 @@ public class ExpenseCursorAdapter extends RecyclerView.Adapter<ExpenseCursorAdap
 
         //Log.d(TAG, "Position " + getCursor().getPosition() + ": " + expense.toString());
 
-        // set up the start date text view
-        BitmapLoader.asyncSetBitmapInImageView(
-                new BitmapLoader.ImageRetrieval(BitmapLoader.ImageRetrieval.RES_ID, R.drawable.moha),
-                holder.image, mContextReference.get(), BitmapCache.getInstance()); //loaded in separate thread if not present in cache
+        asynchLoadPaidImages(expense, holder.image);
 
         BitmapLoader.asyncSetBitmapInImageView( //TODO: will load image of category once I have the category images
                 new BitmapLoader.ImageRetrieval(BitmapLoader.ImageRetrieval.RES_ID, R.drawable.ic_launcher),
                 holder.category, mContextReference.get(), BitmapCache.getInstance());
 
-        asynchLoadPayerImages(expense, holder.payerImages); //TODO: replace this with BitmapLoader loading of class expenses (since we can use submit URI
+        asynchLoadShouldPayImages(expense, holder.payerImages);
 
 
         holder.desc.setText(expense.getMessage());
@@ -92,50 +108,24 @@ public class ExpenseCursorAdapter extends RecyclerView.Adapter<ExpenseCursorAdap
     }
 
 
-    private void asynchLoadPayerImages(Expense expense, ImageViewRow payerImages) {
-        //Let the loading of the images for the payers be done on a separate thread only if they have not yet been loaded.
-        final String users = expense.getText(TablasContract.Compound.ExpenseBalance.SPLIT_USERS);
-        //Load all the bitmaps representing all the payers per expense. We then update the imageRows once the bitmaps are loaded.
+    private void asynchLoadPaidImages(Expense expense, ImageView expenseImage){
+        final String users = expense.getText(TablasContract.Compound.ExpenseBalance.USERS_WHO_PAID);
+        expenseImage.setTag(expense.getId());
         ExpenseUserThreadHandler payerWorker = (ExpenseUserThreadHandler) mHandlerReference.get();
-        payerWorker.setOnContactInfoLoaded(new ExpenseUserThreadHandler.OnContactInfoLoaded() {
-            @Override
-            public void onImagesLoaded(Cursor cursor, ImageViewRow images) {
-                setExpenseImages(cursor, images);
-            }
-        });
-        payerWorker.queueExpensePayers(payerImages, users); //pass not the expense ID, but the list of strings
+
+        PaidUsersLoaded onPaidUserPhotosLoaded = new PaidUsersLoaded(expense.getId(), expenseImage);
+        payerWorker.queueExpensePayers(onPaidUserPhotosLoaded, users);
     }
 
+    private void asynchLoadShouldPayImages(Expense expense, ImageViewRow payerImages) {
+        //Let the loading of the images for the payers be done on a separate thread only if they have not yet been loaded.
+        final String users = expense.getText(TablasContract.Compound.ExpenseBalance.USERS_WHO_SHOULD_PAY);
+        payerImages.setTag(expense.getId());
 
-    private void setExpenseImages(Cursor cursor, ImageViewRow payerImages){
-        int iterator = 0;
-        if (cursor != null && cursor.getCount() > 0) {
-            while (cursor.moveToNext()) {
-                //get Imageview at this location to set its bitmap
-                ImageView imgView = (ImageView) payerImages.getChildAt(iterator);
-                if (imgView == null) {
-                    imgView = new RoundImageView(payerImages.getContext());
-                    payerImages.addImageView(imgView);
-                }
-                //Get the URI for the photo, retrieve it, and load bitmap asynchronously.
-                String photoUriStr = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI));
-                BitmapLoader.ImageRetrieval retrieval = new BitmapLoader.ImageRetrieval(
-                        BitmapLoader.ImageRetrieval.CONTENT_URI,
-                        photoUriStr,
-                        ContactsContract.CommonDataKinds.Photo.PHOTO);
-                BitmapLoader.asyncSetBitmapInImageView(retrieval, imgView, mContextReference.get(), BitmapCache.getInstance());
-                iterator++;
-            }
-            cursor.close();
-        }
-        //Here, we unset bitmaps for ImageViews that will not be used for current ImageRow
-        while(iterator < payerImages.getChildCount()){
-            ImageView imgView = (ImageView)payerImages.getChildAt(iterator);
-            if (imgView != null) {
-                imgView.setImageBitmap(null);
-            }
-            iterator++;
-        }
+        //Load all the bitmaps representing all the payers per expense. We then update the imageRows once the bitmaps are loaded.
+        ExpenseUserThreadHandler payerWorker = (ExpenseUserThreadHandler) mHandlerReference.get();
+        ShouldPayUsersLoaded onShouldPayInfoLoaded = new ShouldPayUsersLoaded(expense.getId(), payerImages);
+        payerWorker.queueExpensePayers(onShouldPayInfoLoaded, users); //pass not the expense ID, but the list of strings
     }
 
     public Cursor getCursor() {
@@ -195,5 +185,64 @@ public class ExpenseCursorAdapter extends RecyclerView.Adapter<ExpenseCursorAdap
             sb.append(desc.getText()).append("; ").append(balance.getText()).append("; ").append(total.getText()).append("; ").append(date.getText()).append("; ").append(location.getText());
             return sb.toString();
         }
+    }
+
+    private class PaidUsersLoaded extends ExpenseUserThreadHandler.OnBitmapsLoaded{
+
+        protected PaidUsersLoaded(long expenseId, ImageView image){
+            super(expenseId, image);
+        }
+
+        @Override
+        public void onBitmapsLoaded(ArrayList<Bitmap> bitmaps){
+            //Check whether the imageView reference has not been used for a different expense (e.g. when recyclying elements in
+            // RecycleView) than the one for which the images were loaded.
+            /*if(mImageView.getTag() == null || !mImageView.getTag().equals(mRequestId)){
+                return;
+            }*/
+            Bitmap collagedImage = RoundImageView.createCollagedBitmap(bitmaps);
+            getImageView().setImageBitmap(collagedImage);
+        }
+    }
+
+    private class ShouldPayUsersLoaded extends ExpenseUserThreadHandler.OnContactInfoLoaded{
+
+        protected ShouldPayUsersLoaded(long expenseId, ImageViewRow imageRow){
+            super(expenseId, imageRow);
+        }
+
+        @Override
+        public void onImagesLoaded(Cursor cursor) {
+            ImageViewRow payerImages = getImageViewRow();
+            int iterator = 0;
+            if (cursor != null && cursor.getCount() > 0) {
+                while (cursor.moveToNext()) {
+                    //get Imageview at this location to set its bitmap
+                    ImageView imgView = (ImageView) payerImages.getChildAt(iterator);
+                    if (imgView == null) {
+                        imgView = new RoundImageView(payerImages.getContext());
+                        payerImages.addImageView(imgView);
+                    }
+                    //Get the URI for the photo, retrieve it, and load bitmap asynchronously.
+                    String photoUriStr = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI));
+                    BitmapLoader.ImageRetrieval retrieval = new BitmapLoader.ImageRetrieval(
+                            BitmapLoader.ImageRetrieval.CONTENT_URI,
+                            photoUriStr,
+                            ContactsContract.CommonDataKinds.Photo.PHOTO);
+                    BitmapLoader.asyncSetBitmapInImageView(retrieval, imgView, mContextReference.get(), BitmapCache.getInstance());
+                    iterator++;
+                }
+                cursor.close();
+            }
+            //Here, we unset bitmaps for ImageViews that will not be used for current ImageRow
+            while(iterator < payerImages.getChildCount()){
+                ImageView imgView = (ImageView)payerImages.getChildAt(iterator);
+                if (imgView != null) {
+                    imgView.setImageBitmap(null);
+                }
+                iterator++;
+            }
+        }
+
     }
 }

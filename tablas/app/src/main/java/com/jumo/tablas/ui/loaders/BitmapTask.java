@@ -1,17 +1,13 @@
 package com.jumo.tablas.ui.loaders;
 
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.widget.ImageView;
 
+import com.jumo.tablas.ui.util.BitmapLoader;
 import com.jumo.tablas.ui.util.CacheManager;
 
 import java.lang.ref.WeakReference;
@@ -39,7 +35,16 @@ public class BitmapTask extends AsyncTask<Object, Void, Bitmap> {
         mContextReference = new WeakReference<Context>(context);
     }
 
-    //Decode image in background
+    /**
+     * Decode image in background. The params argument determines the following:
+     * - Type of retreival: LOAD_FROM_RES_ID or LOAD_FROM_CONTENT_URI; first one is loading from a resource ID or from an URI.
+     * - Other parameters:
+     *      + if type is from ResourceId, second paramter determines the ID of the resource.
+     *      + If type is from URI, then second parameter determines the URI of the picture, and the second parameter determines the column name where the picture is returned.
+     * @param params determines how to decode the image.
+     * @return
+     */
+
     @Override
     protected Bitmap doInBackground(Object[] params){
         if(params.length == 1){ //to be backwards compatible with existent calls.
@@ -68,7 +73,7 @@ public class BitmapTask extends AsyncTask<Object, Void, Bitmap> {
         if(mImageViewReference == null)
             return null;
 
-        Bitmap bitmap = decodeSampledBitmapFromResource(mResReference.get(), (Integer) mData, 100, 100, null);
+        Bitmap bitmap = BitmapLoader.decodeSampledBitmapFromResource(mResReference.get(), (Integer) mData, 100, 100, null);
 
         if(mCacheContainerReference != null && mCacheContainerReference.get() != null){
             mCacheContainerReference.get().addToCache(mData, bitmap);
@@ -84,20 +89,15 @@ public class BitmapTask extends AsyncTask<Object, Void, Bitmap> {
     private Bitmap executeFromResource(String uri, String column){
         mData = uri; //This sets the uri as an "identifier of the task", to know whether this task is loading this resource ID, useful to not run this again while it is running.
         Context context = mContextReference.get();
-        byte[] imgData = null;
 
         if(mImageViewReference == null || context == null)
             return null;
 
-        ContentResolver resolver = context.getContentResolver();
+        Bitmap bitmap = BitmapLoader.decodeBitmapFromUri(context, uri, column);
 
-        Cursor cursor = resolver.query(Uri.parse(uri), new String[]{column}, null, null, null);
-        if(cursor != null){
-            cursor.moveToFirst();
-            imgData = cursor.getBlob(cursor.getColumnIndex(column));
-            cursor.close();
-        }
-        Bitmap bitmap = BitmapFactory.decodeByteArray(imgData, 0, imgData.length);
+        if(mCacheContainerReference != null && mCacheContainerReference.get() != null){
+            mCacheContainerReference.get().addToCache(mData, bitmap);
+        };
 
         return bitmap;
     }
@@ -119,91 +119,6 @@ public class BitmapTask extends AsyncTask<Object, Void, Bitmap> {
                 imageView.setTag(mData.toString());
             }
         }
-    }
-
-    /**
-     * Adds an image to the cache so that it can be reused wherever it used.
-     * @param key
-     * @param pic
-     */
-    /*private void addToCache(Object key, Bitmap pic){
-        if(mCacheReference == null)
-            return;
-
-        LruCache<Object, Bitmap> cache = mCacheReference.get();
-        if(cache == null)
-            return;
-
-        synchronized (cache) {
-            if (cache.get(key) == pic) {
-                return;
-            } else {
-                cache.put(key, pic);
-            }
-        }
-    }*/
-
-    /**
-     * Method slightly modified from Android documentation: http://developer.android.com/training/displaying-bitmaps/load-bitmap.html
-     * When imgView is passed on, the required width and height are calculated from the ImageView drawing area (drawingRect).
-     * @param res
-     * @param resId
-     * @param reqWidth
-     * @param reqHeight
-     * @param imgView
-     * @return
-     */
-    public static Bitmap decodeSampledBitmapFromResource(Resources res, int resId, int reqWidth, int reqHeight, ImageView imgView) {
-
-        // First decode with inJustDecodeBounds=true to check dimensions
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeResource(res, resId, options);
-
-        if(imgView != null){
-            Rect rect = new Rect();
-            imgView.getDrawingRect(rect);
-            reqWidth = rect.width();
-            reqHeight = rect.height();
-        }
-
-        // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
-
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeResource(res, resId, options);
-    }
-
-    /**
-     * Method from Android documentation: http://developer.android.com/training/displaying-bitmaps/load-bitmap.html
-     *
-     * @param options
-     * @param reqWidth
-     * @param reqHeight
-     * @return
-     */
-    public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
-
-        // Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        int inSampleSize = 1;
-
-        if (height > reqHeight || width > reqWidth) {
-
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-
-            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) > reqHeight
-                    && (halfWidth / inSampleSize) > reqWidth) {
-                inSampleSize *= 2;
-            }
-        }
-
-        return inSampleSize;
     }
 
     public static boolean cancelPotentialWork(Object data, ImageView imageView) {

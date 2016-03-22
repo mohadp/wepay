@@ -6,6 +6,8 @@ import android.graphics.*;
 import android.graphics.drawable.*;
 import android.util.*;
 
+import java.util.ArrayList;
+
 public class RoundImageView extends ImageView{
 	
 	private final static int RADIUS_SHORTENER = 1;
@@ -26,29 +28,6 @@ public class RoundImageView extends ImageView{
 
     @Override
     protected void onDraw(Canvas canvas) {
-
-        /*
-        Bitmap image = ((BitmapDrawable) this.getDrawable()).getBitmap();
-        double width = image.getWidth(), height = image.getHeight();
-        float radiusReducer = (height > width)? ((float) (width / height)) : ((float) (height /width));
-        float diameter = (float)calculateDiameter(canvas.getWidth(), canvas.getHeight());
-
-        float radius = ((1f*diameter)/2f);
-
-
-        Paint paint = ((BitmapDrawable)getDrawable()).getPaint();
-        paint.setAntiAlias(true);
-        paint.setFilterBitmap(true);
-        paint.setDither(true);
-        paint.setColor(0x00000000);
-
-        canvas.drawARGB(0, 0, 0, 0);
-        canvas.drawCircle(radius, radius, radius * radiusReducer - 1, paint);
-        Xfermode oldMode = paint.getXfermode();
-        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-        super.onDraw(canvas);
-        paint.setXfermode(oldMode);*/
-
 
         //Get the original bitmap, and create a circular bitmap
         Bitmap originalBmp = (getDrawable() == null)? null : ((BitmapDrawable) this.getDrawable()).getBitmap();
@@ -73,11 +52,17 @@ public class RoundImageView extends ImageView{
         }
     }
 
-    private double calculateDiameter(double width, double height){
+    private static double calculateDiameter(double width, double height){
         return (width <= height) ? width : height;
     }
 
 
+    /**
+     * //The RoundImageView will be of circular shape, which means the circle can fit in a square.
+     * Will always make width and height the same (whichever is the smallest)
+     * @param widthMeasureSpec
+     * @param heightMeasureSpec
+     */
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec){
         int w = View.MeasureSpec.getSize(widthMeasureSpec);
@@ -156,5 +141,123 @@ public class RoundImageView extends ImageView{
 		
 		return output;
 	}
+
+    public static Bitmap createCollagedBitmap(ArrayList<Bitmap> origBitmaps){
+        double minHeight = origBitmaps.get(0).getWidth();
+        double minWidth = origBitmaps.get(0).getHeight();
+        double diameter = 0;
+
+        for(Bitmap bm : origBitmaps){
+            minWidth = (bm.getWidth() < minWidth)? bm.getWidth() : minWidth;
+            minHeight = (bm.getHeight() < minHeight)? bm.getHeight() : minHeight;
+        }
+        diameter = calculateDiameter(minWidth, minHeight);
+
+        Bitmap output = Bitmap.createBitmap((int)diameter, (int)diameter, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+        canvas.drawARGB(0, 0, 0, 0); //Transparent black
+
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setFilterBitmap(true);
+        paint.setDither(true);
+
+        int noBmps = origBitmaps.size();
+        for(int position = 0; position < noBmps; position++){
+            Bitmap bmp = origBitmaps.get(position);
+            Position targetLocation = getPosition((int)diameter, noBmps, position);
+            Rect srcRect = new Rect(targetLocation.x, targetLocation.y, targetLocation.getRight(), targetLocation.getBottom());
+            Position srcLocation = getCenterRectPosition(bmp, targetLocation.width, targetLocation.height);
+            Rect tgtRect = new Rect(srcLocation.x, srcLocation.y, srcLocation.getRight(), srcLocation.getBottom());
+
+            canvas.drawBitmap(bmp, srcRect, tgtRect, paint);
+        }
+        return output;
+    }
+
+    /**
+     * Helper method that gives the position and targetPicSize of where a picture should be positioned in a new picture composed of
+     * up to 4 sections.
+     * There is Maximum four pictures in a pie picture.
+     * If 1 cuadrant, then, one picture the targetPicSize of the new picture.
+     * If 2 cuadrants, each cuadrant uses half the new picture.
+     * If 3 cuadrants, then the first cuadrant uses the left half of the picture, and the other two split the second right half equally.
+     * If 4 cuadrants, then all pictures use a quarter of the new picture.
+     * @param targetPicSize is the targetPicSize of the target/final square-shaped picture (width or height of a square-sized target picture)
+     * @param noCuadrants total number of cuadrants the final picture will ahve
+     * @param currCuadrant the cuadrant for which the position will be calculated
+     * @return
+     */
+    private static Position getPosition(int targetPicSize, int noCuadrants, int currCuadrant){
+        int targetWidth = 0, targetHeight = 0;
+        int targetX = 0, targetY = 0;
+        if(noCuadrants == 1){
+            targetWidth = targetHeight = (int)targetPicSize;
+        }else if(noCuadrants == 2){
+            targetWidth = (int)(targetPicSize/2);
+            targetHeight = (int)targetPicSize;
+            targetX = (currCuadrant == 1)? (int)(targetPicSize/2) : 0;
+        }else if((noCuadrants == 3 )){
+            targetWidth = (int) (targetPicSize/2);
+            targetHeight = (currCuadrant == 0)? (int)targetPicSize : (int)(targetPicSize / 2);
+            targetX = (currCuadrant >= 1)? (int)(targetPicSize/2) + 1 : 0; //adding one to add a bit of space between sections.
+            targetY = (currCuadrant == 2)? (int)(targetPicSize/2) + 1 : 0; //adding one to add a bit of space between sections.
+        }else{
+            targetWidth = targetHeight = (int) (targetPicSize/2);
+            targetX = (currCuadrant == 1 || currCuadrant == 2)? (int)(targetPicSize/2) + 1 : 0; //adding one to add a bit of space between sections.
+            targetY = (currCuadrant == 2 || currCuadrant == 3)? (int)(targetPicSize/2) + 1 : 0; //adding one to add a bit of space between sections.
+        }
+
+        return new Position(targetX, targetY, targetWidth, targetHeight);
+    }
+
+
+    /**
+     * Gets the location/position of a rectangle in the center of the input bitmap, of the size of the target width/height.
+     * @param bmp the bmp from which the center rectangle will be retrieved.
+     * @param width the width of the rectangle in input BMP that will be retrieved.
+     * @param height the height of the rectangle in input BMP that will be retrieved.
+     * @return
+     */
+    private static Position getCenterRectPosition(Bitmap bmp, int width, int height){
+        Position srcPos =  new Position();
+        int centerX = bmp.getWidth() / 2;
+        int centerY = bmp.getHeight() / 2;
+
+        srcPos.x = centerX - width/2;
+        srcPos.y = centerY - height/2;
+        srcPos.width = width;
+        srcPos.height = height;
+
+        return srcPos;
+    }
+
+    private static class Position{
+        protected int x;
+        protected int y;
+        protected int width;
+        protected int height;
+
+        protected Position(){
+            this.x = this.y = this.width = this.height = 0;
+        }
+
+        protected Position(int x, int y, int width, int height){
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+        }
+
+        protected int getRight(){
+            return x + width;
+        }
+
+        protected int getBottom(){
+            return y + height;
+        }
+    }
 	
 }
+
+

@@ -7,8 +7,7 @@
     android:padding="5dp"
     android:orientation="horizontal">
 
-    <com.jumo.tablas.ui.views.RoundImageView
-        android:id="@+id/list_message_image"
+    <android.widget.Space
         android:layout_width="@dimen/list_expense_img_size"
         android:layout_height="@dimen/list_expense_img_size"
         android:layout_margin="5dp" />
@@ -33,12 +32,14 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
+
                 <TextView
                     android:id="@+id/list_message_desc"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:text="@string/list_message_desc"
-                    android:layout_weight="1" />
+                    android:layout_weight="1"
+                    android:gravity="right"/>
 
             </LinearLayout>
 
@@ -47,37 +48,32 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <!--View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginBottom="2dp"
-                    android:layout_marginTop="5dp"
-                    android:background="#ffeeeeee" /-->
 
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/list_message_total"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="left"
-                            android:layout_marginLeft="15dp" />
-
-                    </RelativeLayout>
 
                     <TextView
                         android:id="@+id/list_message_balance"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="15dp"
-                        android:layout_gravity="right" />
+                        android:layout_gravity="left" />
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_gravity="right">
+
+                        <TextView
+                            android:id="@+id/list_message_total"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="left" />
+
+                    </RelativeLayout>
+
 
                 </FrameLayout>
 
@@ -91,7 +87,9 @@
                         android:id="@+id/list_message_payers_images"
                         android:layout_width="wrap_content"
                         android:layout_height="@dimen/list_payers_img_size"
-                        android:orientation="horizontal" />
+                        android:layout_marginEnd="15dp"
+                        android:orientation="horizontal"
+                        android:layout_gravity="left" />
 
                     <ImageView
                         android:id="@+id/list_message_category"
@@ -100,7 +98,12 @@
                         android:src="@drawable/ic_launcher"
                         android:layout_gravity="right"/>
 
-
+                    <TextView
+                        android:id="@+id/list_message_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:visibility="gone"/>
 
                     <!-- location and date here -->
                     <TextView
@@ -110,19 +113,15 @@
                         android:layout_gravity="left"
                         android:visibility="gone"/>
 
-                    <TextView
-                        android:id="@+id/list_message_date"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="right"
-                        android:visibility="gone" />
-
                 </FrameLayout>
+
             </LinearLayout>
+
         </LinearLayout>
     </android.support.v7.widget.CardView>
 
-    <android.widget.Space
+    <com.jumo.tablas.ui.views.RoundImageView
+        android:id="@+id/list_message_image"
         android:layout_width="@dimen/list_expense_img_size"
         android:layout_height="@dimen/list_expense_img_size"
         android:layout_margin="5dp" />

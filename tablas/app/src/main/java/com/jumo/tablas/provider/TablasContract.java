@@ -499,7 +499,8 @@ public final class TablasContract {
             public static final String USER_BALANCE = "user_balance";       //Metric column for balance of every expense.
             public static final String CURR_USER_PAID = "curr_user_paid";   //Metric column to identify if current user paid for part or all of the expense
             public static final String CURR_USER_SHOULD_PAY = "curr_user_should_pay";   //Metric column to identify if current user should pay for part or all of the expense
-            public static final String SPLIT_USERS = "split_users";         //Metric column that has the set of users among which the expense should be split
+            public static final String USERS_WHO_SHOULD_PAY = "users_who_should_pay";         //Metric column that has the set of users among which the expense should be split
+            public static final String USERS_WHO_PAID = "users_who_paid";   //Metric column that has the set of users who paid for the expense
 
 
             //Singleton table
@@ -527,8 +528,9 @@ public final class TablasContract {
             protected void addMetrics(){
                 addMetric(TablasContract.getUserBalanceMetric(USER_BALANCE));
                 addMetric(TablasContract.getHasCurrUserPaidMetric(CURR_USER_PAID));
-                addMetric(TablasContract.getSplitUsersMetric(SPLIT_USERS));
+                addMetric(TablasContract.getUsersWhoShouldPayMetric(USERS_WHO_SHOULD_PAY));
                 addMetric(TablasContract.getCurrUserShouldPayMetric(CURR_USER_SHOULD_PAY));
+                addMetric(TablasContract.getUsersWhoPaidMetric(USERS_WHO_PAID));
             }
 
             @Override
@@ -889,7 +891,7 @@ public final class TablasContract {
      * @param name represents the column name that will represent this metric
      * @return a string concatenating the different user IDs that conform the users that should pay for an expense, separating each user ID with a comma.
      */
-    protected static Metric getSplitUsersMetric(String name){
+    protected static Metric getUsersWhoShouldPayMetric(String name){
         //Aggregation metric
         Column payerRole = TablasContract.Payer.getInstance().getColumn(Payer.PAYER_ROLE);
         Column memberUserId = TablasContract.Member.getInstance().getColumn(Member.MEMBER_USER_ID);
@@ -899,6 +901,29 @@ public final class TablasContract {
 
         StringBuffer expression = new StringBuffer("group_concat(case when (");
         expression.append(payerRole.getFullName()).append(" = ").append(Payer.OPTION_ROLE_SHOULD_PAY)
+                .append(") then ").append(memberUserId.getFullName()).append(" else null end)");
+
+        Column metricCol = new Column(null, name, Column.DB_TYPE_TEXT, null, Column.INTERNAL_TYPE_STRING, Column.IS_METRIC);
+
+        return new Metric(cols, expression.toString(), Metric.IS_AGGREGATION, metricCol);
+    }
+
+    /**
+     * Metric that represents the different users that should pay for an expense.
+     * GROUP_CONCAT(CASE WHEN (PAYER_ROLE =  [shouldPay]) THEN MEMBER.USER_ID ELSE NULL)
+     * @param name represents the column name that will represent this metric
+     * @return a string concatenating the different user IDs that conform the users that should pay for an expense, separating each user ID with a comma.
+     */
+    protected static Metric getUsersWhoPaidMetric(String name){
+        //Aggregation metric
+        Column payerRole = TablasContract.Payer.getInstance().getColumn(Payer.PAYER_ROLE);
+        Column memberUserId = TablasContract.Member.getInstance().getColumn(Member.MEMBER_USER_ID);
+
+        ArrayList<Column> cols = new ArrayList<Column>();
+        cols.add(payerRole);
+
+        StringBuffer expression = new StringBuffer("group_concat(case when (");
+        expression.append(payerRole.getFullName()).append(" = ").append(Payer.OPTION_ROLE_PAID)
                 .append(") then ").append(memberUserId.getFullName()).append(" else null end)");
 
         Column metricCol = new Column(null, name, Column.DB_TYPE_TEXT, null, Column.INTERNAL_TYPE_STRING, Column.IS_METRIC);

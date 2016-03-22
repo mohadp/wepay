@@ -380,7 +380,7 @@ public class TablasManager {
                 TablasContract.Compound.ExpenseBalance.EXPENSE_MESSAGE, TablasContract.Compound.ExpenseBalance.EXPENSE_OFFSET,
                 TablasContract.Compound.ExpenseBalance.EXPENSE_PERIODICITY, TablasContract.Compound.ExpenseBalance.EXPENSE_GROUP_ID,
                 TablasContract.Compound.ExpenseBalance.USER_BALANCE, TablasContract.Compound.ExpenseBalance.CURR_USER_PAID,
-                TablasContract.Compound.ExpenseBalance.SPLIT_USERS};
+                TablasContract.Compound.ExpenseBalance.USERS_WHO_SHOULD_PAY, TablasContract.Compound.ExpenseBalance.USERS_WHO_PAID};
 
         StringBuffer selection = new StringBuffer();
         selection.append(TablasContract.Compound.ExpenseBalance.EXPENSE_GROUP_ID).append(" = ?")
