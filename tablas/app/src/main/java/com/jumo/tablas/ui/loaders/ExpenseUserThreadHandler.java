@@ -142,6 +142,9 @@ public class ExpenseUserThreadHandler extends HandlerThread {
                 Bitmap bmp = BitmapLoader.decodeBitmapFromUri(mContextReference.get(), BitmapCache.getInstance(), retrieval);
                 bitmaps.add(bmp);
             }
+            if(cursor != null && !cursor.isClosed()){
+                cursor.close();
+            }
 
             mResponseHandler.post(new Runnable(){
                 public void run(){

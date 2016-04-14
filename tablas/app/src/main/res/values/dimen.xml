@@ -8,4 +8,5 @@
     <dimen name="edit_group_img_size">60dp</dimen>
     <dimen name="edit_expense_amt">90dp</dimen>
     <dimen name="button_size">35dp</dimen>
+    <dimen name="list_expense_balance_width">50dp</dimen>
 </resources>

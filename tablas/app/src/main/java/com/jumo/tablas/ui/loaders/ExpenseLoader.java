@@ -46,18 +46,19 @@ public class ExpenseLoader extends AsyncTask<Long, Void, ExpenseCalculator> {
         TablasManager tablasManager = TablasManager.getInstance(mContextReference.get());
 
         //Retrieve expense (if any present)
-        ExpenseCalculator calculator = loadExpense(tablasManager, expenseId);
+        ExpenseCalculator calculator = loadExpense(tablasManager, expenseId, groupId);
         //Retrieve members and, if any, existent payers
         loadMembersAndPayers(tablasManager, calculator, expenseId, groupId);
 
         return calculator;
     }
 
-    private ExpenseCalculator loadExpense(TablasManager tablasManager, long expenseId){
+    private ExpenseCalculator loadExpense(TablasManager tablasManager, long expenseId, long groupId){
         Expense expense = null;
         EntityCursor expenseCursor = new EntityCursor(tablasManager.getExpense(expenseId));
         if(expenseCursor == null || expenseCursor.isClosed() || expenseCursor.getCount() == 0){
             expense = new Expense();
+            expense.setGroupId(groupId);
         }else{
             expenseCursor.moveToFirst();
             expense = new Expense(expenseCursor.getEntity(TablasContract.Expense.getInstance()));

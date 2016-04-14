@@ -175,6 +175,8 @@ public class ExpenseListFragment extends Fragment implements LoaderManager.Loade
                 return;
             }
             ((ExpenseCursorAdapter) mRecyclerView.getAdapter()).changeCursor(new EntityCursor(data));
+            mRecyclerView.scrollToPosition(data.getCount()-1);
+
         }
     }
 

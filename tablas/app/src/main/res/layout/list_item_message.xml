@@ -38,28 +38,33 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/list_message_desc"
-                    android:layout_weight="1" />
+                    android:layout_weight="1"
+                    android:layout_marginEnd="15dp"/>
+
+                <!--TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text_separator"
+                    android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small"
+                    android:layout_marginEnd="5dp"/-->
+
+                <ImageView
+                    android:id="@+id/list_message_category"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:src="@drawable/ic_launcher"
+                    android:layout_gravity="top"/>
 
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <!--View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginBottom="2dp"
-                    android:layout_marginTop="5dp"
-                    android:background="#ffeeeeee" /-->
-
                 <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_margin="3dp">
 
-                    <RelativeLayout
-                        android:layout_width="match_parent"
+                    <LinearLayout
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
 
@@ -68,38 +73,35 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="left"
-                            android:layout_marginLeft="15dp" />
+                            android:layout_marginEnd="5dp" />
 
-                    </RelativeLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/text_split_among"
+                            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small"
+                            android:layout_marginEnd="5dp"/>
+
+                        <com.jumo.tablas.ui.views.ImageViewRow
+                            android:id="@+id/list_message_payers_images"
+                            android:layout_width="wrap_content"
+                            android:layout_height="@dimen/list_payers_img_size"
+                            android:orientation="horizontal"
+                            android:layout_gravity="center_vertical"/>
+
+
+
+                    </LinearLayout>
+
+
 
                     <TextView
                         android:id="@+id/list_message_balance"
-                        android:layout_width="wrap_content"
+                        android:layout_width="@dimen/list_expense_balance_width"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="15dp"
-                        android:layout_gravity="right" />
-
-                </FrameLayout>
-
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_margin="3dp">
-
-                    <com.jumo.tablas.ui.views.ImageViewRow
-                        android:id="@+id/list_message_payers_images"
-                        android:layout_width="wrap_content"
-                        android:layout_height="@dimen/list_payers_img_size"
-                        android:orientation="horizontal" />
-
-                    <ImageView
-                        android:id="@+id/list_message_category"
-                        android:layout_width="10dp"
-                        android:layout_height="10dp"
-                        android:src="@drawable/ic_launcher"
-                        android:layout_gravity="right"/>
-
+                        android:gravity="right"
+                        android:textColor="@android:color/holo_red_dark"
+                        android:layout_gravity="right|center_vertical"/>
 
 
                     <!-- location and date here -->
@@ -118,7 +120,7 @@
                         android:visibility="gone" />
 
                 </FrameLayout>
-            </LinearLayout>
+
         </LinearLayout>
     </android.support.v7.widget.CardView>
 

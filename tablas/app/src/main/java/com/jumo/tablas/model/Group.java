@@ -17,7 +17,7 @@ public class Group extends BaseEntity {
     }
 
     public Group(){
-        super();
+        super(new ActualEntity(TablasContract.Group.getInstance()));
     }
 
     public long getId() {

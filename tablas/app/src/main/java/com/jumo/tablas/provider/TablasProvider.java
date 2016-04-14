@@ -1,8 +1,10 @@
 package com.jumo.tablas.provider;
 
 import android.content.ContentProvider;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -30,6 +32,7 @@ import java.util.regex.Pattern;
  */
 public class TablasProvider extends ContentProvider{
     private static final String TAG = "TablasProvider";
+    private static boolean TRY_SYNCH_ON_CHANGE = false;
 
     //TODO: need to close database
 
@@ -83,10 +86,14 @@ public class TablasProvider extends ContentProvider{
             String sqlQuery = select(compositeTable, projection, selection, sortOrder, false);
             cursorResult = dbConnection.rawQuery(sqlQuery, selectionArgs);
 
-            String rowsResults = GeneralUtil.cursorToString(cursorResult);
+            //String rowsResults = GeneralUtil.cursorToString(cursorResult);
             //Log.d(TAG, sqlQuery);
         }
         //dbConnection.close();
+        if(cursorResult != null) {
+            cursorResult.setNotificationUri(getContext().getContentResolver(), uri);
+        }
+
 
         return cursorResult;
     }
@@ -114,6 +121,7 @@ public class TablasProvider extends ContentProvider{
         if(matcher >= 0 && matcher < 100) {
             deletedId = mDBHelper.getWritableDatabase().delete(table, selection, selectionArgs);
         }
+        notifyAllUris(matcher, uri);
         return deletedId;
     }
 
@@ -126,6 +134,7 @@ public class TablasProvider extends ContentProvider{
         if(matcher >= 0 && matcher < 100){
             insertedUri = ContentUris.withAppendedId(uri, mDBHelper.getWritableDatabase().insert(table, null, values));
         }
+        notifyAllUris(matcher, uri);
         return insertedUri;
     }
 
@@ -138,8 +147,34 @@ public class TablasProvider extends ContentProvider{
         if(matcher >= 0 && matcher < 100) {
             affectedRows = mDBHelper.getWritableDatabase().update(table, values, selection, selectionArgs);
         }
+        notifyAllUris(matcher, uri);
         return affectedRows;
     }
+
+    private void notifyAllUris(int matcher, Uri uri){
+        Context context = getContext();
+        ContentResolver cr = (context!= null)? getContext().getContentResolver() : null;
+
+        if(cr == null){
+            return;
+        }
+
+        if(matcher == EXPENSES){
+            cr.notifyChange(TablasContract.Compound.ExpenseBalance.TABLE_URI, null);
+            cr.notifyChange(TablasContract.Compound.GroupBalance.TABLE_URI, null);
+            cr.notifyChange(TablasContract.Expense.TABLE_URI, null);
+        }else if(matcher == GROUPS){
+            cr.notifyChange(TablasContract.Compound.GroupBalance.TABLE_URI, null);
+            cr.notifyChange(TablasContract.Group.TABLE_URI, null);
+        }else if(matcher == PAYERS) {
+            cr.notifyChange(TablasContract.Compound.ExpenseBalance.TABLE_URI, null);
+            cr.notifyChange(TablasContract.Compound.GroupBalance.TABLE_URI, null);
+            cr.notifyChange(TablasContract.Payer.TABLE_URI, null);
+        }else{
+            cr.notifyChange(uri, null);
+        }
+    }
+
 
     private String select(CompositeTable entity, String[] projection, String selection, String sortOrder, boolean distict){
 

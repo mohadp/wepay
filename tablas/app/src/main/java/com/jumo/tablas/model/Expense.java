@@ -14,10 +14,12 @@ public class Expense extends BaseEntity {
 
 	public Expense(Entity m){
         super(m);
+        setCreatedOn(new Date());
 	}
 
     public Expense(){
-        super();
+        super(new ActualEntity(TablasContract.Expense.getInstance()));
+        setCreatedOn(new Date());
     }
 
 

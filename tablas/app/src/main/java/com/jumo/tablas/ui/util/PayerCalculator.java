@@ -171,6 +171,7 @@ public class PayerCalculator {
             payer.setManuallySet(mPayersManuallySet.contains(l));
             payer.setExpenseId(mExpense.getId());
             payer.setPercentage(mPayers.get(l)/mExpense.getAmount());
+            payers.add(payer);
         }
         return payers;
     }

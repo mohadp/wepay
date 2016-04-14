@@ -1,9 +1,11 @@
 package com.jumo.tablas.common;
 
 import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.OperationApplicationException;
 import android.net.Uri;
 
 import com.jumo.tablas.account.AccountService;
@@ -19,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import android.database.*;
+import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.util.Log;
 
@@ -453,6 +456,62 @@ public class TablasManager {
         Cursor cursorResult = mContext.getContentResolver().query(TablasContract.Expense.TABLE_URI, projection, selection.toString(), selectionValues, null);
 
         return cursorResult;
+    }
+
+    public void insertExpense(Expense expense, ArrayList<Payer> payersPaid, ArrayList<Payer> payersShouldPay){
+        ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
+
+        insertExpenseOperation(TablasContract.Expense.TABLE_URI, expense, ops);
+
+        for(Payer p : payersPaid){
+            insertPayerOperation(TablasContract.Payer.TABLE_URI, p, 0, ops);
+        }
+
+        for(Payer p : payersShouldPay){
+            insertPayerOperation(TablasContract.Payer.TABLE_URI, p, 0, ops);
+        }
+
+        try{
+            ContentProviderResult[] result = mContext.getContentResolver().applyBatch(TablasContract.AUTHORITY, ops);
+            for(ContentProviderResult cpr : result){
+                Log.d(TAG, cpr.toString());
+            }
+        }catch(OperationApplicationException e){
+            Log.d(TAG, "Creating Expense and Payers: ApplyBatch of operations failed: ", e);
+        }catch(RemoteException e){
+            Log.d(TAG, "Creating Expense and Payers: ApplyBatch of operations failed", e);
+        }
+    }
+
+    private void insertExpenseOperation(Uri tableUri, Expense expense, ArrayList<ContentProviderOperation> ops){
+        ContentProviderOperation op = ContentProviderOperation.newInsert(tableUri)
+                .withValue(TablasContract.Expense.EXPENSE_CREATED_ON, (new Date()).getTime())
+                .withValue(TablasContract.Expense.EXPENSE_LONGITUDE, expense.getLongitude())
+                .withValue(TablasContract.Expense.EXPENSE_LATITUDE, expense.getLatitude())
+                .withValue(TablasContract.Expense.EXPENSE_AMOUNT, expense.getAmount())
+                .withValue(TablasContract.Expense.EXPENSE_CATEGORY_ID, expense.getCategoryId())
+                .withValue(TablasContract.Expense.EXPENSE_CURRENCY_ID, expense.getCurrencyId())
+                .withValue(TablasContract.Expense.EXPENSE_GROUP_EXPENSE_ID, expense.getGroupExpenseId())
+                .withValue(TablasContract.Expense.EXPENSE_GROUP_ID, expense.getGroupId())
+                .withValue(TablasContract.Expense.EXPENSE_IS_PAYMENT, expense.isPayment()? 1 : 0)
+                .withValue(TablasContract.Expense.EXPENSE_MESSAGE, expense.getMessage())
+                .withValue(TablasContract.Expense.EXPENSE_PERIODICITY, expense.getPeriodicity())
+                .withValue(TablasContract.Expense.EXPENSE_OFFSET, expense.getOffset())
+                .build();
+
+        ops.add(op);
+    }
+
+    private void insertPayerOperation(Uri payerTable, Payer payer, int expenseIndex, ArrayList<ContentProviderOperation> ops){
+        ContentProviderOperation op = ContentProviderOperation.newInsert(payerTable)
+                .withValueBackReference(TablasContract.Payer.PAYER_EXPENSE_ID, expenseIndex)
+                .withValue(TablasContract.Payer.PAYER_MANUALLY_SET, payer.isManuallySet()? 1 : 0)
+                .withValue(TablasContract.Payer.PAYER_MEMBER_ID, payer.getMemberId())
+                .withValue(TablasContract.Payer.PAYER_PERCENTAGE, payer.getPercentage())
+                .withValue(TablasContract.Payer.PAYER_ROLE, payer.getRole())
+                .build();
+
+        ops.add(op);
     }
 
 

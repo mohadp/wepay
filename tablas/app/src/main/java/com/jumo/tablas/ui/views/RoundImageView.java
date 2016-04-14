@@ -11,6 +11,7 @@ import java.util.ArrayList;
 public class RoundImageView extends ImageView{
 	
 	private final static int RADIUS_SHORTENER = 1;
+    private final static int COLLAGE_SEPARATOR = 2;
     private static final String TAG = "RoundImageView";
 
 	public RoundImageView(Context context) { 
@@ -166,9 +167,9 @@ public class RoundImageView extends ImageView{
         for(int position = 0; position < noBmps; position++){
             Bitmap bmp = origBitmaps.get(position);
             Position targetLocation = getPosition((int)diameter, noBmps, position);
-            Rect srcRect = new Rect(targetLocation.x, targetLocation.y, targetLocation.getRight(), targetLocation.getBottom());
+            Rect tgtRect = new Rect(targetLocation.x, targetLocation.y, targetLocation.getRight(), targetLocation.getBottom());
             Position srcLocation = getCenterRectPosition(bmp, targetLocation.width, targetLocation.height);
-            Rect tgtRect = new Rect(srcLocation.x, srcLocation.y, srcLocation.getRight(), srcLocation.getBottom());
+            Rect srcRect = new Rect(srcLocation.x, srcLocation.y, srcLocation.getRight(), srcLocation.getBottom());
 
             canvas.drawBitmap(bmp, srcRect, tgtRect, paint);
         }
@@ -196,16 +197,16 @@ public class RoundImageView extends ImageView{
         }else if(noCuadrants == 2){
             targetWidth = (int)(targetPicSize/2);
             targetHeight = (int)targetPicSize;
-            targetX = (currCuadrant == 1)? (int)(targetPicSize/2) : 0;
+            targetX = (currCuadrant == 1)? ((int)(targetPicSize/2) + COLLAGE_SEPARATOR) : 0;
         }else if((noCuadrants == 3 )){
             targetWidth = (int) (targetPicSize/2);
             targetHeight = (currCuadrant == 0)? (int)targetPicSize : (int)(targetPicSize / 2);
-            targetX = (currCuadrant >= 1)? (int)(targetPicSize/2) + 1 : 0; //adding one to add a bit of space between sections.
-            targetY = (currCuadrant == 2)? (int)(targetPicSize/2) + 1 : 0; //adding one to add a bit of space between sections.
+            targetX = (currCuadrant >= 1)? (int)(targetPicSize/2) + COLLAGE_SEPARATOR : 0; //adding one to add a bit of space between sections.
+            targetY = (currCuadrant == 2)? (int)(targetPicSize/2) + COLLAGE_SEPARATOR : 0; //adding one to add a bit of space between sections.
         }else{
             targetWidth = targetHeight = (int) (targetPicSize/2);
-            targetX = (currCuadrant == 1 || currCuadrant == 2)? (int)(targetPicSize/2) + 1 : 0; //adding one to add a bit of space between sections.
-            targetY = (currCuadrant == 2 || currCuadrant == 3)? (int)(targetPicSize/2) + 1 : 0; //adding one to add a bit of space between sections.
+            targetX = (currCuadrant == 1 || currCuadrant == 2)? (int)(targetPicSize/2) + COLLAGE_SEPARATOR : 0; //adding one to add a bit of space between sections.
+            targetY = (currCuadrant == 2 || currCuadrant == 3)? (int)(targetPicSize/2) + COLLAGE_SEPARATOR : 0; //adding one to add a bit of space between sections.
         }
 
         return new Position(targetX, targetY, targetWidth, targetHeight);

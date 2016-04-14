@@ -16,9 +16,9 @@ public class BaseEntity extends Entity {
         entity = m;
 	}
 
-    public BaseEntity(){
+    /*public BaseEntity(){
         entity = new ActualEntity(TablasContract.Expense.getInstance());
-    }
+    }*/
 
     @Override
     public Table table(){

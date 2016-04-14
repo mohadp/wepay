@@ -18,6 +18,8 @@ import android.widget.LinearLayout;
 import android.support.v4.view.ViewPager;
 
 import com.jumo.tablas.R;
+import com.jumo.tablas.common.TablasManager;
+import com.jumo.tablas.provider.TablasContract;
 import com.jumo.tablas.ui.adapters.InputMethodPageAdapter;
 import com.jumo.tablas.ui.loaders.ExpenseLoader;
 import com.jumo.tablas.ui.util.ExpenseCalculator;
@@ -45,6 +47,7 @@ public class ExpenseInputFragment extends Fragment implements OnKeyEventListener
     private ImageButton mCurrencyButton;
     private EditText mConversationEditText;
     private EditText mAmountEditText;
+    private ImageButton mSendExpense;
     private ViewPager mCustomKeyboard;
     //Other control variables
     private float mCustomKeyboardHeight;
@@ -99,8 +102,11 @@ public class ExpenseInputFragment extends Fragment implements OnKeyEventListener
         mExpenseEntryLayout = (LinearLayoutResize) view.findViewById(R.id.expense_entry);
         mCurrencyButton = (ImageButton) view.findViewById(R.id.button_currency);
         mConversationEditText = (EditText) view.findViewById(R.id.edit_message);
+        mConversationEditText.addTextChangedListener(new ChatListener());
         mAmountEditText = (EditText) view.findViewById(R.id.edit_amount);
         mAmountEditText.addTextChangedListener(new AmountListener());
+        mSendExpense = (ImageButton) view.findViewById(R.id.button_send_expense);
+        mSendExpense.setOnClickListener(new OnSendExpense());
 
         //Set the custom keyboard pages
         mCustomKeyboard = (ViewPager) view.findViewById(R.id.input_method);
@@ -272,6 +278,22 @@ public class ExpenseInputFragment extends Fragment implements OnKeyEventListener
         public boolean isSystemKeyboardShowing();
     }
 
+
+    protected class OnSendExpense implements ImageButton.OnClickListener{
+
+        @Override
+        public void onClick(View v) {
+            TablasManager manager = TablasManager.getInstance(getActivity());
+            manager.insertExpense(mExpenseCalculator.getExpense(),
+                    mExpenseCalculator.exportPayers(TablasContract.Payer.OPTION_ROLE_PAID),
+                    mExpenseCalculator.exportPayers(TablasContract.Payer.OPTION_ROLE_SHOULD_PAY));
+
+        }
+    }
+
+    /**
+     * Listener for the expense amount Edit Text.
+     */
     protected class AmountListener implements TextWatcher {
         public AmountListener(){ }
 
@@ -291,6 +313,25 @@ public class ExpenseInputFragment extends Fragment implements OnKeyEventListener
             }catch(NumberFormatException e){
                 Log.d(TAG, "Double Value could not be parsed", e);
             }
+        }
+    }
+
+    /**
+     * Listener for the expense description EditText.
+     */
+    protected class ChatListener implements TextWatcher {
+        public ChatListener(){ }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {  }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            Log.d(TAG, "Expense chat changed; updating chat description!");
+            mExpenseCalculator.getExpense().setMessage(s.toString());
         }
     }
 

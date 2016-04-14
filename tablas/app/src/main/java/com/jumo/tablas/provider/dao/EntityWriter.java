@@ -1,6 +1,8 @@
 package com.jumo.tablas.provider.dao;
 
+import android.content.ContentProviderOperation;
 import android.content.ContentValues;
+import android.net.Uri;
 
 
 import com.jumo.tablas.model.Entity;

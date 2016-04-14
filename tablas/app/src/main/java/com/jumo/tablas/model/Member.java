@@ -18,7 +18,7 @@ public class Member extends BaseEntity {
     }
 
     public Member(){
-        super();
+        super(new ActualEntity(TablasContract.Member.getInstance()));
     }
 
     public long getId() {

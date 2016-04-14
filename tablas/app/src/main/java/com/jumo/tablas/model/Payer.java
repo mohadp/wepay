@@ -13,7 +13,7 @@ public class Payer extends BaseEntity {
     }
 
     public Payer(){
-        super();
+        super(new ActualEntity(TablasContract.Payer.getInstance()));
     }
 
     public long getId() {

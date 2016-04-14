@@ -40,6 +40,7 @@ public class ExpenseCursorAdapter extends RecyclerView.Adapter<ExpenseCursorAdap
         mContextReference = new WeakReference<Context>(context);
         mHandlerReference = new WeakReference<HandlerThread>(handler);
         mCursor = cursor;
+
     }
 
 

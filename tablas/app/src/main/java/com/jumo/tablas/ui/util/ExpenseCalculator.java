@@ -7,6 +7,7 @@ import com.jumo.tablas.model.Member;
 import com.jumo.tablas.model.Payer;
 import com.jumo.tablas.provider.TablasContract;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
@@ -53,14 +54,6 @@ public class ExpenseCalculator {
 
     public void addPerson(Person person){
         mPeople.put(person.member.getId(), person);
-    }
-
-    //Todo: Add a removePayer method...
-
-    public void updateExpenseAmount(double amount){
-        mExpense.setAmount(amount);
-        mShouldPay.rebalanceAmounts();
-        mHasPaid.rebalanceAmounts();
     }
 
     public boolean addShouldPay(long memberId){
@@ -175,6 +168,15 @@ public class ExpenseCalculator {
         mExpense.setAmount(amt);
         mHasPaid.rebalanceAmounts();
         mShouldPay.rebalanceAmounts();
+    }
+
+    public ArrayList<Payer> exportPayers(int payerRole){
+        if(payerRole == TablasContract.Payer.OPTION_ROLE_PAID){
+            return mHasPaid.exportPayers(payerRole);
+        }else if(payerRole == TablasContract.Payer.OPTION_ROLE_SHOULD_PAY){
+            return mShouldPay.exportPayers(payerRole);
+        }
+        return null;
     }
 
     public static class Person{
